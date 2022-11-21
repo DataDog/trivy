@@ -94,6 +94,9 @@ type Package struct {
 	// This is required when using SPDX formats. Otherwise, it will be empty.
 	Digest digest.Digest `json:",omitempty"`
 
+	// Files provided by the package
+	SystemInstalledFiles []string `json:",omitempty"`
+
 	// lines from the lock file where the dependency is written
 	Locations []Location `json:",omitempty"`
 }

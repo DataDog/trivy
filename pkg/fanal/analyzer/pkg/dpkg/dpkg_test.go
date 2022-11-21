@@ -2,11 +2,12 @@ package dpkg
 
 import (
 	"context"
-	"github.com/aquasecurity/trivy/pkg/mapfs"
 	"os"
 	"path/filepath"
 	"sort"
 	"testing"
+
+	"github.com/aquasecurity/trivy/pkg/mapfs"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
@@ -1319,22 +1320,24 @@ func Test_dpkgAnalyzer_Analyze(t *testing.T) {
 			name:      "info list",
 			testFiles: map[string]string{"./testdata/tar.list": "var/lib/dpkg/info/tar.list"},
 			want: &analyzer.AnalysisResult{
-				SystemInstalledFiles: []string{
-					"/bin/tar",
-					"/etc",
-					"/usr/lib/mime/packages/tar",
-					"/usr/sbin/rmt-tar",
-					"/usr/sbin/tarcat",
-					"/usr/share/doc/tar/AUTHORS",
-					"/usr/share/doc/tar/NEWS.gz",
-					"/usr/share/doc/tar/README.Debian",
-					"/usr/share/doc/tar/THANKS.gz",
-					"/usr/share/doc/tar/changelog.Debian.gz",
-					"/usr/share/doc/tar/copyright",
-					"/usr/share/man/man1/tar.1.gz",
-					"/usr/share/man/man1/tarcat.1.gz",
-					"/usr/share/man/man8/rmt-tar.8.gz",
-					"/etc/rmt",
+				SystemInstalledFiles: map[string][]string{
+					"tar": {
+						"/bin/tar",
+						"/etc",
+						"/usr/lib/mime/packages/tar",
+						"/usr/sbin/rmt-tar",
+						"/usr/sbin/tarcat",
+						"/usr/share/doc/tar/AUTHORS",
+						"/usr/share/doc/tar/NEWS.gz",
+						"/usr/share/doc/tar/README.Debian",
+						"/usr/share/doc/tar/THANKS.gz",
+						"/usr/share/doc/tar/changelog.Debian.gz",
+						"/usr/share/doc/tar/copyright",
+						"/usr/share/man/man1/tar.1.gz",
+						"/usr/share/man/man1/tarcat.1.gz",
+						"/usr/share/man/man8/rmt-tar.8.gz",
+						"/etc/rmt",
+					},
 				},
 			},
 		},

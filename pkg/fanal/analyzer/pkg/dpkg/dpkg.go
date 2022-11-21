@@ -52,7 +52,7 @@ var (
 )
 
 func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
-	var systemInstalledFiles []string
+	var systemInstalledFiles map[string][]string
 	var packageInfos []types.PackageInfo
 
 	// parse `available` file to get digest for packages
@@ -70,11 +70,11 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		// parse list files
 		if a.isListFile(filepath.Split(path)) {
 			scanner := bufio.NewScanner(r)
-			systemFiles, err := a.parseDpkgInfoList(scanner)
+			systemFiles, err := a.parseDpkgInfoList(path, scanner)
 			if err != nil {
 				return err
 			}
-			systemInstalledFiles = append(systemInstalledFiles, systemFiles...)
+			systemInstalledFiles = lo.Assign(systemInstalledFiles, map[string][]string{strings.TrimSuffix(filepath.Base(path), ".list"): systemFiles})
 			return nil
 		}
 		// parse status files
@@ -96,10 +96,11 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 
 }
 
-// parseDpkgInfoList parses /var/lib/dpkg/info/*.list
-func (a dpkgAnalyzer) parseDpkgInfoList(scanner *bufio.Scanner) ([]string, error) {
+// parseDpkgStatus parses /var/lib/dpkg/info/*.list
+func (a dpkgAnalyzer) parseDpkgInfoList(filePath string, scanner *bufio.Scanner) ([]string, error) {
 	var installedFiles []string
 	var previous string
+
 	for scanner.Scan() {
 		current := scanner.Text()
 		if current == "/." {

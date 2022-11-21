@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 
-	"golang.org/x/exp/slices"
 	"golang.org/x/xerrors"
 
 	sbomatt "github.com/aquasecurity/trivy/pkg/attestation/sbom"
@@ -39,9 +38,15 @@ func NewUnpackagedHandler(opt artifact.Option) (handler.PostHandler, error) {
 
 // Handle retrieves SBOM of unpackaged executable files in Rekor.
 func (h unpackagedHook) Handle(ctx context.Context, res *analyzer.AnalysisResult, blob *types.BlobInfo) error {
+	sysInstalledFiles := make(map[string]struct{}, len(res.SystemInstalledFiles))
+	for _, files := range res.SystemInstalledFiles {
+		for i := range files {
+			sysInstalledFiles[files[i]] = struct{}{}
+		}
+	}
 	for filePath, digest := range res.Digests {
 		// Skip files installed by OS package managers.
-		if slices.Contains(res.SystemInstalledFiles, filePath) {
+		if _, found := sysInstalledFiles[filePath]; found {
 			continue
 		}
 

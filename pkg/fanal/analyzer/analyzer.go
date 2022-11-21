@@ -157,7 +157,7 @@ type AnalysisResult struct {
 	Misconfigurations    []types.Misconfiguration
 	Secrets              []types.Secret
 	Licenses             []types.LicenseFile
-	SystemInstalledFiles []string // A list of files installed by OS package manager
+	SystemInstalledFiles map[string][]string // A map of files installed by OS package manager indexed by package
 
 	// Digests contains SHA-256 digests of unpackaged files
 	// used to search for SBOM attestation.
@@ -173,6 +173,7 @@ type AnalysisResult struct {
 
 func NewAnalysisResult() *AnalysisResult {
 	result := new(AnalysisResult)
+	result.SystemInstalledFiles = map[string][]string{}
 	return result
 }
 
@@ -274,7 +275,10 @@ func (r *AnalysisResult) Merge(new *AnalysisResult) {
 	r.Misconfigurations = append(r.Misconfigurations, new.Misconfigurations...)
 	r.Secrets = append(r.Secrets, new.Secrets...)
 	r.Licenses = append(r.Licenses, new.Licenses...)
-	r.SystemInstalledFiles = append(r.SystemInstalledFiles, new.SystemInstalledFiles...)
+
+	for packageRef, installedFiles := range new.SystemInstalledFiles {
+		r.SystemInstalledFiles[packageRef] = append(r.SystemInstalledFiles[packageRef], installedFiles...)
+	}
 
 	if new.BuildInfo != nil {
 		if r.BuildInfo == nil {
@@ -472,7 +476,12 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			continue
 		}
 
-		skippedFiles := result.SystemInstalledFiles
+		skippedFiles := make([]string, 0, len(result.SystemInstalledFiles))
+		for _, files := range result.SystemInstalledFiles {
+			for i := range files {
+				skippedFiles = append(skippedFiles, files[i])
+			}
+		}
 		for _, app := range result.Applications {
 			skippedFiles = append(skippedFiles, app.FilePath)
 			for _, lib := range app.Libraries {
