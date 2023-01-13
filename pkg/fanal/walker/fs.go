@@ -25,6 +25,7 @@ func (w *FS) Walk(root string, opt Option, fn WalkFunc) error {
 	opt.SkipFiles = w.BuildSkipPaths(root, opt.SkipFiles)
 	opt.SkipDirs = w.BuildSkipPaths(root, opt.SkipDirs)
 	opt.SkipDirs = append(opt.SkipDirs, defaultSkipDirs...)
+	opt.OnlyDirs = w.BuildSkipPaths(root, opt.OnlyDirs)
 
 	walkDirFunc := w.WalkDirFunc(root, fn, opt)
 	walkDirFunc = w.onError(walkDirFunc)
@@ -56,10 +57,15 @@ func (w *FS) WalkDirFunc(root string, fn WalkFunc, opt Option) fs.WalkDirFunc {
 			if SkipPath(relPath, opt.SkipDirs) {
 				return filepath.SkipDir
 			}
+			if OnlyPath(relPath, opt.OnlyDirs) {
+				return filepath.SkipDir
+			}
 			return nil
 		case !d.Type().IsRegular():
 			return nil
 		case SkipPath(relPath, opt.SkipFiles):
+			return nil
+		case OnlyPath(relPath, opt.OnlyDirs):
 			return nil
 		}
 
