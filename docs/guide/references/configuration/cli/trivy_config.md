@@ -51,6 +51,7 @@ trivy config [flags] DIR
       --k8s-version string                specify k8s version to validate outdated APIs against (example: 1.21.0)
       --misconfig-scanners strings        comma-separated list of misconfig scanners to use for misconfiguration scanning (default [azure-arm,cloudformation,dockerfile,helm,kubernetes,terraform,terraformplan-json,terraformplan-snapshot,ansible])
       --module-dir string                 specify the directory of the WASM modules to load (default "$HOME/.trivy/modules")
+      --only-dirs strings                 specify the directories where the traversal is allowed
   -o, --output string                     output file name
       --output-plugin-arg string          [EXPERIMENTAL] output plugin arguments
       --password strings                  password. Comma-separated passwords allowed. TRIVY_PASSWORD should be used for security reasons.

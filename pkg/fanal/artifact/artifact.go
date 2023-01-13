@@ -81,6 +81,7 @@ func (o *Option) Sort() {
 	slices.Sort(o.DisabledAnalyzers)
 	sort.Strings(o.WalkerOption.SkipFiles)
 	sort.Strings(o.WalkerOption.SkipDirs)
+	sort.Strings(o.WalkerOption.OnlyDirs)
 	sort.Strings(o.FilePatterns)
 }
 
