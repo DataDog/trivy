@@ -41,6 +41,7 @@ trivy sbom [flags] SBOM_PATH
       --list-all-pkgs               output all packages in the JSON report regardless of vulnerability
       --no-progress                 suppress progress bar
       --offline-scan                do not issue API requests to identify dependencies
+      --only-dirs strings           specify the directories where the traversal is allowed
   -o, --output string               output file name
       --output-plugin-arg string    [EXPERIMENTAL] output plugin arguments
       --pkg-relationships strings   list of package relationships (unknown,root,direct,indirect) (default [unknown,root,direct,indirect])

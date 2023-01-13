@@ -24,6 +24,7 @@ var defaultSkipDirs = []string{
 type Option struct {
 	SkipFiles []string
 	SkipDirs  []string
+	OnlyDirs  []string
 }
 
 type WalkFunc func(filePath string, info os.FileInfo, opener analyzer.Opener) error
@@ -49,4 +50,30 @@ func SkipPath(path string, skipPaths []string) bool {
 		}
 	}
 	return false
+}
+
+func OnlyPath(path string, onlyPaths []string) bool {
+	if len(onlyPaths) == 0 {
+		return false
+	}
+
+	if path == "" || path == "." {
+		return false
+	}
+
+	path = strings.TrimLeft(path, "/")
+
+	for _, pattern := range onlyPaths {
+		if strings.HasPrefix(pattern, path+"/") {
+			return false
+		}
+		match, err := doublestar.Match(pattern, path)
+		if err != nil {
+			return false // return early if bad pattern
+		} else if match {
+			return false
+		}
+	}
+	log.Debug("Skipping path", log.String("path", path))
+	return true
 }

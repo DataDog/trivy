@@ -27,6 +27,12 @@ var (
 		ConfigName: "scan.offline",
 		Usage:      "do not issue API requests to identify dependencies",
 	}
+	OnlyDirsFlag = Flag[[]string]{
+		Name:       "only-dirs",
+		ConfigName: "scan.only-dirs",
+		Default:    []string{},
+		Usage:      "specify the directories where the traversal is allowed",
+	}
 	ScannersFlag = Flag[[]string]{
 		Name:       "scanners",
 		ConfigName: "scan.scanners",
@@ -101,6 +107,7 @@ var (
 type ScanFlagGroup struct {
 	SkipDirs     *Flag[[]string]
 	SkipFiles    *Flag[[]string]
+	OnlyDirs     *Flag[[]string]
 	OfflineScan  *Flag[bool]
 	Scanners     *Flag[[]string]
 	FilePatterns *Flag[[]string]
@@ -114,6 +121,7 @@ type ScanOptions struct {
 	Target       string
 	SkipDirs     []string
 	SkipFiles    []string
+	OnlyDirs     []string
 	OfflineScan  bool
 	Scanners     types.Scanners
 	FilePatterns []string
@@ -126,6 +134,7 @@ func NewScanFlagGroup() *ScanFlagGroup {
 	return &ScanFlagGroup{
 		SkipDirs:     SkipDirsFlag.Clone(),
 		SkipFiles:    SkipFilesFlag.Clone(),
+		OnlyDirs:     OnlyDirsFlag.Clone(),
 		OfflineScan:  OfflineScanFlag.Clone(),
 		Scanners:     ScannersFlag.Clone(),
 		FilePatterns: FilePatternsFlag.Clone(),
@@ -144,6 +153,7 @@ func (f *ScanFlagGroup) Flags() []Flagger {
 	return []Flagger{
 		f.SkipDirs,
 		f.SkipFiles,
+		f.OnlyDirs,
 		f.OfflineScan,
 		f.Scanners,
 		f.FilePatterns,
@@ -174,6 +184,7 @@ func (f *ScanFlagGroup) ToOptions(args []string) (ScanOptions, error) {
 		Target:       target,
 		SkipDirs:     f.SkipDirs.Value(),
 		SkipFiles:    f.SkipFiles.Value(),
+		OnlyDirs:     f.OnlyDirs.Value(),
 		OfflineScan:  f.OfflineScan.Value(),
 		Scanners:     xstrings.ToTSlice[types.Scanner](f.Scanners.Value()),
 		FilePatterns: f.FilePatterns.Value(),
