@@ -54,7 +54,7 @@ func Test_shouldSkipFile(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			w := newWalker(tc.skipFiles, nil, false)
+			w := newWalker(tc.skipFiles, nil, nil, false)
 			for file, skipResult := range tc.skipMap {
 				assert.Equal(t, skipResult, w.shouldSkipFile(filepath.ToSlash(filepath.Clean(file))), fmt.Sprintf("skipFiles: %s, file: %s", tc.skipFiles, file))
 			}
@@ -115,7 +115,115 @@ func Test_shouldSkipDir(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			w := newWalker(nil, tc.skipDirs, false)
+			w := newWalker(nil, tc.skipDirs, nil, false)
+			for dir, skipResult := range tc.skipMap {
+				assert.Equal(t, skipResult, w.shouldSkipDir(filepath.ToSlash(filepath.Clean(dir))), fmt.Sprintf("skipDirs: %s, dir: %s", tc.skipDirs, dir))
+			}
+		})
+	}
+}
+
+func Test_onlyDir(t *testing.T) {
+	testCases := []struct {
+		skipDirs []string
+		onlyDirs []string
+		skipMap  map[string]bool
+	}{
+		{
+			skipDirs: nil,
+			onlyDirs: []string{"/etc/**"},
+			skipMap: map[string]bool{
+				"/etc/foo":     false,
+				"/etc/foo/bar": false,
+				"/var/log/bar": true,
+			},
+		},
+		{
+			skipDirs: nil,
+			onlyDirs: []string{"/**"},
+			skipMap: map[string]bool{
+				"/etc":         false,
+				"/etc/foo":     false,
+				"/var/log/bar": false,
+			},
+		},
+		{
+			skipDirs: nil,
+			onlyDirs: []string{"/*"},
+			skipMap: map[string]bool{
+				"/etc":     false,
+				"/etc/foo": true,
+			},
+		},
+		{
+			skipDirs: nil,
+			onlyDirs: []string{"/etc/foo/*"},
+			skipMap: map[string]bool{
+				"/etc/foo/bar":  false,
+				"/etc/foo2/bar": true,
+			},
+		},
+		{
+			skipDirs: nil,
+			onlyDirs: []string{"/etc/**"},
+			skipMap: map[string]bool{
+				"/etc/foo/bar":  false,
+				"/etc/foo2/bar": false,
+			},
+		},
+		{
+			skipDirs: []string{"/etc/foo2/*"},
+			onlyDirs: []string{"/etc/**"},
+			skipMap: map[string]bool{
+				"/etc/foo/bar":  false,
+				"/etc/foo2/bar": true,
+			},
+		},
+		{
+			skipDirs: []string{"/etc/foo2/*"},
+			onlyDirs: []string{"/etc/*/bar"},
+			skipMap: map[string]bool{
+				"/etc/foo/bar":  false,
+				"/etc/foo2/bar": true,
+			},
+		},
+		{
+			onlyDirs: []string{"/*/foo/*"},
+			skipMap: map[string]bool{
+				"/etc/foo/bar":  false,
+				"/etc/foo2/bar": true,
+			},
+		},
+		{
+			skipDirs: []string{"/etc/foo/*"},
+			onlyDirs: []string{"/*/foo/*"},
+			skipMap: map[string]bool{
+				"/etc/foo/bar":  true,
+				"/var/foo/bar":  false,
+				"/etc/foo2/bar": true,
+			},
+		},
+		{
+			onlyDirs: []string{"/etc"},
+			skipMap: map[string]bool{
+				"/etc":         false,
+				"/etc/foo/bar": true,
+			},
+		},
+		{
+			onlyDirs: []string{"/etc/**"},
+			skipMap: map[string]bool{
+				"/etc":         false,
+				"/etc/foo":     false,
+				"/etc/foo/bar": false,
+				"/var/foo/var": true,
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			w := newWalker(nil, tc.skipDirs, tc.onlyDirs, false)
 			for dir, skipResult := range tc.skipMap {
 				assert.Equal(t, skipResult, w.shouldSkipDir(filepath.ToSlash(filepath.Clean(dir))), fmt.Sprintf("skipDirs: %s, dir: %s", tc.skipDirs, dir))
 			}

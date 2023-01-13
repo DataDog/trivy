@@ -18,6 +18,7 @@ func TestDir_Walk(t *testing.T) {
 	type fields struct {
 		skipFiles   []string
 		skipDirs    []string
+		onlyDirs    []string
 		errCallback walker.ErrorCallback
 	}
 	tests := []struct {
@@ -93,7 +94,7 @@ func TestDir_Walk(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			w := walker.NewFS(tt.fields.skipFiles, tt.fields.skipDirs, true, tt.fields.errCallback)
+			w := walker.NewFS(tt.fields.skipFiles, tt.fields.skipDirs, tt.fields.onlyDirs, true, tt.fields.errCallback)
 
 			err := w.Walk(tt.rootDir, tt.analyzeFn)
 			if tt.wantErr != "" {

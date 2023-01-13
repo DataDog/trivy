@@ -50,6 +50,7 @@ trivy vm [flags] VM_IMAGE
       --module-dir string                 specify directory to the wasm modules that will be loaded (default "$HOME/.trivy/modules")
       --no-progress                       suppress progress bar
       --offline-scan                      do not issue API requests to identify dependencies
+      --only-dirs strings                 specify the directories where the traversal is allowed
   -o, --output string                     output file name
       --policy-bundle-repository string   OCI registry URL to retrieve policy bundle from (default "ghcr.io/aquasecurity/defsec:0")
       --redis-ca string                   redis ca file location, if using redis as cache backend
