@@ -19,7 +19,7 @@ type FS struct {
 	errCallback ErrorCallback
 }
 
-func NewFS(skipFiles, skipDirs []string, parallel int, errCallback ErrorCallback) FS {
+func NewFS(skipFiles, skipDirs, onlyDirs []string, parallel int, errCallback ErrorCallback) FS {
 	if errCallback == nil {
 		errCallback = func(pathname string, err error) error {
 			// ignore permission errors
@@ -32,8 +32,7 @@ func NewFS(skipFiles, skipDirs []string, parallel int, errCallback ErrorCallback
 	}
 
 	return FS{
-		walker:      newWalker(skipFiles, skipDirs),
-		parallel:    parallel,
+		walker:      newWalker(skipFiles, skipDirs, onlyDirs),
 		errCallback: errCallback,
 	}
 }
