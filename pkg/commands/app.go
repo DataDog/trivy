@@ -680,6 +680,7 @@ func NewConfigCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 		// and `--disable-telemetry`, disable other scan flags
 		SkipDirs:         flag.SkipDirsFlag.Clone(),
 		SkipFiles:        flag.SkipFilesFlag.Clone(),
+		OnlyDirs:         flag.OnlyDirsFlag.Clone(),
 		FilePatterns:     flag.FilePatternsFlag.Clone(),
 		SkipVersionCheck: flag.SkipVersionCheckFlag.Clone(),
 		DisableTelemetry: flag.DisableTelemetryFlag.Clone(),

@@ -31,6 +31,7 @@ func CalcKey(id string, artifactVersion int, analyzerVersions analyzer.Versions,
 		HookVersions      map[string]int
 		SkipFiles         []string
 		SkipDirs          []string
+		OnlyDirs          []string
 		FilePatterns      []string                `json:",omitempty"`
 		DetectionPriority types.DetectionPriority `json:",omitempty"`
 	}{
@@ -40,6 +41,7 @@ func CalcKey(id string, artifactVersion int, analyzerVersions analyzer.Versions,
 		hookVersions,
 		artifactOpt.WalkerOption.SkipFiles,
 		artifactOpt.WalkerOption.SkipDirs,
+		artifactOpt.WalkerOption.OnlyDirs,
 		artifactOpt.FilePatterns,
 		artifactOpt.DetectionPriority,
 	}
