@@ -1,8 +1,9 @@
 package flag_test
 
 import (
-	"github.com/spf13/viper"
 	"testing"
+
+	"github.com/spf13/viper"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,6 +16,7 @@ func TestScanFlagGroup_ToOptions(t *testing.T) {
 	type fields struct {
 		skipDirs    []string
 		skipFiles   []string
+		onlyDirs    []string
 		offlineScan bool
 		scanners    string
 	}
@@ -112,6 +114,7 @@ func TestScanFlagGroup_ToOptions(t *testing.T) {
 			t.Cleanup(viper.Reset)
 			setSliceValue(flag.SkipDirsFlag.ConfigName, tt.fields.skipDirs)
 			setSliceValue(flag.SkipFilesFlag.ConfigName, tt.fields.skipFiles)
+			setSliceValue(flag.OnlyDirsFlag.ConfigName, tt.fields.onlyDirs)
 			setValue(flag.OfflineScanFlag.ConfigName, tt.fields.offlineScan)
 			setValue(flag.ScannersFlag.ConfigName, tt.fields.scanners)
 
@@ -119,6 +122,7 @@ func TestScanFlagGroup_ToOptions(t *testing.T) {
 			f := &flag.ScanFlagGroup{
 				SkipDirs:    flag.SkipDirsFlag.Clone(),
 				SkipFiles:   flag.SkipFilesFlag.Clone(),
+				OnlyDirs:    flag.OnlyDirsFlag.Clone(),
 				OfflineScan: flag.OfflineScanFlag.Clone(),
 				Scanners:    flag.ScannersFlag.Clone(),
 			}
