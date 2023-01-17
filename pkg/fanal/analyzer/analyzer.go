@@ -420,7 +420,7 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 			return xerrors.Errorf("unable to open %s: %w", filePath, err)
 		}
 
-		fmt.Fprintf(os.Stderr, "VBDEBUG waiting for analyzer file: %s analyzer: %s", filePath, a.Type())
+		fmt.Fprintf(os.Stderr, "VBDEBUG waiting for analyzer file: %s analyzer: %s\n", filePath, a.Type())
 		if err = limit.Acquire(ctx, 1); err != nil {
 			return xerrors.Errorf("semaphore acquire: %w", err)
 		}
@@ -429,11 +429,11 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 		go func(a analyzer, rc dio.ReadSeekCloserAt) {
 			defer func() {
 				limit.Release(1)
-				fmt.Fprintf(os.Stderr, "VBDEBUG ending analyzer file: %s analyzer: %s", filePath, a.Type())
+				fmt.Fprintf(os.Stderr, "VBDEBUG ending analyzer file: %s analyzer: %s\n", filePath, a.Type())
 			}()
 			defer wg.Done()
 			defer rc.Close()
-			fmt.Fprintf(os.Stderr, "VBDEBUG starting analyzer file: %s analyzer: %s", filePath, a.Type())
+			fmt.Fprintf(os.Stderr, "VBDEBUG starting analyzer file: %s analyzer: %s\n", filePath, a.Type())
 
 			ret, err := a.Analyze(ctx, AnalysisInput{
 				Dir:      dir,
