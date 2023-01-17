@@ -3,6 +3,7 @@ package analyzer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"regexp"
@@ -393,7 +394,8 @@ func (ag AnalyzerGroup) ImageConfigAnalyzerVersions() map[string]int {
 }
 
 func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, limit *semaphore.Weighted, result *AnalysisResult,
-	dir, filePath string, info os.FileInfo, opener Opener, disabled []Type, opts AnalysisOptions) error {
+	dir, filePath string, info os.FileInfo, opener Opener, disabled []Type, opts AnalysisOptions,
+) error {
 	if info.IsDir() {
 		return nil
 	}
@@ -418,15 +420,20 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 			return xerrors.Errorf("unable to open %s: %w", filePath, err)
 		}
 
+		fmt.Fprintf(os.Stderr, "VBDEBUG waiting for analyzer file: %s analyzer: %s", filePath, a.Type())
 		if err = limit.Acquire(ctx, 1); err != nil {
 			return xerrors.Errorf("semaphore acquire: %w", err)
 		}
 		wg.Add(1)
 
 		go func(a analyzer, rc dio.ReadSeekCloserAt) {
-			defer limit.Release(1)
+			defer func() {
+				limit.Release(1)
+				fmt.Fprintf(os.Stderr, "VBDEBUG ending analyzer file: %s analyzer: %s", filePath, a.Type())
+			}()
 			defer wg.Done()
 			defer rc.Close()
+			fmt.Fprintf(os.Stderr, "VBDEBUG starting analyzer file: %s analyzer: %s", filePath, a.Type())
 
 			ret, err := a.Analyze(ctx, AnalysisInput{
 				Dir:      dir,
