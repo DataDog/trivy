@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/samber/lo"
@@ -33,6 +34,8 @@ var (
 	ErrPkgAnalysis = xerrors.New("failed to analyze packages")
 	// ErrNoPkgsDetected occurs when the required files for an OS package manager are not detected
 	ErrNoPkgsDetected = xerrors.New("no packages detected")
+
+	count atomic.Int64
 )
 
 //////////////////////
@@ -420,8 +423,11 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 			return xerrors.Errorf("unable to open %s: %w", filePath, err)
 		}
 
-		fmt.Fprintf(os.Stderr, "VBDEBUG waiting for analyzer file: %s analyzer: %s\n", filePath, a.Type())
+		id := count.Add(1)
+
+		fmt.Fprintf(os.Stderr, "VBDEBUG | %d | waiting for analyzer file: %s analyzer: %s\n", id, filePath, a.Type())
 		if err = limit.Acquire(ctx, 1); err != nil {
+			fmt.Fprintf(os.Stderr, "VBDEBUG | %d | semaphore acquire error file: %s analyzer: %s\n", id, filePath, a.Type())
 			return xerrors.Errorf("semaphore acquire: %w", err)
 		}
 		wg.Add(1)
@@ -429,11 +435,11 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 		go func(a analyzer, rc dio.ReadSeekCloserAt) {
 			defer func() {
 				limit.Release(1)
-				fmt.Fprintf(os.Stderr, "VBDEBUG ending analyzer file: %s analyzer: %s\n", filePath, a.Type())
+				fmt.Fprintf(os.Stderr, "VBDEBUG | %d | ending analyzer file: %s analyzer: %s\n", id, filePath, a.Type())
 			}()
 			defer wg.Done()
 			defer rc.Close()
-			fmt.Fprintf(os.Stderr, "VBDEBUG starting analyzer file: %s analyzer: %s\n", filePath, a.Type())
+			fmt.Fprintf(os.Stderr, "VBDEBUG | %d | starting analyzer file: %s analyzer: %s\n", id, filePath, a.Type())
 
 			ret, err := a.Analyze(ctx, AnalysisInput{
 				Dir:      dir,
