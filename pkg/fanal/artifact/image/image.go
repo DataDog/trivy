@@ -3,11 +3,14 @@ package image
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"reflect"
+	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/samber/lo"
@@ -199,16 +202,24 @@ func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, b
 	done := make(chan struct{})
 	errCh := make(chan error)
 	limit := semaphore.New(a.artifactOption.Slow)
+	deadline, _ := ctx.Deadline()
+	fmt.Fprintf(os.Stderr, "VBDEBUG | starting Artifact.inspect image: %s, ctx: %d", a.image.Name(), time.Until(deadline).Milliseconds())
 
 	var osFound types.OS
 	for _, k := range layerKeys {
+		fmt.Fprintf(os.Stderr, "VBDEBUG | starting layer key image: %s, key: %s, ctx: %d", a.image.Name(), k, time.Until(deadline).Milliseconds())
 		if err := limit.Acquire(ctx, 1); err != nil {
+			fmt.Fprintf(os.Stderr, "VBDEBUG | failed semaphore image: %s, key: %s, ctx: %d", a.image.Name(), k, time.Until(deadline).Milliseconds())
+			stackBuf := make([]byte, 0)
+			_ = runtime.Stack(stackBuf, false)
+			fmt.Fprintf(os.Stderr, string(stackBuf))
 			return xerrors.Errorf("semaphore acquire: %w", err)
 		}
 
 		go func(ctx context.Context, layerKey string) {
 			defer func() {
 				limit.Release(1)
+				fmt.Fprintf(os.Stderr, "finished layer key image: %s, key: %s, ctx: %d", a.image.Name(), layerKey, time.Until(deadline).Milliseconds())
 				done <- struct{}{}
 			}()
 
@@ -252,7 +263,6 @@ func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, b
 	}
 
 	return nil
-
 }
 
 func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disabled []analyzer.Type) (types.BlobInfo, error) {

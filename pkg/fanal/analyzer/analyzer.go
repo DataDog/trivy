@@ -3,7 +3,6 @@ package analyzer
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"regexp"
@@ -425,9 +424,7 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 
 		id := count.Add(1)
 
-		fmt.Fprintf(os.Stderr, "VBDEBUG | %d | waiting for analyzer file: %s analyzer: %s\n", id, filePath, a.Type())
 		if err = limit.Acquire(ctx, 1); err != nil {
-			fmt.Fprintf(os.Stderr, "VBDEBUG | %d | semaphore acquire error file: %s analyzer: %s\n", id, filePath, a.Type())
 			return xerrors.Errorf("semaphore acquire: %w", err)
 		}
 		wg.Add(1)
@@ -435,11 +432,9 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 		go func(a analyzer, rc dio.ReadSeekCloserAt) {
 			defer func() {
 				limit.Release(1)
-				fmt.Fprintf(os.Stderr, "VBDEBUG | %d | ending analyzer file: %s analyzer: %s\n", id, filePath, a.Type())
 			}()
 			defer wg.Done()
 			defer rc.Close()
-			fmt.Fprintf(os.Stderr, "VBDEBUG | %d | starting analyzer file: %s analyzer: %s\n", id, filePath, a.Type())
 
 			ret, err := a.Analyze(ctx, AnalysisInput{
 				Dir:      dir,
