@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"sync/atomic"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/samber/lo"
@@ -33,8 +32,6 @@ var (
 	ErrPkgAnalysis = xerrors.New("failed to analyze packages")
 	// ErrNoPkgsDetected occurs when the required files for an OS package manager are not detected
 	ErrNoPkgsDetected = xerrors.New("no packages detected")
-
-	count atomic.Int64
 )
 
 //////////////////////
@@ -421,8 +418,6 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 		} else if err != nil {
 			return xerrors.Errorf("unable to open %s: %w", filePath, err)
 		}
-
-		id := count.Add(1)
 
 		if err = limit.Acquire(ctx, 1); err != nil {
 			return xerrors.Errorf("semaphore acquire: %w", err)
