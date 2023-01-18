@@ -203,13 +203,13 @@ func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, b
 	errCh := make(chan error)
 	limit := semaphore.New(a.artifactOption.Slow)
 	deadline, _ := ctx.Deadline()
-	fmt.Fprintf(os.Stderr, "VBDEBUG starting Artifact.inspect image: %s, ctx: %d", a.image.Name(), time.Until(deadline).Milliseconds())
+	log.Logger.Errorf("VBDEBUG starting Artifact.inspect image: %s, ctx: %d", a.image.Name(), time.Until(deadline).Milliseconds())
 
 	var osFound types.OS
 	for _, k := range layerKeys {
-		fmt.Fprintf(os.Stderr, "VBDEBUG starting layer key image: %s, key: %s, ctx: %d", a.image.Name(), k, time.Until(deadline).Milliseconds())
+		log.Logger.Errorf("VBDEBUG starting layer key image: %s, key: %s, ctx: %d", a.image.Name(), k, time.Until(deadline).Milliseconds())
 		if err := limit.Acquire(ctx, 1); err != nil {
-			fmt.Fprintf(os.Stderr, "VBDEBUG failed semaphore image: %s, key: %s, ctx: %d", a.image.Name(), k, time.Until(deadline).Milliseconds())
+			log.Logger.Errorf("VBDEBUG failed semaphore image: %s, key: %s, ctx: %d", a.image.Name(), k, time.Until(deadline).Milliseconds())
 			stackBuf := make([]byte, 0)
 			_ = runtime.Stack(stackBuf, false)
 			fmt.Fprint(os.Stderr, string(stackBuf))
