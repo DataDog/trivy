@@ -199,8 +199,8 @@ func (a Artifact) consolidateCreatedBy(diffIDs, layerKeys []string, configFile *
 }
 
 func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, baseDiffIDs []string, layerKeyMap map[string]LayerInfo) error {
-	done := make(chan struct{})
-	errCh := make(chan error)
+	done := make(chan struct{}, len(layerKeys))
+	errCh := make(chan error, len(layerKeys))
 	limit := semaphore.New(a.artifactOption.Slow)
 	deadline, _ := ctx.Deadline()
 	log.Logger.Errorf("VBDEBUG starting Artifact.inspect image: %s, ctx: %d", a.image.Name(), time.Until(deadline).Milliseconds())
