@@ -1,7 +1,6 @@
 package walker
 
 import (
-	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -64,7 +63,7 @@ func (w FS) Walk(root string, fn WalkFunc) error {
 
 type fastWalkFunc func(pathname string, fi os.FileInfo) error
 
-func walkFast(root string, walkFn fastWalkFunc) error {
+func walk(root string, walkFn fastWalkFunc, walkOpts ...swalker.Option) error {
 	// error function called for every error encountered
 	errorCallbackOption := swalker.WithErrorCallback(func(pathname string, err error) error {
 		// ignore permission errors
@@ -75,26 +74,26 @@ func walkFast(root string, walkFn fastWalkFunc) error {
 		return xerrors.Errorf("unknown error with %s: %w", pathname, err)
 	})
 
-	// Multiple goroutines stat the filesystem concurrently. The provided
-	// walkFn must be safe for concurrent use.
-	log.Logger.Debugf("Walk the file tree rooted at '%s' in parallel", root)
-	if err := swalker.Walk(root, walkFn, errorCallbackOption); err != nil {
+	if err := swalker.Walk(root, walkFn, append(walkOpts, errorCallbackOption)...); err != nil {
 		return xerrors.Errorf("walk error: %w", err)
 	}
 	return nil
 }
 
-func walkSlow(root string, walkFn fastWalkFunc) error {
+func walkFast(root string, walkFn fastWalkFunc, walkOpts ...swalker.Option) error {
+	// Multiple goroutines stat the filesystem concurrently. The provided
+	// walkFn must be safe for concurrent use.
+	log.Logger.Debugf("Walk the file tree rooted at '%s' in parallel", root)
+	if err := walk(root, walkFn, walkOpts...); err != nil {
+		return xerrors.Errorf("walk error: %w", err)
+	}
+	return nil
+}
+
+func walkSlow(root string, walkFn fastWalkFunc, walkOpts ...swalker.Option) error {
 	log.Logger.Debugf("Walk the file tree rooted at '%s' in series", root)
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		info, err := d.Info()
-		if err != nil {
-			return xerrors.Errorf("file info error: %w", err)
-		}
-		return walkFn(path, info)
-	})
-	if err != nil {
-		return xerrors.Errorf("walk dir error: %w", err)
+	if err := walk(root, walkFn, append(walkOpts, swalker.WithLimit(1))...); err != nil {
+		return xerrors.Errorf("walk error: %w", err)
 	}
 	return nil
 }
