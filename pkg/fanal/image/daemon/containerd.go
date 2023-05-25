@@ -55,6 +55,7 @@ func imageWriter(client *containerd.Client, img containerd.Image) imageSave {
 		if len(ref) < 1 {
 			return nil, xerrors.New("no image reference")
 		}
+		fmt.Printf("USING CUSTOM EXPORTER")
 		imgOpts := archive.WithImage(client.ImageService(), ref[0])
 		manifestOpts := archive.WithManifest(img.Target())
 		platOpts := archive.WithAllPlatforms()
