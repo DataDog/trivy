@@ -66,41 +66,50 @@ var (
 		Value:      "https://rekor.sigstore.dev",
 		Usage:      "[EXPERIMENTAL] address of rekor STL server",
 	}
+	KeepSystemInstalledFilesFlag = Flag{
+		Name:       "keep-system-installed-files",
+		ConfigName: "scan.keep-system-installed-files",
+		Value:      false,
+		Usage:      "keep system installed files in analysis result output",
+	}
 )
 
 type ScanFlagGroup struct {
-	SkipDirs     *Flag
-	SkipFiles    *Flag
-	OfflineScan  *Flag
-	Scanners     *Flag
-	FilePatterns *Flag
-	Slow         *Flag
-	SBOMSources  *Flag
-	RekorURL     *Flag
+	SkipDirs                 *Flag
+	SkipFiles                *Flag
+	OfflineScan              *Flag
+	Scanners                 *Flag
+	FilePatterns             *Flag
+	Slow                     *Flag
+	SBOMSources              *Flag
+	RekorURL                 *Flag
+	KeepSystemInstalledFiles *Flag
 }
 
 type ScanOptions struct {
-	Target       string
-	SkipDirs     []string
-	SkipFiles    []string
-	OfflineScan  bool
-	Scanners     types.Scanners
-	FilePatterns []string
-	Slow         bool
-	SBOMSources  []string
-	RekorURL     string
+	Target                   string
+	SkipDirs                 []string
+	SkipFiles                []string
+	OfflineScan              bool
+	Scanners                 types.Scanners
+	FilePatterns             []string
+	Slow                     bool
+	SBOMSources              []string
+	RekorURL                 string
+	KeepSystemInstalledFiles bool
 }
 
 func NewScanFlagGroup() *ScanFlagGroup {
 	return &ScanFlagGroup{
-		SkipDirs:     &SkipDirsFlag,
-		SkipFiles:    &SkipFilesFlag,
-		OfflineScan:  &OfflineScanFlag,
-		Scanners:     &ScannersFlag,
-		FilePatterns: &FilePatternsFlag,
-		Slow:         &SlowFlag,
-		SBOMSources:  &SBOMSourcesFlag,
-		RekorURL:     &RekorURLFlag,
+		SkipDirs:                 &SkipDirsFlag,
+		SkipFiles:                &SkipFilesFlag,
+		OfflineScan:              &OfflineScanFlag,
+		Scanners:                 &ScannersFlag,
+		FilePatterns:             &FilePatternsFlag,
+		Slow:                     &SlowFlag,
+		SBOMSources:              &SBOMSourcesFlag,
+		RekorURL:                 &RekorURLFlag,
+		KeepSystemInstalledFiles: &KeepSystemInstalledFilesFlag,
 	}
 }
 
@@ -118,6 +127,7 @@ func (f *ScanFlagGroup) Flags() []*Flag {
 		f.Slow,
 		f.SBOMSources,
 		f.RekorURL,
+		f.KeepSystemInstalledFiles,
 	}
 }
 
@@ -137,15 +147,16 @@ func (f *ScanFlagGroup) ToOptions(args []string) (ScanOptions, error) {
 	}
 
 	return ScanOptions{
-		Target:       target,
-		SkipDirs:     getStringSlice(f.SkipDirs),
-		SkipFiles:    getStringSlice(f.SkipFiles),
-		OfflineScan:  getBool(f.OfflineScan),
-		Scanners:     scanners,
-		FilePatterns: getStringSlice(f.FilePatterns),
-		Slow:         getBool(f.Slow),
-		SBOMSources:  sbomSources,
-		RekorURL:     getString(f.RekorURL),
+		Target:                   target,
+		SkipDirs:                 getStringSlice(f.SkipDirs),
+		SkipFiles:                getStringSlice(f.SkipFiles),
+		OfflineScan:              getBool(f.OfflineScan),
+		Scanners:                 scanners,
+		FilePatterns:             getStringSlice(f.FilePatterns),
+		Slow:                     getBool(f.Slow),
+		SBOMSources:              sbomSources,
+		RekorURL:                 getString(f.RekorURL),
+		KeepSystemInstalledFiles: getBool(f.KeepSystemInstalledFiles),
 	}, nil
 }
 

@@ -29,7 +29,8 @@
               "StartLine": 19,
               "EndLine": 26
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         }
       ],
       "Vulnerabilities": [

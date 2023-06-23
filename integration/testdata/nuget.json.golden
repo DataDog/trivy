@@ -30,7 +30,8 @@
               "StartLine": 5,
               "EndLine": 10
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "NuGet.Frameworks@5.7.0",
@@ -45,7 +46,8 @@
               "StartLine": 11,
               "EndLine": 19
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         }
       ],
       "Vulnerabilities": [

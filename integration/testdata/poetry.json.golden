@@ -27,20 +27,23 @@
           "DependsOn": [
             "colorama@0.4.6"
           ],
-          "Layer": {}
+          "Layer": {},
+          "SystemInstalledFiles": null
         },
         {
           "ID": "colorama@0.4.6",
           "Name": "colorama",
           "Version": "0.4.6",
           "Indirect": true,
-          "Layer": {}
+          "Layer": {},
+          "SystemInstalledFiles": null
         },
         {
           "ID": "werkzeug@0.14",
           "Name": "werkzeug",
           "Version": "0.14",
-          "Layer": {}
+          "Layer": {},
+          "SystemInstalledFiles": null
         }
       ],
       "Vulnerabilities": [

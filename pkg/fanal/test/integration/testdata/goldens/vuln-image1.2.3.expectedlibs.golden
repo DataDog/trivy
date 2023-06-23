@@ -19,7 +19,8 @@
             "StartLine": 4,
             "EndLine": 4
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "actionmailer@5.2.3",
@@ -39,7 +40,8 @@
             "StartLine": 8,
             "EndLine": 8
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "actionpack@5.2.3",
@@ -60,7 +62,8 @@
             "StartLine": 14,
             "EndLine": 14
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "actionview@5.2.3",
@@ -80,7 +83,8 @@
             "StartLine": 21,
             "EndLine": 21
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "activejob@5.2.3",
@@ -97,7 +101,8 @@
             "StartLine": 27,
             "EndLine": 27
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "activemodel@5.2.3",
@@ -113,7 +118,8 @@
             "StartLine": 30,
             "EndLine": 30
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "activerecord@5.2.3",
@@ -131,7 +137,8 @@
             "StartLine": 32,
             "EndLine": 32
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "activestorage@5.2.3",
@@ -149,7 +156,8 @@
             "StartLine": 36,
             "EndLine": 36
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "activesupport@5.2.3",
@@ -168,7 +176,8 @@
             "StartLine": 40,
             "EndLine": 40
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "arel@9.0.0",
@@ -181,7 +190,8 @@
             "StartLine": 45,
             "EndLine": 45
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "ast@2.4.0",
@@ -194,7 +204,8 @@
             "StartLine": 46,
             "EndLine": 46
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "builder@3.2.3",
@@ -207,7 +218,8 @@
             "StartLine": 47,
             "EndLine": 47
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "coderay@1.1.2",
@@ -220,7 +232,8 @@
             "StartLine": 48,
             "EndLine": 48
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "concurrent-ruby@1.1.5",
@@ -233,7 +246,8 @@
             "StartLine": 49,
             "EndLine": 49
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "crass@1.0.4",
@@ -246,7 +260,8 @@
             "StartLine": 50,
             "EndLine": 50
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "dotenv@2.7.2",
@@ -258,7 +273,8 @@
             "StartLine": 51,
             "EndLine": 51
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "erubi@1.8.0",
@@ -271,7 +287,8 @@
             "StartLine": 52,
             "EndLine": 52
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "faker@1.9.3",
@@ -286,7 +303,8 @@
             "StartLine": 53,
             "EndLine": 53
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "globalid@0.4.2",
@@ -302,7 +320,8 @@
             "StartLine": 55,
             "EndLine": 55
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "i18n@1.6.0",
@@ -318,7 +337,8 @@
             "StartLine": 57,
             "EndLine": 57
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "jaro_winkler@1.5.2",
@@ -331,7 +351,8 @@
             "StartLine": 59,
             "EndLine": 59
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "json@2.2.0",
@@ -343,7 +364,8 @@
             "StartLine": 60,
             "EndLine": 60
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "loofah@2.2.3",
@@ -360,7 +382,8 @@
             "StartLine": 61,
             "EndLine": 61
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "mail@2.7.1",
@@ -376,7 +399,8 @@
             "StartLine": 64,
             "EndLine": 64
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "marcel@0.3.3",
@@ -392,7 +416,8 @@
             "StartLine": 66,
             "EndLine": 66
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "method_source@0.9.2",
@@ -405,7 +430,8 @@
             "StartLine": 68,
             "EndLine": 68
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "mimemagic@0.3.3",
@@ -418,7 +444,8 @@
             "StartLine": 69,
             "EndLine": 69
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "mini_mime@1.0.1",
@@ -431,7 +458,8 @@
             "StartLine": 70,
             "EndLine": 70
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "mini_portile2@2.4.0",
@@ -444,7 +472,8 @@
             "StartLine": 71,
             "EndLine": 71
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "minitest@5.11.3",
@@ -457,7 +486,8 @@
             "StartLine": 72,
             "EndLine": 72
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "nio4r@2.3.1",
@@ -470,7 +500,8 @@
             "StartLine": 73,
             "EndLine": 73
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "nokogiri@1.10.3",
@@ -486,7 +517,8 @@
             "StartLine": 74,
             "EndLine": 74
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "parallel@1.17.0",
@@ -499,7 +531,8 @@
             "StartLine": 76,
             "EndLine": 76
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "parser@2.6.3.0",
@@ -515,7 +548,8 @@
             "StartLine": 77,
             "EndLine": 77
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "pry@0.12.2",
@@ -531,7 +565,8 @@
             "StartLine": 79,
             "EndLine": 79
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "psych@3.1.0",
@@ -544,7 +579,8 @@
             "StartLine": 82,
             "EndLine": 82
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rack@2.0.7",
@@ -557,7 +593,8 @@
             "StartLine": 83,
             "EndLine": 83
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rack-test@1.1.0",
@@ -573,7 +610,8 @@
             "StartLine": 84,
             "EndLine": 84
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rails@5.2.0",
@@ -598,7 +636,8 @@
             "StartLine": 86,
             "EndLine": 86
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rails-dom-testing@2.0.3",
@@ -615,7 +654,8 @@
             "StartLine": 99,
             "EndLine": 99
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rails-html-sanitizer@1.0.3",
@@ -631,7 +671,8 @@
             "StartLine": 102,
             "EndLine": 102
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "railties@5.2.3",
@@ -651,7 +692,8 @@
             "StartLine": 104,
             "EndLine": 104
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rainbow@3.0.0",
@@ -664,7 +706,8 @@
             "StartLine": 110,
             "EndLine": 110
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rake@12.3.2",
@@ -677,7 +720,8 @@
             "StartLine": 111,
             "EndLine": 111
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rubocop@0.67.2",
@@ -698,7 +742,8 @@
             "StartLine": 112,
             "EndLine": 112
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "ruby-progressbar@1.10.0",
@@ -711,7 +756,8 @@
             "StartLine": 120,
             "EndLine": 120
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "sprockets@3.7.2",
@@ -728,7 +774,8 @@
             "StartLine": 121,
             "EndLine": 121
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "sprockets-rails@3.2.1",
@@ -746,7 +793,8 @@
             "StartLine": 124,
             "EndLine": 124
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "thor@0.20.3",
@@ -759,7 +807,8 @@
             "StartLine": 128,
             "EndLine": 128
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "thread_safe@0.3.6",
@@ -772,7 +821,8 @@
             "StartLine": 129,
             "EndLine": 129
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "tzinfo@1.2.5",
@@ -788,7 +838,8 @@
             "StartLine": 130,
             "EndLine": 130
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "unicode-display_width@1.5.0",
@@ -801,7 +852,8 @@
             "StartLine": 132,
             "EndLine": 132
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "websocket-driver@0.7.0",
@@ -817,7 +869,8 @@
             "StartLine": 133,
             "EndLine": 133
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "websocket-extensions@0.1.3",
@@ -830,7 +883,8 @@
             "StartLine": 135,
             "EndLine": 135
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       }
     ]
   },
@@ -856,7 +910,8 @@
             "StartLine": 2,
             "EndLine": 13
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "autocfg@0.1.2",
@@ -868,7 +923,8 @@
             "StartLine": 15,
             "EndLine": 18
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "bitflags@0.7.0",
@@ -880,7 +936,8 @@
             "StartLine": 20,
             "EndLine": 23
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "bitflags@1.0.4",
@@ -892,7 +949,8 @@
             "StartLine": 25,
             "EndLine": 28
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "cfg-if@0.1.7",
@@ -904,7 +962,8 @@
             "StartLine": 30,
             "EndLine": 33
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "cloudabi@0.0.3",
@@ -919,7 +978,8 @@
             "StartLine": 35,
             "EndLine": 41
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "fuchsia-cprng@0.1.1",
@@ -931,7 +991,8 @@
             "StartLine": 43,
             "EndLine": 46
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "futf@0.1.4",
@@ -947,7 +1008,8 @@
             "StartLine": 48,
             "EndLine": 55
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "gdi32-sys@0.2.0",
@@ -963,7 +1025,8 @@
             "StartLine": 57,
             "EndLine": 64
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "html5ever@0.23.0",
@@ -983,7 +1046,8 @@
             "StartLine": 66,
             "EndLine": 77
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "idna@0.1.5",
@@ -1000,7 +1064,8 @@
             "StartLine": 79,
             "EndLine": 87
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "itoa@0.4.4",
@@ -1012,7 +1077,8 @@
             "StartLine": 89,
             "EndLine": 92
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "kernel32-sys@0.2.2",
@@ -1028,7 +1094,8 @@
             "StartLine": 94,
             "EndLine": 101
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "lazy_static@0.2.11",
@@ -1040,7 +1107,8 @@
             "StartLine": 103,
             "EndLine": 106
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "lazy_static@1.3.0",
@@ -1052,7 +1120,8 @@
             "StartLine": 108,
             "EndLine": 111
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "libc@0.2.54",
@@ -1064,7 +1133,8 @@
             "StartLine": 113,
             "EndLine": 116
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "libressl-pnacl-sys@2.1.6",
@@ -1079,7 +1149,8 @@
             "StartLine": 118,
             "EndLine": 124
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "log@0.4.6",
@@ -1094,7 +1165,8 @@
             "StartLine": 126,
             "EndLine": 132
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "mac@0.1.1",
@@ -1106,7 +1178,8 @@
             "StartLine": 134,
             "EndLine": 137
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "maplit@1.0.1",
@@ -1118,7 +1191,8 @@
             "StartLine": 139,
             "EndLine": 142
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "markup5ever@0.8.1",
@@ -1141,7 +1215,8 @@
             "StartLine": 144,
             "EndLine": 158
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "matches@0.1.8",
@@ -1153,7 +1228,8 @@
             "StartLine": 160,
             "EndLine": 163
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "new_debug_unreachable@1.0.3",
@@ -1165,7 +1241,8 @@
             "StartLine": 165,
             "EndLine": 168
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "normal@0.1.0",
@@ -1182,7 +1259,8 @@
             "StartLine": 170,
             "EndLine": 177
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "openssl@0.8.3",
@@ -1200,7 +1278,8 @@
             "StartLine": 179,
             "EndLine": 188
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "openssl-sys@0.7.17",
@@ -1219,7 +1298,8 @@
             "StartLine": 190,
             "EndLine": 200
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "percent-encoding@1.0.1",
@@ -1231,7 +1311,8 @@
             "StartLine": 202,
             "EndLine": 205
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "phf@0.7.24",
@@ -1246,7 +1327,8 @@
             "StartLine": 207,
             "EndLine": 213
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "phf_codegen@0.7.24",
@@ -1262,7 +1344,8 @@
             "StartLine": 215,
             "EndLine": 222
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "phf_generator@0.7.24",
@@ -1278,7 +1361,8 @@
             "StartLine": 224,
             "EndLine": 231
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "phf_shared@0.7.24",
@@ -1293,7 +1377,8 @@
             "StartLine": 233,
             "EndLine": 239
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "pkg-config@0.3.14",
@@ -1305,7 +1390,8 @@
             "StartLine": 241,
             "EndLine": 244
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "pnacl-build-helper@1.4.11",
@@ -1321,7 +1407,8 @@
             "StartLine": 246,
             "EndLine": 253
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "precomputed-hash@0.1.1",
@@ -1333,7 +1420,8 @@
             "StartLine": 255,
             "EndLine": 258
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "proc-macro2@0.4.30",
@@ -1348,7 +1436,8 @@
             "StartLine": 260,
             "EndLine": 266
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "quote@0.6.12",
@@ -1363,7 +1452,8 @@
             "StartLine": 268,
             "EndLine": 274
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand@0.4.6",
@@ -1382,7 +1472,8 @@
             "StartLine": 276,
             "EndLine": 286
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand@0.6.5",
@@ -1407,7 +1498,8 @@
             "StartLine": 288,
             "EndLine": 304
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_chacha@0.1.1",
@@ -1423,7 +1515,8 @@
             "StartLine": 306,
             "EndLine": 313
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_core@0.3.1",
@@ -1438,7 +1531,8 @@
             "StartLine": 315,
             "EndLine": 321
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_core@0.4.0",
@@ -1450,7 +1544,8 @@
             "StartLine": 323,
             "EndLine": 326
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_hc@0.1.0",
@@ -1465,7 +1560,8 @@
             "StartLine": 328,
             "EndLine": 334
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_isaac@0.1.1",
@@ -1480,7 +1576,8 @@
             "StartLine": 336,
             "EndLine": 342
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_jitter@0.1.4",
@@ -1497,7 +1594,8 @@
             "StartLine": 344,
             "EndLine": 352
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_os@0.1.3",
@@ -1517,7 +1615,8 @@
             "StartLine": 354,
             "EndLine": 365
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_pcg@0.1.2",
@@ -1533,7 +1632,8 @@
             "StartLine": 367,
             "EndLine": 374
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rand_xorshift@0.1.1",
@@ -1548,7 +1648,8 @@
             "StartLine": 376,
             "EndLine": 382
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "rdrand@0.4.0",
@@ -1563,7 +1664,8 @@
             "StartLine": 384,
             "EndLine": 390
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "remove_dir_all@0.5.1",
@@ -1578,7 +1680,8 @@
             "StartLine": 392,
             "EndLine": 398
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "ryu@0.2.8",
@@ -1590,7 +1693,8 @@
             "StartLine": 400,
             "EndLine": 403
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "same-file@0.1.3",
@@ -1606,7 +1710,8 @@
             "StartLine": 405,
             "EndLine": 412
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "serde@1.0.91",
@@ -1618,7 +1723,8 @@
             "StartLine": 414,
             "EndLine": 417
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "serde_derive@1.0.91",
@@ -1635,7 +1741,8 @@
             "StartLine": 419,
             "EndLine": 427
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "serde_json@1.0.39",
@@ -1652,7 +1759,8 @@
             "StartLine": 429,
             "EndLine": 437
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "siphasher@0.2.3",
@@ -1664,7 +1772,8 @@
             "StartLine": 439,
             "EndLine": 442
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "smallvec@0.6.9",
@@ -1676,7 +1785,8 @@
             "StartLine": 444,
             "EndLine": 447
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "string_cache@0.7.3",
@@ -1697,7 +1807,8 @@
             "StartLine": 449,
             "EndLine": 461
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "string_cache_codegen@0.4.2",
@@ -1716,7 +1827,8 @@
             "StartLine": 463,
             "EndLine": 473
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "string_cache_shared@0.3.0",
@@ -1728,7 +1840,8 @@
             "StartLine": 475,
             "EndLine": 478
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "syn@0.15.34",
@@ -1745,7 +1858,8 @@
             "StartLine": 480,
             "EndLine": 488
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "tempdir@0.3.7",
@@ -1761,7 +1875,8 @@
             "StartLine": 490,
             "EndLine": 497
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "tendril@0.4.1",
@@ -1778,7 +1893,8 @@
             "StartLine": 499,
             "EndLine": 507
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "unicode-bidi@0.3.4",
@@ -1793,7 +1909,8 @@
             "StartLine": 509,
             "EndLine": 515
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "unicode-normalization@0.1.8",
@@ -1808,7 +1925,8 @@
             "StartLine": 517,
             "EndLine": 523
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "unicode-xid@0.1.0",
@@ -1820,7 +1938,8 @@
             "StartLine": 525,
             "EndLine": 528
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "url@1.7.2",
@@ -1837,7 +1956,8 @@
             "StartLine": 530,
             "EndLine": 538
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "user32-sys@0.2.0",
@@ -1853,7 +1973,8 @@
             "StartLine": 540,
             "EndLine": 547
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "utf-8@0.7.5",
@@ -1865,7 +1986,8 @@
             "StartLine": 549,
             "EndLine": 552
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "walkdir@1.0.7",
@@ -1882,7 +2004,8 @@
             "StartLine": 554,
             "EndLine": 562
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "winapi@0.2.8",
@@ -1894,7 +2017,8 @@
             "StartLine": 564,
             "EndLine": 567
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "winapi@0.3.7",
@@ -1910,7 +2034,8 @@
             "StartLine": 569,
             "EndLine": 576
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "winapi-build@0.1.1",
@@ -1922,7 +2047,8 @@
             "StartLine": 578,
             "EndLine": 581
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "winapi-i686-pc-windows-gnu@0.4.0",
@@ -1934,7 +2060,8 @@
             "StartLine": 583,
             "EndLine": 586
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "winapi-x86_64-pc-windows-gnu@0.4.0",
@@ -1946,7 +2073,8 @@
             "StartLine": 588,
             "EndLine": 591
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       }
     ]
   },
@@ -1971,7 +2099,8 @@
             "StartLine": 9,
             "EndLine": 73
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "guzzlehttp/promises@v1.3.1",
@@ -1986,7 +2115,8 @@
             "StartLine": 74,
             "EndLine": 124
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "guzzlehttp/psr7@1.5.2",
@@ -2005,7 +2135,8 @@
             "StartLine": 125,
             "EndLine": 191
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "laravel/installer@v2.0.1",
@@ -2026,7 +2157,8 @@
             "StartLine": 192,
             "EndLine": 237
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "pear/log@1.13.1",
@@ -2044,7 +2176,8 @@
             "StartLine": 238,
             "EndLine": 290
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "pear/pear_exception@v1.0.0",
@@ -2059,7 +2192,8 @@
             "StartLine": 291,
             "EndLine": 345
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "psr/http-message@1.0.1",
@@ -2074,7 +2208,8 @@
             "StartLine": 346,
             "EndLine": 395
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "ralouphie/getallheaders@2.0.5",
@@ -2089,7 +2224,8 @@
             "StartLine": 396,
             "EndLine": 435
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symfony/console@v4.2.7",
@@ -2108,7 +2244,8 @@
             "StartLine": 436,
             "EndLine": 507
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symfony/contracts@v1.0.2",
@@ -2123,7 +2260,8 @@
             "StartLine": 508,
             "EndLine": 575
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symfony/filesystem@v4.2.7",
@@ -2141,7 +2279,8 @@
             "StartLine": 576,
             "EndLine": 625
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symfony/polyfill-ctype@v1.11.0",
@@ -2156,7 +2295,8 @@
             "StartLine": 626,
             "EndLine": 683
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symfony/polyfill-mbstring@v1.11.0",
@@ -2171,7 +2311,8 @@
             "StartLine": 684,
             "EndLine": 742
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symfony/process@v4.2.7",
@@ -2186,7 +2327,8 @@
             "StartLine": 743,
             "EndLine": 791
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       }
     ]
   },
@@ -2205,7 +2347,8 @@
             "StartLine": 6,
             "EndLine": 10
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "jquery@3.3.9",
@@ -2218,7 +2361,8 @@
             "StartLine": 16,
             "EndLine": 20
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "js-tokens@4.0.0",
@@ -2231,7 +2375,8 @@
             "StartLine": 21,
             "EndLine": 25
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "lodash@4.17.4",
@@ -2244,7 +2389,8 @@
             "StartLine": 11,
             "EndLine": 15
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "loose-envify@1.4.0",
@@ -2260,7 +2406,8 @@
             "StartLine": 26,
             "EndLine": 33
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "object-assign@4.1.1",
@@ -2273,7 +2420,8 @@
             "StartLine": 34,
             "EndLine": 38
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "promise@8.0.3",
@@ -2289,7 +2437,8 @@
             "StartLine": 39,
             "EndLine": 46
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "prop-types@15.7.2",
@@ -2307,7 +2456,8 @@
             "StartLine": 47,
             "EndLine": 56
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "react@16.8.6",
@@ -2326,7 +2476,8 @@
             "StartLine": 57,
             "EndLine": 67
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "react-is@16.8.6",
@@ -2339,7 +2490,8 @@
             "StartLine": 68,
             "EndLine": 72
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "redux@4.0.1",
@@ -2356,7 +2508,8 @@
             "StartLine": 73,
             "EndLine": 81
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "scheduler@0.13.6",
@@ -2373,7 +2526,8 @@
             "StartLine": 82,
             "EndLine": 90
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "ID": "symbol-observable@1.2.0",
@@ -2386,7 +2540,8 @@
             "StartLine": 91,
             "EndLine": 95
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       }
     ]
   },
@@ -2403,7 +2558,8 @@
             "StartLine": 19,
             "EndLine": 25
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "autopep8",
@@ -2414,7 +2570,8 @@
             "StartLine": 26,
             "EndLine": 31
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "babel",
@@ -2425,7 +2582,8 @@
             "StartLine": 32,
             "EndLine": 38
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "billiard",
@@ -2436,7 +2594,8 @@
             "StartLine": 39,
             "EndLine": 44
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "boto3",
@@ -2447,7 +2606,8 @@
             "StartLine": 45,
             "EndLine": 52
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "botocore",
@@ -2458,7 +2618,8 @@
             "StartLine": 53,
             "EndLine": 59
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "celery",
@@ -2469,7 +2630,8 @@
             "StartLine": 60,
             "EndLine": 70
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "certifi",
@@ -2480,7 +2642,8 @@
             "StartLine": 71,
             "EndLine": 77
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "chardet",
@@ -2491,7 +2654,8 @@
             "StartLine": 78,
             "EndLine": 84
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "decorator",
@@ -2502,7 +2666,8 @@
             "StartLine": 85,
             "EndLine": 91
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django",
@@ -2513,7 +2678,8 @@
             "StartLine": 92,
             "EndLine": 99
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-celery-beat",
@@ -2524,7 +2690,8 @@
             "StartLine": 100,
             "EndLine": 107
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-cors-headers",
@@ -2535,7 +2702,8 @@
             "StartLine": 108,
             "EndLine": 115
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-extensions",
@@ -2546,7 +2714,8 @@
             "StartLine": 116,
             "EndLine": 123
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-postgres-extra",
@@ -2556,7 +2725,8 @@
             "StartLine": 124,
             "EndLine": 128
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-redis-cache",
@@ -2567,7 +2737,8 @@
             "StartLine": 129,
             "EndLine": 135
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-silk",
@@ -2578,7 +2749,8 @@
             "StartLine": 136,
             "EndLine": 143
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "django-timezone-field",
@@ -2589,7 +2761,8 @@
             "StartLine": 144,
             "EndLine": 150
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "djangorestframework",
@@ -2600,7 +2773,8 @@
             "StartLine": 151,
             "EndLine": 158
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "djangorestframework-jwt",
@@ -2611,7 +2785,8 @@
             "StartLine": 159,
             "EndLine": 166
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "docutils",
@@ -2622,7 +2797,8 @@
             "StartLine": 167,
             "EndLine": 174
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "flower",
@@ -2633,7 +2809,8 @@
             "StartLine": 175,
             "EndLine": 181
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "gprof2dot",
@@ -2644,7 +2821,8 @@
             "StartLine": 182,
             "EndLine": 187
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "gunicorn",
@@ -2655,7 +2833,8 @@
             "StartLine": 188,
             "EndLine": 195
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "hiredis",
@@ -2666,7 +2845,8 @@
             "StartLine": 196,
             "EndLine": 229
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "httplib2",
@@ -2677,7 +2857,8 @@
             "StartLine": 230,
             "EndLine": 235
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "idna",
@@ -2688,7 +2869,8 @@
             "StartLine": 236,
             "EndLine": 242
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "jinja2",
@@ -2699,7 +2881,8 @@
             "StartLine": 243,
             "EndLine": 249
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "jmespath",
@@ -2710,7 +2893,8 @@
             "StartLine": 250,
             "EndLine": 256
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "kombu",
@@ -2721,7 +2905,8 @@
             "StartLine": 257,
             "EndLine": 263
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "markupsafe",
@@ -2732,7 +2917,8 @@
             "StartLine": 264,
             "EndLine": 296
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "oauth2",
@@ -2743,7 +2929,8 @@
             "StartLine": 297,
             "EndLine": 304
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "psycopg2-binary",
@@ -2754,7 +2941,8 @@
             "StartLine": 305,
             "EndLine": 338
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "py",
@@ -2765,7 +2953,8 @@
             "StartLine": 339,
             "EndLine": 345
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "pycodestyle",
@@ -2776,7 +2965,8 @@
             "StartLine": 346,
             "EndLine": 352
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "pycurl",
@@ -2787,7 +2977,8 @@
             "StartLine": 353,
             "EndLine": 365
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "pygments",
@@ -2798,7 +2989,8 @@
             "StartLine": 366,
             "EndLine": 372
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "pyjwt",
@@ -2809,7 +3001,8 @@
             "StartLine": 373,
             "EndLine": 379
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "python-crontab",
@@ -2820,7 +3013,8 @@
             "StartLine": 380,
             "EndLine": 385
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "python-dateutil",
@@ -2831,7 +3025,8 @@
             "StartLine": 386,
             "EndLine": 393
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "python-http-client",
@@ -2842,7 +3037,8 @@
             "StartLine": 394,
             "EndLine": 399
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "pytz",
@@ -2853,7 +3049,8 @@
             "StartLine": 400,
             "EndLine": 406
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "pyyaml",
@@ -2864,7 +3061,8 @@
             "StartLine": 407,
             "EndLine": 423
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "redis",
@@ -2875,7 +3073,8 @@
             "StartLine": 424,
             "EndLine": 430
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "requests",
@@ -2886,7 +3085,8 @@
             "StartLine": 431,
             "EndLine": 438
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "retry",
@@ -2897,7 +3097,8 @@
             "StartLine": 439,
             "EndLine": 446
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "s3transfer",
@@ -2908,7 +3109,8 @@
             "StartLine": 447,
             "EndLine": 453
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "sendgrid",
@@ -2919,7 +3121,8 @@
             "StartLine": 454,
             "EndLine": 461
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "sentry-sdk",
@@ -2930,7 +3133,8 @@
             "StartLine": 462,
             "EndLine": 469
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "six",
@@ -2941,7 +3145,8 @@
             "StartLine": 470,
             "EndLine": 476
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "sqlparse",
@@ -2952,7 +3157,8 @@
             "StartLine": 477,
             "EndLine": 483
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "tornado",
@@ -2963,7 +3169,8 @@
             "StartLine": 484,
             "EndLine": 495
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "urllib3",
@@ -2974,7 +3181,8 @@
             "StartLine": 496,
             "EndLine": 503
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "vine",
@@ -2985,7 +3193,8 @@
             "StartLine": 504,
             "EndLine": 510
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       },
       {
         "Name": "xmltodict",
@@ -2996,7 +3205,8 @@
             "StartLine": 511,
             "EndLine": 518
           }
-        ]
+        ],
+        "SystemInstalledFiles": null
       }
     ]
   }

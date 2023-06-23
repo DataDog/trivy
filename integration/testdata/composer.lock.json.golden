@@ -36,7 +36,8 @@
               "StartLine": 9,
               "EndLine": 129
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "guzzlehttp/psr7@1.8.3",
@@ -52,7 +53,8 @@
               "StartLine": 130,
               "EndLine": 245
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         }
       ],
       "Vulnerabilities": [

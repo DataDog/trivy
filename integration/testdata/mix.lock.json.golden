@@ -30,7 +30,8 @@
               "StartLine": 2,
               "EndLine": 2
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "jason@1.4.0",
@@ -42,7 +43,8 @@
               "StartLine": 3,
               "EndLine": 3
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "phoenix@1.6.13",
@@ -54,7 +56,8 @@
               "StartLine": 4,
               "EndLine": 4
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "phoenix_html@3.2.0",
@@ -66,7 +69,8 @@
               "StartLine": 5,
               "EndLine": 5
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "phoenix_pubsub@2.1.1",
@@ -78,7 +82,8 @@
               "StartLine": 6,
               "EndLine": 6
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "phoenix_template@1.0.0",
@@ -90,7 +95,8 @@
               "StartLine": 7,
               "EndLine": 7
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "phoenix_view@2.0.1",
@@ -102,7 +108,8 @@
               "StartLine": 8,
               "EndLine": 8
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "plug@1.14.0",
@@ -114,7 +121,8 @@
               "StartLine": 9,
               "EndLine": 9
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "plug_crypto@1.2.3",
@@ -126,7 +134,8 @@
               "StartLine": 10,
               "EndLine": 10
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         },
         {
           "ID": "telemetry@1.1.0",
@@ -138,7 +147,8 @@
               "StartLine": 11,
               "EndLine": 11
             }
-          ]
+          ],
+          "SystemInstalledFiles": null
         }
       ],
       "Vulnerabilities": [
