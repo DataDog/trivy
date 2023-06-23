@@ -37,6 +37,7 @@ trivy sbom [flags] SBOM_PATH
       --ignore-unfixed              display only fixed vulnerabilities
       --ignorefile string           specify .trivyignore file (default ".trivyignore")
       --java-db-repository string   OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
+      --keep-system-installed-files      keep system installed files in analysis result output
       --list-all-pkgs               enabling the option will output all packages regardless of vulnerability
       --no-progress                 suppress progress bar
       --offline-scan                do not issue API requests to identify dependencies

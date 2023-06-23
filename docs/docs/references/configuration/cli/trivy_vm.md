@@ -45,6 +45,7 @@ trivy vm [flags] VM_IMAGE
       --ignorefile string           specify .trivyignore file (default ".trivyignore")
       --include-non-failures        include successes and exceptions, available with '--scanners config'
       --java-db-repository string   OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
+      --keep-system-installed-files      keep system installed files in analysis result output
       --list-all-pkgs               enabling the option will output all packages regardless of vulnerability
       --module-dir string           specify directory to the wasm modules that will be loaded (default "$HOME/.trivy/modules")
       --no-progress                 suppress progress bar

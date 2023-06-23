@@ -65,6 +65,7 @@ trivy image [flags] IMAGE_NAME
       --include-non-failures             include successes and exceptions, available with '--scanners config'
       --input string                     input file path instead of image name
       --java-db-repository string        OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
+      --keep-system-installed-files      keep system installed files in analysis result output
       --license-confidence-level float   specify license classifier's confidence level (default 0.9)
       --license-full                     eagerly look for licenses in source code headers and license files
       --list-all-pkgs                    enabling the option will output all packages regardless of vulnerability
