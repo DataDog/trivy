@@ -663,7 +663,8 @@ func initScannerConfig(opts flag.Options, cacheClient cache.Cache) (ScannerConfi
 				ClassifierConfidenceLevel: opts.LicenseConfidenceLevel,
 			},
 
-			// To keep system installed files in the analysis result
+			// To keep system installed fiels in the package information of
+			// the analysis result
 			KeepSystemInstalledFiles: opts.KeepSystemInstalledFiles,
 		},
 	}, scanOptions, nil
