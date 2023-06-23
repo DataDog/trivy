@@ -263,8 +263,9 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 	// Prepare variables
 	var wg sync.WaitGroup
 	opts := analyzer.AnalysisOptions{
-		Offline:      a.artifactOption.Offline,
-		FileChecksum: a.artifactOption.FileChecksum,
+		Offline:                  a.artifactOption.Offline,
+		FileChecksum:             a.artifactOption.FileChecksum,
+		KeepSystemInstalledFiles: a.artifactOption.KeepSystemInstalledFiles,
 	}
 	result := analyzer.NewAnalysisResult()
 	limit := semaphore.New(a.artifactOption.Slow)

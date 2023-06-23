@@ -146,6 +146,9 @@ type PostAnalysisInput struct {
 type AnalysisOptions struct {
 	Offline      bool
 	FileChecksum bool
+
+	// Keep system installed files in the analysis result
+	KeepSystemInstalledFiles bool
 }
 
 type AnalysisResult struct {

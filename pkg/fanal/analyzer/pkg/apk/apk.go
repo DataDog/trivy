@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -34,7 +34,7 @@ type alpinePkgAnalyzer struct{}
 
 func (a alpinePkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
 	scanner := bufio.NewScanner(input.Content)
-	parsedPkgs, installedFiles := a.parseApkInfo(scanner)
+	parsedPkgs, installedFiles := a.parseApkInfo(scanner, &input.Options)
 
 	return &analyzer.AnalysisResult{
 		PackageInfos: []types.PackageInfo{
@@ -47,7 +47,7 @@ func (a alpinePkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInp
 	}, nil
 }
 
-func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner) ([]types.Package, []string) {
+func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.AnalysisOptions) ([]types.Package, []string) {
 	var (
 		pkgs           []types.Package
 		pkg            types.Package
@@ -66,6 +66,9 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner) ([]types.Package
 				pkgs = append(pkgs, pkg)
 			}
 			pkg = types.Package{}
+			if opts.KeepSystemInstalledFiles {
+				pkg.SystemInstalledFiles = []string{}
+			}
 			continue
 		}
 
@@ -89,7 +92,11 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner) ([]types.Package
 		case "F:":
 			dir = line[2:]
 		case "R:":
-			installedFiles = append(installedFiles, path.Join(dir, line[2:]))
+			relPath := filepath.Join(dir, line[2:])
+			if opts.KeepSystemInstalledFiles {
+				pkg.SystemInstalledFiles = append(pkg.SystemInstalledFiles, relPath)
+			}
+			installedFiles = append(installedFiles, relPath)
 		case "p:": // provides (corresponds to provides in PKGINFO, concatenated by spaces into a single line)
 			a.parseProvides(line, pkg.ID, provides)
 		case "D:": // dependencies (corresponds to depend in PKGINFO, concatenated by spaces into a single line)

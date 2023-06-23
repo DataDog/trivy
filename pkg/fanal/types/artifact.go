@@ -96,6 +96,9 @@ type Package struct {
 
 	// lines from the lock file where the dependency is written
 	Locations []Location `json:",omitempty"`
+
+	// Files installed by the package
+	SystemInstalledFiles []string
 }
 
 type Location struct {
@@ -203,6 +206,9 @@ type ArtifactReference struct {
 
 	// SBOM
 	CycloneDX *CycloneDX
+
+	// Files provided by the package
+	SystemInstalledFiles []string `json:",omitempty"`
 }
 
 type ImageMetadata struct {
