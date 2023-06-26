@@ -98,7 +98,7 @@ type Package struct {
 	Locations []Location `json:",omitempty"`
 
 	// Files installed by the package
-	SystemInstalledFiles []string
+	SystemInstalledFiles []string `json:",omitempty"`
 }
 
 type Location struct {
@@ -206,9 +206,6 @@ type ArtifactReference struct {
 
 	// SBOM
 	CycloneDX *CycloneDX
-
-	// Files provided by the package
-	SystemInstalledFiles []string `json:",omitempty"`
 }
 
 type ImageMetadata struct {

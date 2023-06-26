@@ -31,8 +31,7 @@
               "StartLine": 6,
               "EndLine": 10
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "jquery@3.3.9",
@@ -48,8 +47,7 @@
               "StartLine": 11,
               "EndLine": 15
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "js-tokens@4.0.0",
@@ -62,8 +60,7 @@
               "StartLine": 16,
               "EndLine": 20
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "loose-envify@1.4.0",
@@ -79,8 +76,7 @@
               "StartLine": 21,
               "EndLine": 28
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "object-assign@4.1.1",
@@ -93,8 +89,7 @@
               "StartLine": 29,
               "EndLine": 33
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "promise@8.0.3",
@@ -113,8 +108,7 @@
               "StartLine": 34,
               "EndLine": 41
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "prop-types@15.7.2",
@@ -132,8 +126,7 @@
               "StartLine": 42,
               "EndLine": 51
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "react@16.8.6",
@@ -155,8 +148,7 @@
               "StartLine": 52,
               "EndLine": 62
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "react-is@16.8.6",
@@ -172,8 +164,7 @@
               "StartLine": 63,
               "EndLine": 67
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "redux@4.0.1",
@@ -193,8 +184,7 @@
               "StartLine": 68,
               "EndLine": 76
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "scheduler@0.13.6",
@@ -211,8 +201,7 @@
               "StartLine": 77,
               "EndLine": 85
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         },
         {
           "ID": "symbol-observable@1.2.0",
@@ -225,8 +214,7 @@
               "StartLine": 86,
               "EndLine": 90
             }
-          ],
-          "SystemInstalledFiles": null
+          ]
         }
       ],
       "Vulnerabilities": [

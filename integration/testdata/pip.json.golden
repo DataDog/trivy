@@ -23,44 +23,37 @@
         {
           "Name": "Flask",
           "Version": "2.0.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "Name": "Jinja2",
           "Version": "3.0.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "Name": "Werkzeug",
           "Version": "0.11",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "Name": "click",
           "Version": "8.0.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "Name": "itsdangerous",
           "Version": "2.0.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "Name": "oauth2-client",
           "Version": "4.0.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "Name": "python-gitlab",
           "Version": "2.0.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         }
       ],
       "Vulnerabilities": [

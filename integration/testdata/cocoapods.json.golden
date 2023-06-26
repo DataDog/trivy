@@ -28,8 +28,7 @@
             "AppCenter/Analytics/4.2.0",
             "AppCenter/Crashes/4.2.0"
           ],
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "ID": "AppCenter/Analytics/4.2.0",
@@ -38,15 +37,13 @@
           "DependsOn": [
             "AppCenter/Core/4.2.0"
           ],
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "ID": "AppCenter/Core/4.2.0",
           "Name": "AppCenter/Core",
           "Version": "4.2.0",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "ID": "AppCenter/Crashes/4.2.0",
@@ -55,15 +52,13 @@
           "DependsOn": [
             "AppCenter/Core/4.2.0"
           ],
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "ID": "KeychainAccess/4.2.1",
           "Name": "KeychainAccess",
           "Version": "4.2.1",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         }
       ]
     }

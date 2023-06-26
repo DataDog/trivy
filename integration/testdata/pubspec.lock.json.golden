@@ -24,16 +24,14 @@
           "ID": "http@0.13.2",
           "Name": "http",
           "Version": "0.13.2",
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         },
         {
           "ID": "shelf@1.3.1",
           "Name": "shelf",
           "Version": "1.3.1",
           "Indirect": true,
-          "Layer": {},
-          "SystemInstalledFiles": null
+          "Layer": {}
         }
       ],
       "Vulnerabilities": [
