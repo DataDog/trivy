@@ -55,8 +55,8 @@ trivy kubernetes [flags] { cluster | all | specific resources like kubectl. eg: 
       --image-src strings                 image source(s) to use, in priority order (docker,containerd,podman,remote) (default [docker,containerd,podman,remote])
       --include-non-failures              include successes and exceptions, available with '--scanners config'
       --java-db-repository string         OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
-      --keep-system-installed-files      keep system installed files in analysis result output
       --k8s-version string                specify k8s version to validate outdated api by it (example: 1.21.0)
+      --keep-system-installed-files       keep system installed files in analysis result output
       --kubeconfig string                 specify the kubeconfig file path to use
       --list-all-pkgs                     enabling the option will output all packages regardless of vulnerability
   -n, --namespace string                  specify a namespace to scan
