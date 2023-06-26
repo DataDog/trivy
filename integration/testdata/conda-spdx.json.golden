@@ -3,14 +3,14 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "testdata/fixtures/fs/conda",
-  "documentNamespace": "http://aquasecurity.github.io/trivy/filesystem/testdata/fixtures/fs/conda-5348a082-fd10-4e3d-8a95-2ea9d3061e4d",
+  "documentNamespace": "http://aquasecurity.github.io/trivy/filesystem/testdata/fixtures/fs/conda-051f3518-aa4a-4506-8fb5-8c29244201aa",
   "creationInfo": {
     "licenseListVersion": "",
     "creators": [
       "Organization: aquasecurity",
       "Tool: trivy-dev"
     ],
-    "created": "2023-06-26T14:35:34Z"
+    "created": "2023-06-26T14:39:28Z"
   },
   "packages": [
     {
