@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"sort"
 	"strings"
 
@@ -98,7 +98,7 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.A
 		case "F:":
 			dir = line[2:]
 		case "R:":
-			relPath := filepath.Join(dir, line[2:])
+			relPath := path.Join(dir, line[2:])
 			patchSystemInstalledFiles(&pkg, []string{relPath}, opts)
 			installedFiles = append(installedFiles, relPath)
 		case "p:": // provides (corresponds to provides in PKGINFO, concatenated by spaces into a single line)
