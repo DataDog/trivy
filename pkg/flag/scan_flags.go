@@ -66,6 +66,12 @@ var (
 		Value:      "https://rekor.sigstore.dev",
 		Usage:      "[EXPERIMENTAL] address of rekor STL server",
 	}
+	IncludeDevDepsFlag = Flag{
+		Name:       "include-dev-deps",
+		ConfigName: "include-dev-deps",
+		Value:      false,
+		Usage:      "include development dependencies in the report (supported: npm)",
+	}
 	KeepSystemInstalledFilesFlag = Flag{
 		Name:       "keep-system-installed-files",
 		ConfigName: "scan.keep-system-installed-files",
@@ -83,6 +89,7 @@ type ScanFlagGroup struct {
 	Slow                     *Flag
 	SBOMSources              *Flag
 	RekorURL                 *Flag
+	IncludeDevDeps           *Flag
 	KeepSystemInstalledFiles *Flag
 }
 
@@ -96,6 +103,7 @@ type ScanOptions struct {
 	Slow                     bool
 	SBOMSources              []string
 	RekorURL                 string
+	IncludeDevDeps           bool
 	KeepSystemInstalledFiles bool
 }
 
@@ -109,6 +117,7 @@ func NewScanFlagGroup() *ScanFlagGroup {
 		Slow:                     &SlowFlag,
 		SBOMSources:              &SBOMSourcesFlag,
 		RekorURL:                 &RekorURLFlag,
+		IncludeDevDeps:           &IncludeDevDepsFlag,
 		KeepSystemInstalledFiles: &KeepSystemInstalledFilesFlag,
 	}
 }
@@ -127,6 +136,7 @@ func (f *ScanFlagGroup) Flags() []*Flag {
 		f.Slow,
 		f.SBOMSources,
 		f.RekorURL,
+		f.IncludeDevDeps,
 		f.KeepSystemInstalledFiles,
 	}
 }
@@ -156,6 +166,7 @@ func (f *ScanFlagGroup) ToOptions(args []string) (ScanOptions, error) {
 		Slow:                     getBool(f.Slow),
 		SBOMSources:              sbomSources,
 		RekorURL:                 getString(f.RekorURL),
+		IncludeDevDeps:           getBool(f.IncludeDevDeps),
 		KeepSystemInstalledFiles: getBool(f.KeepSystemInstalledFiles),
 	}, nil
 }
