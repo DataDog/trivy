@@ -74,7 +74,6 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.A
 				pkgs = append(pkgs, pkg)
 			}
 			pkg = types.Package{}
-			patchSystemInstalledFiles(&pkg, []string{}, opts)
 			continue
 		}
 
@@ -98,9 +97,9 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.A
 		case "F:":
 			dir = line[2:]
 		case "R:":
-			relPath := path.Join(dir, line[2:])
-			patchSystemInstalledFiles(&pkg, []string{relPath}, opts)
-			installedFiles = append(installedFiles, relPath)
+			absPath := path.Join(dir, line[2:])
+			patchSystemInstalledFiles(&pkg, []string{absPath}, opts)
+			installedFiles = append(installedFiles, absPath)
 		case "p:": // provides (corresponds to provides in PKGINFO, concatenated by spaces into a single line)
 			a.parseProvides(line, pkg.ID, provides)
 		case "D:": // dependencies (corresponds to depend in PKGINFO, concatenated by spaces into a single line)
