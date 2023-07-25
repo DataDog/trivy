@@ -402,29 +402,30 @@ func TestParseApkInfo(t *testing.T) {
 			wantFiles:                files,
 		},
 		"do not keep system installed files": {
-			path:      "./testdata/apk",
-			wantPkgs:  pkgs,
-			wantFiles: files,
+			path:                     "./testdata/apk",
+			keepSystemInstalledFiles: false,
+			wantPkgs:                 pkgs,
+			wantFiles:                files,
 		},
 	}
 	a := alpinePkgAnalyzer{}
-	for testname, v := range tests {
+	for testname, tt := range tests {
 		t.Run(testname, func(t *testing.T) {
-			read, err := os.Open(v.path)
+			read, err := os.Open(tt.path)
 			require.NoError(t, err)
 			scanner := bufio.NewScanner(read)
-			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{KeepSystemInstalledFiles: v.keepSystemInstalledFiles})
+			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{KeepSystemInstalledFiles: tt.keepSystemInstalledFiles})
 
 			// Remove system installed files if necessary
-			wantPkgs := v.wantPkgs
-			if !v.keepSystemInstalledFiles {
+			wantPkgs := tt.wantPkgs
+			if !tt.keepSystemInstalledFiles {
 				for i, pkg := range wantPkgs {
 					pkg.SystemInstalledFiles = nil
 					wantPkgs[i] = pkg
 				}
 			}
-			assert.Equal(t, v.wantPkgs, gotPkgs)
-			assert.Equal(t, v.wantFiles, gotFiles)
+			assert.Equal(t, wantPkgs, gotPkgs)
+			assert.Equal(t, tt.wantFiles, gotFiles)
 		})
 	}
 }
