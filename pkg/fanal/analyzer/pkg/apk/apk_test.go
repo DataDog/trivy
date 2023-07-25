@@ -408,9 +408,9 @@ func TestParseApkInfo(t *testing.T) {
 			wantFiles:                files,
 		},
 	}
-	a := alpinePkgAnalyzer{}
 	for testname, tt := range tests {
 		t.Run(testname, func(t *testing.T) {
+			a := alpinePkgAnalyzer{}
 			read, err := os.Open(tt.path)
 			require.NoError(t, err)
 			scanner := bufio.NewScanner(read)
