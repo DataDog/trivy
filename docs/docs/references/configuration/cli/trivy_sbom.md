@@ -48,7 +48,7 @@ trivy sbom [flags] SBOM_PATH
       --redis-tls                       enable redis TLS with public certificates, if using redis as cache backend
       --rekor-url string                [EXPERIMENTAL] address of rekor STL server (default "https://rekor.sigstore.dev")
       --reset                           remove all caches and database
-      --retain-system-installed-files   Retains the files installed by each package in the analysis output when set to true.
+      --retain-system-installed-files   retains the files installed by each package in the analysis output when set to true
       --sbom-sources strings            [EXPERIMENTAL] try to retrieve SBOM from the specified sources (oci,rekor)
       --server string                   server address in client mode
   -s, --severity strings                severities of security issues to be displayed (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL) (default [UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL])

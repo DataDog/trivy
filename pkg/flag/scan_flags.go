@@ -81,7 +81,7 @@ var (
 		Name:       "retain-system-installed-files",
 		ConfigName: "scan.retain-system-installed-files",
 		Default:    false,
-		Usage:      "Retains the files installed by each package in the analysis output when set to true.",
+		Usage:      "retains the files installed by each package in the analysis output when set to true",
 	}
 )
 
