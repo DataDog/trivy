@@ -58,8 +58,8 @@
       "primaryPackagePurpose": "LIBRARY"
     },
     {
-      "name": "testdata/fixtures/fs/conda",
-      "SPDXID": "SPDXRef-Filesystem-6e0ac6a0fab50ab4",
+      "name": "testdata/fixtures/repo/conda",
+      "SPDXID": "SPDXRef-Filesystem-2e2426fd0f2580ef",
       "downloadLocation": "NONE",
       "copyrightText": "",
       "attributionTexts": [
@@ -95,11 +95,11 @@
   "relationships": [
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
-      "relatedSpdxElement": "SPDXRef-Filesystem-6e0ac6a0fab50ab4",
+      "relatedSpdxElement": "SPDXRef-Filesystem-2e2426fd0f2580ef",
       "relationshipType": "DESCRIBES"
     },
     {
-      "spdxElementId": "SPDXRef-Filesystem-6e0ac6a0fab50ab4",
+      "spdxElementId": "SPDXRef-Filesystem-2e2426fd0f2580ef",
       "relatedSpdxElement": "SPDXRef-Application-ee5ef1aa4ac89125",
       "relationshipType": "CONTAINS"
     },
