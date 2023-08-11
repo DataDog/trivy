@@ -390,22 +390,22 @@ var files = []string{
 
 func TestParseApkInfo(t *testing.T) {
 	var tests = map[string]struct {
-		path                     string
-		wantPkgs                 []types.Package
-		wantFiles                []string
-		keepSystemInstalledFiles bool
+		path                       string
+		wantPkgs                   []types.Package
+		wantFiles                  []string
+		RetainSystemInstalledFiles bool
 	}{
 		"Valid": {
-			path:                     "./testdata/apk",
-			keepSystemInstalledFiles: true,
-			wantPkgs:                 pkgs,
-			wantFiles:                files,
+			path:                       "./testdata/apk",
+			RetainSystemInstalledFiles: true,
+			wantPkgs:                   pkgs,
+			wantFiles:                  files,
 		},
-		"do not keep system installed files": {
-			path:                     "./testdata/apk",
-			keepSystemInstalledFiles: false,
-			wantPkgs:                 pkgs,
-			wantFiles:                files,
+		"do not retain system installed files": {
+			path:                       "./testdata/apk",
+			RetainSystemInstalledFiles: false,
+			wantPkgs:                   pkgs,
+			wantFiles:                  files,
 		},
 	}
 	for testname, tt := range tests {
@@ -414,11 +414,11 @@ func TestParseApkInfo(t *testing.T) {
 			read, err := os.Open(tt.path)
 			require.NoError(t, err)
 			scanner := bufio.NewScanner(read)
-			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{KeepSystemInstalledFiles: tt.keepSystemInstalledFiles})
+			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainSystemInstalledFiles: tt.RetainSystemInstalledFiles})
 
 			// Remove system installed files if necessary
 			wantPkgs := tt.wantPkgs
-			if !tt.keepSystemInstalledFiles {
+			if !tt.RetainSystemInstalledFiles {
 				for i, pkg := range wantPkgs {
 					pkg.SystemInstalledFiles = nil
 					wantPkgs[i] = pkg

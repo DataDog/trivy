@@ -48,7 +48,7 @@ func (a alpinePkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInp
 }
 
 func patchSystemInstalledFiles(pkg *types.Package, files []string, opts *analyzer.AnalysisOptions) {
-	if opts.KeepSystemInstalledFiles {
+	if opts.RetainSystemInstalledFiles {
 		pkg.SystemInstalledFiles = append(pkg.SystemInstalledFiles, files...)
 	}
 }

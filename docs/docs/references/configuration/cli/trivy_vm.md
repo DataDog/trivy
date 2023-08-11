@@ -45,7 +45,6 @@ trivy vm [flags] VM_IMAGE
       --ignorefile string               specify .trivyignore file (default ".trivyignore")
       --include-non-failures            include successes and exceptions, available with '--scanners config'
       --java-db-repository string       OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
-      --keep-system-installed-files     keep system installed files in analysis result output
       --list-all-pkgs                   enabling the option will output all packages regardless of vulnerability
       --module-dir string               specify directory to the wasm modules that will be loaded (default "$HOME/.trivy/modules")
       --no-progress                     suppress progress bar
@@ -58,6 +57,7 @@ trivy vm [flags] VM_IMAGE
       --rekor-url string                [EXPERIMENTAL] address of rekor STL server (default "https://rekor.sigstore.dev")
       --reset                           remove all caches and database
       --reset-policy-bundle             remove policy bundle
+      --retain-system-installed-files   Retains the files installed by each package in the analysis output when set to true.
       --sbom-sources strings            [EXPERIMENTAL] try to retrieve SBOM from the specified sources (oci,rekor)
       --scanners strings                comma-separated list of what security issues to detect (vuln,config,secret,license) (default [vuln,secret])
       --secret-config string            specify a path to config file for secret scanning (default "trivy-secret.yaml")

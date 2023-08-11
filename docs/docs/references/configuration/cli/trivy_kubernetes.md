@@ -56,7 +56,6 @@ trivy kubernetes [flags] { cluster | all | specific resources like kubectl. eg: 
       --include-non-failures              include successes and exceptions, available with '--scanners config'
       --java-db-repository string         OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
       --k8s-version string                specify k8s version to validate outdated api by it (example: 1.21.0)
-      --keep-system-installed-files       keep system installed files in analysis result output
       --kubeconfig string                 specify the kubeconfig file path to use
       --list-all-pkgs                     enabling the option will output all packages regardless of vulnerability
   -n, --namespace string                  specify a namespace to scan
@@ -76,6 +75,7 @@ trivy kubernetes [flags] { cluster | all | specific resources like kubectl. eg: 
       --report string                     specify a report format for the output (all,summary) (default "all")
       --reset                             remove all caches and database
       --reset-policy-bundle               remove policy bundle
+      --retain-system-installed-files     Retains the files installed by each package in the analysis output when set to true.
       --sbom-sources strings              [EXPERIMENTAL] try to retrieve SBOM from the specified sources (oci,rekor)
       --scanners string                   comma-separated list of what security issues to detect (vuln,config,secret,license) (default "vuln,config,secret,rbac")
       --secret-config string              specify a path to config file for secret scanning (default "trivy-secret.yaml")

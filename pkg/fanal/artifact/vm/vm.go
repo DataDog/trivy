@@ -45,9 +45,9 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 	result := analyzer.NewAnalysisResult()
 
 	opts := analyzer.AnalysisOptions{
-		Offline:                  a.artifactOption.Offline,
-		FileChecksum:             a.artifactOption.FileChecksum,
-		KeepSystemInstalledFiles: a.artifactOption.KeepSystemInstalledFiles,
+		Offline:                    a.artifactOption.Offline,
+		FileChecksum:               a.artifactOption.FileChecksum,
+		RetainSystemInstalledFiles: a.artifactOption.RetainSystemInstalledFiles,
 	}
 
 	// Prepare filesystem for post analysis

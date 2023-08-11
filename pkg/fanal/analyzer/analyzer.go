@@ -147,8 +147,8 @@ type AnalysisOptions struct {
 	Offline      bool
 	FileChecksum bool
 
-	// Keep system installed files in the analysis result
-	KeepSystemInstalledFiles bool
+	// retain system installed files in the analysis result
+	RetainSystemInstalledFiles bool
 }
 
 type AnalysisResult struct {

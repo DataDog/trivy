@@ -44,7 +44,6 @@ trivy repository [flags] REPO_URL
       --include-dev-deps                 include development dependencies in the report (supported: npm, yarn)
       --include-non-failures             include successes and exceptions, available with '--scanners config'
       --java-db-repository string        OCI repository to retrieve trivy-java-db from (default "ghcr.io/aquasecurity/trivy-java-db")
-      --keep-system-installed-files      keep system installed files in analysis result output
       --license-confidence-level float   specify license classifier's confidence level (default 0.9)
       --license-full                     eagerly look for licenses in source code headers and license files
       --list-all-pkgs                    enabling the option will output all packages regardless of vulnerability
@@ -62,6 +61,7 @@ trivy repository [flags] REPO_URL
       --rekor-url string                 [EXPERIMENTAL] address of rekor STL server (default "https://rekor.sigstore.dev")
       --reset                            remove all caches and database
       --reset-policy-bundle              remove policy bundle
+      --retain-system-installed-files    Retains the files installed by each package in the analysis output when set to true.
       --sbom-sources strings             [EXPERIMENTAL] try to retrieve SBOM from the specified sources (oci,rekor)
       --scanners strings                 comma-separated list of what security issues to detect (vuln,config,secret,license) (default [vuln,secret])
       --secret-config string             specify a path to config file for secret scanning (default "trivy-secret.yaml")
