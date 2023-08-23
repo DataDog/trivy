@@ -78,7 +78,7 @@ var (
 		Usage:      "include development dependencies in the report (supported: npm, yarn)",
 	}
 	RetainSystemInstalledFilesFlag = Flag{
-		Name:       "retain-system-installed-files",
+		Name:       "retain-pkg-installed-files",
 		ConfigName: "scan.retain-system-installed-files",
 		Default:    false,
 		Usage:      "retains the files installed by each package in the analysis output when set to true",

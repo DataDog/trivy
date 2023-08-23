@@ -99,7 +99,7 @@ type Package struct {
 	Locations []Location `json:",omitempty"`
 
 	// Files installed by the package
-	SystemInstalledFiles []string `json:",omitempty"`
+	InstalledFiles []string `json:",omitempty"`
 }
 
 type Location struct {
