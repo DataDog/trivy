@@ -2,11 +2,12 @@ package dpkg
 
 import (
 	"context"
-	"github.com/aquasecurity/trivy/pkg/mapfs"
 	"os"
 	"path/filepath"
 	"sort"
 	"testing"
+
+	"github.com/aquasecurity/trivy/pkg/mapfs"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
@@ -1419,7 +1420,7 @@ func Test_dpkgAnalyzer_Analyze(t *testing.T) {
 			name:      "info list",
 			testFiles: map[string]string{"./testdata/tar.list": "var/lib/dpkg/info/tar.list"},
 			want: &analyzer.AnalysisResult{
-				SystemInstalledFiles: []string{
+				PkgInstalledFiles: []string{
 					"/bin/tar",
 					"/etc",
 					"/usr/lib/mime/packages/tar",

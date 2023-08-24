@@ -77,53 +77,53 @@ var (
 		Default:    false,
 		Usage:      "include development dependencies in the report (supported: npm, yarn)",
 	}
-	RetainSystemInstalledFilesFlag = Flag{
+	RetainPkgInstalledFilesFlag = Flag{
 		Name:       "retain-pkg-installed-files",
-		ConfigName: "scan.retain-system-installed-files",
+		ConfigName: "scan.retain-pkg-installed-files",
 		Default:    false,
 		Usage:      "retains the files installed by each package in the analysis output when set to true",
 	}
 )
 
 type ScanFlagGroup struct {
-	SkipDirs                   *Flag
-	SkipFiles                  *Flag
-	OfflineScan                *Flag
-	Scanners                   *Flag
-	FilePatterns               *Flag
-	Slow                       *Flag
-	SBOMSources                *Flag
-	RekorURL                   *Flag
-	IncludeDevDeps             *Flag
-	RetainSystemInstalledFiles *Flag
+	SkipDirs                *Flag
+	SkipFiles               *Flag
+	OfflineScan             *Flag
+	Scanners                *Flag
+	FilePatterns            *Flag
+	Slow                    *Flag
+	SBOMSources             *Flag
+	RekorURL                *Flag
+	IncludeDevDeps          *Flag
+	RetainPkgInstalledFiles *Flag
 }
 
 type ScanOptions struct {
-	Target                     string
-	SkipDirs                   []string
-	SkipFiles                  []string
-	OfflineScan                bool
-	Scanners                   types.Scanners
-	FilePatterns               []string
-	Slow                       bool
-	SBOMSources                []string
-	RekorURL                   string
-	IncludeDevDeps             bool
-	RetainSystemInstalledFiles bool
+	Target                  string
+	SkipDirs                []string
+	SkipFiles               []string
+	OfflineScan             bool
+	Scanners                types.Scanners
+	FilePatterns            []string
+	Slow                    bool
+	SBOMSources             []string
+	RekorURL                string
+	IncludeDevDeps          bool
+	RetainPkgInstalledFiles bool
 }
 
 func NewScanFlagGroup() *ScanFlagGroup {
 	return &ScanFlagGroup{
-		SkipDirs:                   &SkipDirsFlag,
-		SkipFiles:                  &SkipFilesFlag,
-		OfflineScan:                &OfflineScanFlag,
-		Scanners:                   &ScannersFlag,
-		FilePatterns:               &FilePatternsFlag,
-		Slow:                       &SlowFlag,
-		SBOMSources:                &SBOMSourcesFlag,
-		RekorURL:                   &RekorURLFlag,
-		IncludeDevDeps:             &IncludeDevDepsFlag,
-		RetainSystemInstalledFiles: &RetainSystemInstalledFilesFlag,
+		SkipDirs:                &SkipDirsFlag,
+		SkipFiles:               &SkipFilesFlag,
+		OfflineScan:             &OfflineScanFlag,
+		Scanners:                &ScannersFlag,
+		FilePatterns:            &FilePatternsFlag,
+		Slow:                    &SlowFlag,
+		SBOMSources:             &SBOMSourcesFlag,
+		RekorURL:                &RekorURLFlag,
+		IncludeDevDeps:          &IncludeDevDepsFlag,
+		RetainPkgInstalledFiles: &RetainPkgInstalledFilesFlag,
 	}
 }
 
@@ -142,7 +142,7 @@ func (f *ScanFlagGroup) Flags() []*Flag {
 		f.SBOMSources,
 		f.RekorURL,
 		f.IncludeDevDeps,
-		f.RetainSystemInstalledFiles,
+		f.RetainPkgInstalledFiles,
 	}
 }
 
@@ -153,16 +153,16 @@ func (f *ScanFlagGroup) ToOptions(args []string) (ScanOptions, error) {
 	}
 
 	return ScanOptions{
-		Target:                     target,
-		SkipDirs:                   getStringSlice(f.SkipDirs),
-		SkipFiles:                  getStringSlice(f.SkipFiles),
-		OfflineScan:                getBool(f.OfflineScan),
-		Scanners:                   getUnderlyingStringSlice[types.Scanner](f.Scanners),
-		FilePatterns:               getStringSlice(f.FilePatterns),
-		Slow:                       getBool(f.Slow),
-		SBOMSources:                getStringSlice(f.SBOMSources),
-		RekorURL:                   getString(f.RekorURL),
-		IncludeDevDeps:             getBool(f.IncludeDevDeps),
-		RetainSystemInstalledFiles: getBool(f.RetainSystemInstalledFiles),
+		Target:                  target,
+		SkipDirs:                getStringSlice(f.SkipDirs),
+		SkipFiles:               getStringSlice(f.SkipFiles),
+		OfflineScan:             getBool(f.OfflineScan),
+		Scanners:                getUnderlyingStringSlice[types.Scanner](f.Scanners),
+		FilePatterns:            getStringSlice(f.FilePatterns),
+		Slow:                    getBool(f.Slow),
+		SBOMSources:             getStringSlice(f.SBOMSources),
+		RekorURL:                getString(f.RekorURL),
+		IncludeDevDeps:          getBool(f.IncludeDevDeps),
+		RetainPkgInstalledFiles: getBool(f.RetainPkgInstalledFiles),
 	}, nil
 }

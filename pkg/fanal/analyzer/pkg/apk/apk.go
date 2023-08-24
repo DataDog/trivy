@@ -43,13 +43,13 @@ func (a alpinePkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInp
 				Packages: parsedPkgs,
 			},
 		},
-		SystemInstalledFiles: installedFiles,
+		PkgInstalledFiles: installedFiles,
 	}, nil
 }
 
-func patchSystemInstalledFiles(pkg *types.Package, files []string, opts *analyzer.AnalysisOptions) {
-	if opts.RetainSystemInstalledFiles {
-		pkg.SystemInstalledFiles = append(pkg.SystemInstalledFiles, files...)
+func patchPkgInstalledFiles(pkg *types.Package, files []string, opts *analyzer.AnalysisOptions) {
+	if opts.RetainPkgInstalledFiles {
+		pkg.InstalledFiles = append(pkg.InstalledFiles, files...)
 	}
 }
 
@@ -96,7 +96,7 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.A
 			dir = line[2:]
 		case "R:":
 			absPath := path.Join(dir, line[2:])
-			patchSystemInstalledFiles(&pkg, []string{absPath}, opts)
+			patchPkgInstalledFiles(&pkg, []string{absPath}, opts)
 			installedFiles = append(installedFiles, absPath)
 		case "p:": // provides (corresponds to provides in PKGINFO, concatenated by spaces into a single line)
 			a.parseProvides(line, pkg.ID, provides)

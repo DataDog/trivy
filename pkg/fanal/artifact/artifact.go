@@ -43,8 +43,8 @@ type Option struct {
 	// File walk
 	WalkOption WalkOption
 
-	// Retain system installed files in the output of the scanner
-	RetainSystemInstalledFiles bool
+	// Retain package installed files in the output of the scanner
+	RetainPkgInstalledFiles bool
 }
 
 // WalkOption is a struct that allows users to define a custom walking behavior.

@@ -53,7 +53,7 @@ var (
 )
 
 func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
-	var systemInstalledFiles []string
+	var PkgInstalledFiles []string
 	var packageInfos []types.PackageInfo
 
 	// parse `available` file to get digest for packages
@@ -75,7 +75,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 			if err != nil {
 				return err
 			}
-			systemInstalledFiles = append(systemInstalledFiles, systemFiles...)
+			PkgInstalledFiles = append(PkgInstalledFiles, systemFiles...)
 			return nil
 		}
 		// parse status files
@@ -91,8 +91,8 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	}
 
 	return &analyzer.AnalysisResult{
-		PackageInfos:         packageInfos,
-		SystemInstalledFiles: systemInstalledFiles,
+		PackageInfos:      packageInfos,
+		PkgInstalledFiles: PkgInstalledFiles,
 	}, nil
 
 }

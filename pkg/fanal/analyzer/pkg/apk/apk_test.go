@@ -22,7 +22,7 @@ var pkgs = []types.Package{
 		Licenses:   []string{"MIT"},
 		Arch:       "x86_64",
 		Digest:     "sha1:d68b402f35f57750f49156b0cb4e886a2ad35d2d",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"lib/libc.musl-x86_64.so.1",
 			"lib/ld-musl-x86_64.so.1",
 		},
@@ -37,7 +37,7 @@ var pkgs = []types.Package{
 		DependsOn:  []string{"musl@1.1.14-r10"},
 		Arch:       "x86_64",
 		Digest:     "sha1:ca124719267cd0bedc2f4cb850a286ac13f0ad44",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"bin/busybox",
 			"bin/sh",
 			"etc/securetty",
@@ -55,7 +55,7 @@ var pkgs = []types.Package{
 		DependsOn:  []string{"busybox@1.24.2-r9", "musl@1.1.14-r10"},
 		Arch:       "x86_64",
 		Digest:     "sha1:a214896150411d72dd1fafdb32d1c6c4855cccfa",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"etc/hosts",
 			"etc/sysctl.conf",
 			"etc/group",
@@ -92,7 +92,7 @@ var pkgs = []types.Package{
 		Licenses:   []string{"GPL-3.0"},
 		Arch:       "x86_64",
 		Digest:     "sha1:4def7ffaee6aeba700c1d62570326f75cbb8fa25",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"etc/apk/keys/alpine-devel@lists.alpinelinux.org-4d07755e.rsa.pub",
 			"etc/apk/keys/alpine-devel@lists.alpinelinux.org-524d27bb.rsa.pub",
 			"etc/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub",
@@ -110,7 +110,7 @@ var pkgs = []types.Package{
 		DependsOn:  []string{"musl@1.1.14-r10"},
 		Arch:       "x86_64",
 		Digest:     "sha1:efd04d34d40aa8eb331480127364c27a8ba760ef",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"lib/libz.so.1.2.8",
 			"lib/libz.so.1",
 		},
@@ -125,7 +125,7 @@ var pkgs = []types.Package{
 		DependsOn:  []string{"musl@1.1.14-r10", "zlib@1.2.8-r2"},
 		Arch:       "x86_64",
 		Digest:     "sha1:65c860ff8f103b664f40ba849a3f5a51c69c8beb",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"lib/libcrypto.so.1.0.0",
 			"usr/bin/c_rehash",
 			"usr/lib/libcrypto.so.1.0.0",
@@ -156,7 +156,7 @@ var pkgs = []types.Package{
 			"musl@1.1.14-r10",
 		},
 		Arch: "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"lib/libssl.so.1.0.0",
 			"usr/lib/libssl.so.1.0.0",
 		},
@@ -176,7 +176,7 @@ var pkgs = []types.Package{
 			"zlib@1.2.8-r2",
 		},
 		Arch: "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"sbin/apk",
 		},
 	},
@@ -190,7 +190,7 @@ var pkgs = []types.Package{
 		Digest:     "sha1:f9bab817c5ad93e92a6218bc0f7596b657c02d90",
 		DependsOn:  []string{"musl@1.1.14-r10"},
 		Arch:       "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"usr/bin/scanelf",
 		},
 	},
@@ -207,7 +207,7 @@ var pkgs = []types.Package{
 			"scanelf@1.1.6-r0",
 		},
 		Arch: "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"sbin/ldconfig",
 			"usr/bin/iconv",
 			"usr/bin/ldd",
@@ -225,7 +225,7 @@ var pkgs = []types.Package{
 		Digest:     "sha1:9055bc7afd76cf2672198042f72fc4a5ed4fa961",
 		DependsOn:  []string{"musl-utils@1.1.14-r10"},
 		Arch:       "x86_64",
-		//SystemInstalledFiles: []string{},
+		//InstalledFiles: []string{},
 	},
 	{
 		ID:         "pkgconf@1.6.0-r0",
@@ -237,7 +237,7 @@ var pkgs = []types.Package{
 		Digest:     "sha1:e6242ac29589c8a84a4b179b491ea7c29fce66a9",
 		DependsOn:  []string{"musl@1.1.14-r10"},
 		Arch:       "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"usr/bin/pkgconf",
 			"usr/bin/pkg-config",
 			"usr/lib/libpkgconf.so.3.0.0",
@@ -256,7 +256,7 @@ var pkgs = []types.Package{
 		Digest:     "sha1:1464946c3a5f0dd5a67ca1af930fc17af7a74474",
 		DependsOn:  []string{"musl@1.1.14-r10"},
 		Arch:       "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"usr/lib/libsqlite3.so.0",
 			"usr/lib/libsqlite3.so.0.8.6",
 		},
@@ -275,7 +275,7 @@ var pkgs = []types.Package{
 			"sqlite-libs@3.26.0-r3",
 		},
 		Arch: "x86_64",
-		SystemInstalledFiles: []string{
+		InstalledFiles: []string{
 			"usr/lib/libsqlite3.so",
 			"usr/lib/pkgconfig/sqlite3.pc",
 			"usr/include/sqlite3ext.h",
@@ -390,22 +390,22 @@ var files = []string{
 
 func TestParseApkInfo(t *testing.T) {
 	var tests = map[string]struct {
-		path                       string
-		wantPkgs                   []types.Package
-		wantFiles                  []string
-		RetainSystemInstalledFiles bool
+		path                 string
+		wantPkgs             []types.Package
+		wantFiles            []string
+		RetainInstalledFiles bool
 	}{
 		"Valid": {
-			path:                       "./testdata/apk",
-			RetainSystemInstalledFiles: true,
-			wantPkgs:                   pkgs,
-			wantFiles:                  files,
+			path:                 "./testdata/apk",
+			RetainInstalledFiles: true,
+			wantPkgs:             pkgs,
+			wantFiles:            files,
 		},
-		"do not retain system installed files": {
-			path:                       "./testdata/apk",
-			RetainSystemInstalledFiles: false,
-			wantPkgs:                   pkgs,
-			wantFiles:                  files,
+		"do not retain pkg installed files": {
+			path:                 "./testdata/apk",
+			RetainInstalledFiles: false,
+			wantPkgs:             pkgs,
+			wantFiles:            files,
 		},
 	}
 	for testname, tt := range tests {
@@ -415,13 +415,13 @@ func TestParseApkInfo(t *testing.T) {
 			defer f.Close()
 			require.NoError(t, err)
 			scanner := bufio.NewScanner(read)
-			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainSystemInstalledFiles: tt.RetainSystemInstalledFiles})
+			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainPkgInstalledFiles: tt.RetainInstalledFiles})
 
-			// Remove system installed files if necessary
+			// Remove package installed files if necessary
 			wantPkgs := tt.wantPkgs
-			if !tt.RetainSystemInstalledFiles {
+			if !tt.RetainInstalledFiles {
 				for i, pkg := range wantPkgs {
-					pkg.SystemInstalledFiles = nil
+					pkg.InstalledFiles = nil
 					wantPkgs[i] = pkg
 				}
 			}

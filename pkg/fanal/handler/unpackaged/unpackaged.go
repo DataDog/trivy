@@ -41,7 +41,7 @@ func NewUnpackagedHandler(opt artifact.Option) (handler.PostHandler, error) {
 func (h unpackagedHook) Handle(ctx context.Context, res *analyzer.AnalysisResult, blob *types.BlobInfo) error {
 	for filePath, digest := range res.Digests {
 		// Skip files installed by OS package managers.
-		if slices.Contains(res.SystemInstalledFiles, filePath) {
+		if slices.Contains(res.PkgInstalledFiles, filePath) {
 			continue
 		}
 

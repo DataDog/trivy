@@ -22,7 +22,7 @@ func Test_systemFileFilterHook_Hook(t *testing.T) {
 		{
 			name: "happy path",
 			result: &analyzer.AnalysisResult{
-				SystemInstalledFiles: []string{
+				PkgInstalledFiles: []string{
 					"/",
 					"/usr/bin/pydoc",
 					"/usr/bin/python",
@@ -201,7 +201,7 @@ func Test_systemFileFilterHook_Hook(t *testing.T) {
 		{
 			name: "go binaries",
 			result: &analyzer.AnalysisResult{
-				SystemInstalledFiles: []string{
+				PkgInstalledFiles: []string{
 					"usr/local/bin/goreleaser",
 				},
 			},
@@ -224,7 +224,7 @@ func Test_systemFileFilterHook_Hook(t *testing.T) {
 		{
 			name: "Rust will not be skipped",
 			result: &analyzer.AnalysisResult{
-				SystemInstalledFiles: []string{
+				PkgInstalledFiles: []string{
 					"app/Cargo.lock",
 				},
 			},
