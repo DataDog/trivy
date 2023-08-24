@@ -146,18 +146,21 @@ type PostAnalysisInput struct {
 type AnalysisOptions struct {
 	Offline      bool
 	FileChecksum bool
+
+	// retain package installed files in the analysis result
+	RetainPkgInstalledFiles bool
 }
 
 type AnalysisResult struct {
-	m                    sync.Mutex
-	OS                   types.OS
-	Repository           *types.Repository
-	PackageInfos         []types.PackageInfo
-	Applications         []types.Application
-	Misconfigurations    []types.Misconfiguration
-	Secrets              []types.Secret
-	Licenses             []types.LicenseFile
-	SystemInstalledFiles []string // A list of files installed by OS package manager
+	m                 sync.Mutex
+	OS                types.OS
+	Repository        *types.Repository
+	PackageInfos      []types.PackageInfo
+	Applications      []types.Application
+	Misconfigurations []types.Misconfiguration
+	Secrets           []types.Secret
+	Licenses          []types.LicenseFile
+	PkgInstalledFiles []string // A list of files installed by OS package manager
 
 	// Digests contains SHA-256 digests of unpackaged files
 	// used to search for SBOM attestation.
@@ -178,7 +181,7 @@ func NewAnalysisResult() *AnalysisResult {
 
 func (r *AnalysisResult) isEmpty() bool {
 	return lo.IsEmpty(r.OS) && r.Repository == nil && len(r.PackageInfos) == 0 && len(r.Applications) == 0 &&
-		len(r.Misconfigurations) == 0 && len(r.Secrets) == 0 && len(r.Licenses) == 0 && len(r.SystemInstalledFiles) == 0 &&
+		len(r.Misconfigurations) == 0 && len(r.Secrets) == 0 && len(r.Licenses) == 0 && len(r.PkgInstalledFiles) == 0 &&
 		r.BuildInfo == nil && len(r.Digests) == 0 && len(r.CustomResources) == 0
 }
 
@@ -269,7 +272,7 @@ func (r *AnalysisResult) Merge(new *AnalysisResult) {
 	r.Misconfigurations = append(r.Misconfigurations, new.Misconfigurations...)
 	r.Secrets = append(r.Secrets, new.Secrets...)
 	r.Licenses = append(r.Licenses, new.Licenses...)
-	r.SystemInstalledFiles = append(r.SystemInstalledFiles, new.SystemInstalledFiles...)
+	r.PkgInstalledFiles = append(r.PkgInstalledFiles, new.PkgInstalledFiles...)
 
 	if new.BuildInfo != nil {
 		if r.BuildInfo == nil {
@@ -467,7 +470,7 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			continue
 		}
 
-		skippedFiles := result.SystemInstalledFiles
+		skippedFiles := result.PkgInstalledFiles
 		for _, app := range result.Applications {
 			skippedFiles = append(skippedFiles, app.FilePath)
 			for _, lib := range app.Libraries {
