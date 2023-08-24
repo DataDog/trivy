@@ -349,7 +349,7 @@ func TestAnalyzerGroup_AnalyzeFile(t *testing.T) {
 						},
 					},
 				},
-				PkgInstalledFiles: []string{
+				SystemInstalledFiles: []string{
 					"lib/libc.musl-x86_64.so.1",
 					"lib/ld-musl-x86_64.so.1",
 				},

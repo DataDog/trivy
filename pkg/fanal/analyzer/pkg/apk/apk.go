@@ -34,7 +34,12 @@ type alpinePkgAnalyzer struct{}
 
 func (a alpinePkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
 	scanner := bufio.NewScanner(input.Content)
-	parsedPkgs, installedFiles := a.parseApkInfo(scanner, &input.Options)
+	parsedPkgs := a.parseApkInfo(scanner, &input.Options)
+
+	installedFiles := make([]string, 0)
+	for i := range parsedPkgs {
+		installedFiles = append(installedFiles, parsedPkgs[i].InstalledFiles...)
+	}
 
 	return &analyzer.AnalysisResult{
 		PackageInfos: []types.PackageInfo{
@@ -43,24 +48,17 @@ func (a alpinePkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInp
 				Packages: parsedPkgs,
 			},
 		},
-		PkgInstalledFiles: installedFiles,
+		SystemInstalledFiles: installedFiles,
 	}, nil
 }
 
-func patchPkgInstalledFiles(pkg *types.Package, files []string, opts *analyzer.AnalysisOptions) {
-	if opts.RetainPkgInstalledFiles {
-		pkg.InstalledFiles = append(pkg.InstalledFiles, files...)
-	}
-}
-
-func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.AnalysisOptions) ([]types.Package, []string) {
+func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.AnalysisOptions) []types.Package {
 	var (
-		pkgs           []types.Package
-		pkg            types.Package
-		version        string
-		dir            string
-		installedFiles []string
-		provides       = map[string]string{} // for dependency graph
+		pkgs     []types.Package
+		pkg      types.Package
+		version  string
+		dir      string
+		provides = map[string]string{} // for dependency graph
 	)
 
 	for scanner.Scan() {
@@ -96,8 +94,7 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.A
 			dir = line[2:]
 		case "R:":
 			absPath := path.Join(dir, line[2:])
-			patchPkgInstalledFiles(&pkg, []string{absPath}, opts)
-			installedFiles = append(installedFiles, absPath)
+			pkg.InstalledFiles = append(pkg.InstalledFiles, absPath)
 		case "p:": // provides (corresponds to provides in PKGINFO, concatenated by spaces into a single line)
 			a.parseProvides(line, pkg.ID, provides)
 		case "D:": // dependencies (corresponds to depend in PKGINFO, concatenated by spaces into a single line)
@@ -129,7 +126,7 @@ func (a alpinePkgAnalyzer) parseApkInfo(scanner *bufio.Scanner, opts *analyzer.A
 	// Replace dependencies with package IDs
 	a.consolidateDependencies(pkgs, provides)
 
-	return pkgs, installedFiles
+	return pkgs
 }
 
 func (a alpinePkgAnalyzer) trimRequirement(s string) string {

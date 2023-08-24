@@ -284,128 +284,15 @@ var pkgs = []types.Package{
 	},
 }
 
-var files = []string{
-	// musl-1.1.14-r10
-	"lib/libc.musl-x86_64.so.1",
-	"lib/ld-musl-x86_64.so.1",
-
-	// busybox-1.24.2-r9
-	"bin/busybox",
-	"bin/sh",
-	"etc/securetty",
-	"etc/udhcpd.conf",
-	"etc/logrotate.d/acpid",
-
-	// alpine-baselayout-3.0.3-r0
-	"etc/hosts",
-	"etc/sysctl.conf",
-	"etc/group",
-	"etc/protocols",
-	"etc/fstab",
-	"etc/mtab",
-	"etc/profile",
-	"etc/TZ",
-	"etc/shells",
-	"etc/motd",
-	"etc/inittab",
-	"etc/hostname",
-	"etc/modules",
-	"etc/services",
-	"etc/shadow",
-	"etc/passwd",
-	"etc/profile.d/color_prompt",
-	"etc/sysctl.d/00-alpine.conf",
-	"etc/modprobe.d/i386.conf",
-	"etc/modprobe.d/blacklist.conf",
-	"etc/modprobe.d/aliases.conf",
-	"etc/modprobe.d/kms.conf",
-	"etc/crontabs/root",
-	"sbin/mkmntdirs",
-	"var/spool/cron/crontabs",
-
-	// alpine-keys-1.1-r0
-	"etc/apk/keys/alpine-devel@lists.alpinelinux.org-4d07755e.rsa.pub",
-	"etc/apk/keys/alpine-devel@lists.alpinelinux.org-524d27bb.rsa.pub",
-	"etc/apk/keys/alpine-devel@lists.alpinelinux.org-5243ef4b.rsa.pub",
-	"etc/apk/keys/alpine-devel@lists.alpinelinux.org-5261cecb.rsa.pub",
-	"etc/apk/keys/alpine-devel@lists.alpinelinux.org-4a6a0840.rsa.pub",
-
-	// zlib-1.2.8-r2
-	"lib/libz.so.1.2.8",
-	"lib/libz.so.1",
-
-	// libcrypto1.0-1.0.2h-r1
-	"lib/libcrypto.so.1.0.0",
-	"usr/bin/c_rehash",
-	"usr/lib/libcrypto.so.1.0.0",
-	"usr/lib/engines/libubsec.so",
-	"usr/lib/engines/libatalla.so",
-	"usr/lib/engines/libcapi.so",
-	"usr/lib/engines/libgost.so",
-	"usr/lib/engines/libcswift.so",
-	"usr/lib/engines/libchil.so",
-	"usr/lib/engines/libgmp.so",
-	"usr/lib/engines/libnuron.so",
-	"usr/lib/engines/lib4758cca.so",
-	"usr/lib/engines/libsureware.so",
-	"usr/lib/engines/libpadlock.so",
-	"usr/lib/engines/libaep.so",
-
-	// libssl1.0-1.0.2h-r1
-	"lib/libssl.so.1.0.0",
-	"usr/lib/libssl.so.1.0.0",
-
-	// apk-tools-2.6.7-r0
-	"sbin/apk",
-
-	// scanelf-1.1.6-r0
-	"usr/bin/scanelf",
-
-	// musl-utils-1.1.14-r10
-	"sbin/ldconfig",
-	"usr/bin/iconv",
-	"usr/bin/ldd",
-	"usr/bin/getconf",
-	"usr/bin/getent",
-
-	// libc-utils-0.7-r0
-
-	// pkgconf-1.6.0-r0
-	"usr/bin/pkgconf",
-	"usr/bin/pkg-config",
-	"usr/lib/libpkgconf.so.3.0.0",
-	"usr/lib/libpkgconf.so.3",
-	"usr/share/aclocal/pkg.m4",
-
-	// sqlite-libs-3.26.0-r3
-	"usr/lib/libsqlite3.so.0",
-	"usr/lib/libsqlite3.so.0.8.6",
-
-	// test-2.9.11_pre20061021-r2
-	"usr/lib/libsqlite3.so",
-	"usr/lib/pkgconfig/sqlite3.pc",
-	"usr/include/sqlite3ext.h",
-	"usr/include/sqlite3.h",
-}
-
 func TestParseApkInfo(t *testing.T) {
 	var tests = map[string]struct {
-		path                 string
-		wantPkgs             []types.Package
-		wantFiles            []string
-		RetainInstalledFiles bool
+		path      string
+		wantPkgs  []types.Package
+		wantFiles []string
 	}{
 		"Valid": {
-			path:                 "./testdata/apk",
-			RetainInstalledFiles: true,
-			wantPkgs:             pkgs,
-			wantFiles:            files,
-		},
-		"do not retain pkg installed files": {
-			path:                 "./testdata/apk",
-			RetainInstalledFiles: false,
-			wantPkgs:             pkgs,
-			wantFiles:            files,
+			path:     "./testdata/apk",
+			wantPkgs: pkgs,
 		},
 	}
 	for testname, tt := range tests {
@@ -415,18 +302,8 @@ func TestParseApkInfo(t *testing.T) {
 			defer f.Close()
 			require.NoError(t, err)
 			scanner := bufio.NewScanner(f)
-			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainPkgInstalledFiles: tt.RetainInstalledFiles})
-
-			// Remove package installed files if necessary
-			wantPkgs := tt.wantPkgs
-			if !tt.RetainInstalledFiles {
-				for i, pkg := range wantPkgs {
-					pkg.InstalledFiles = nil
-					wantPkgs[i] = pkg
-				}
-			}
-			assert.Equal(t, wantPkgs, gotPkgs)
-			assert.Equal(t, tt.wantFiles, gotFiles)
+			gotPkgs := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{})
+			assert.Equal(t, tt.wantPkgs, gotPkgs)
 		})
 	}
 }

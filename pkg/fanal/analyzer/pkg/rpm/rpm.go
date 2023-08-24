@@ -76,7 +76,7 @@ func (a rpmPkgAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInput)
 				Packages: parsedPkgs,
 			},
 		},
-		PkgInstalledFiles: installedFiles,
+		SystemInstalledFiles: installedFiles,
 	}, nil
 }
 

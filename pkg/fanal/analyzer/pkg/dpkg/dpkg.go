@@ -90,8 +90,8 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	}
 
 	return &analyzer.AnalysisResult{
-		PackageInfos:      packageInfos,
-		PkgInstalledFiles: PkgInstalledFiles,
+		PackageInfos:         packageInfos,
+		SystemInstalledFiles: PkgInstalledFiles,
 	}, nil
 
 }
