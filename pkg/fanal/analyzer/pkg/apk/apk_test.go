@@ -411,7 +411,8 @@ func TestParseApkInfo(t *testing.T) {
 	for testname, tt := range tests {
 		t.Run(testname, func(t *testing.T) {
 			a := alpinePkgAnalyzer{}
-			read, err := os.Open(tt.path)
+			f, err := os.Open(tt.path)
+			defer f.Close()
 			require.NoError(t, err)
 			scanner := bufio.NewScanner(read)
 			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainSystemInstalledFiles: tt.RetainSystemInstalledFiles})
