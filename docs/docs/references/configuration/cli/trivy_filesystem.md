@@ -66,7 +66,7 @@ trivy filesystem [flags] PATH
       --report string                     specify a compliance report format for the output (all,summary) (default "all")
       --reset                             remove all caches and database
       --reset-policy-bundle               remove policy bundle
-      --retain-system-installed-files     retains the files installed by each package in the analysis output when set to true
+      --retain-pkg-installed-files        retains the files installed by each package in the analysis output when set to true
       --sbom-sources strings              [EXPERIMENTAL] try to retrieve SBOM from the specified sources (oci,rekor)
       --scanners strings                  comma-separated list of what security issues to detect (vuln,config,secret,license) (default [vuln,secret])
       --secret-config string              specify a path to config file for secret scanning (default "trivy-secret.yaml")
