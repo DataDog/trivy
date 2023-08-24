@@ -414,7 +414,7 @@ func TestParseApkInfo(t *testing.T) {
 			f, err := os.Open(tt.path)
 			defer f.Close()
 			require.NoError(t, err)
-			scanner := bufio.NewScanner(read)
+			scanner := bufio.NewScanner(f)
 			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainPkgInstalledFiles: tt.RetainInstalledFiles})
 
 			// Remove package installed files if necessary
