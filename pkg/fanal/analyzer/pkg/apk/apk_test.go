@@ -418,13 +418,14 @@ func TestParseApkInfo(t *testing.T) {
 			gotPkgs, gotFiles := a.parseApkInfo(scanner, &analyzer.AnalysisOptions{RetainPkgInstalledFiles: tt.RetainInstalledFiles})
 
 			// Remove package installed files if necessary
-			wantPkgs := tt.wantPkgs
-			if !tt.RetainInstalledFiles {
-				for i, pkg := range wantPkgs {
+			wantPkgs := make([]types.Package, 0, len(tt.wantPkgs))
+			for _, pkg := range tt.wantPkgs {
+				if !tt.RetainInstalledFiles {
 					pkg.InstalledFiles = nil
-					wantPkgs[i] = pkg
 				}
+				wantPkgs = append(wantPkgs, pkg)
 			}
+
 			assert.Equal(t, wantPkgs, gotPkgs)
 			assert.Equal(t, tt.wantFiles, gotFiles)
 		})
