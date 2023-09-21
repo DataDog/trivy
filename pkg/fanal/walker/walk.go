@@ -1,6 +1,7 @@
 package walker
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,11 +72,15 @@ func (w *walker) shouldSkipDir(dir string) bool {
 	// Skip application dirs (relative path)
 	base := filepath.Base(dir)
 	if utils.StringInSlice(base, AppDirs) {
+		fmt.Printf("basename %s in AppDirs\n", base)
 		return true
 	}
 
 	// Skip system dirs and specified dirs (absolute path)
 	if utils.StringInSlice(dir, w.skipDirs) {
+		if strings.HasSuffix(dir, "os-release") || strings.HasSuffix(dir, "info/base-files.list") {
+			fmt.Printf("dir %s in skipDirs\n", dir)
+		}
 		return true
 	}
 
@@ -84,6 +89,9 @@ func (w *walker) shouldSkipDir(dir string) bool {
 			if strings.HasPrefix(dir, onlyDir) || strings.HasPrefix(onlyDir, dir) {
 				return false
 			}
+		}
+		if strings.HasSuffix(dir, "os-release") || strings.HasSuffix(dir, "info/base-files.list") {
+			fmt.Printf("dir %s not in onlyDirs\n", dir)
 		}
 		return true
 	}

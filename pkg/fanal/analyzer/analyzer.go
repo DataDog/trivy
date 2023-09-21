@@ -3,6 +3,7 @@ package analyzer
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"regexp"
@@ -282,6 +283,9 @@ func (r *AnalysisResult) Merge(new *AnalysisResult) {
 	r.Licenses = append(r.Licenses, new.Licenses...)
 
 	for packageRef, installedFiles := range new.SystemInstalledFiles {
+		if packageRef == "base-files" {
+			fmt.Printf("sys files for package %s: %+q\n", packageRef, installedFiles)
+		}
 		r.SystemInstalledFiles[packageRef] = append(r.SystemInstalledFiles[packageRef], installedFiles...)
 	}
 
@@ -428,6 +432,10 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 			defer wg.Done()
 			defer rc.Close()
 
+			if strings.HasSuffix(filePath, "os-release") || strings.HasSuffix(filePath, "info/base-files.list") {
+				fmt.Printf("%s analyzing %s\n", a.Type(), filePath)
+			}
+
 			ret, err := a.Analyze(ctx, AnalysisInput{
 				Dir:      dir,
 				FilePath: filePath,
@@ -440,7 +448,14 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 				return
 			}
 			if ret != nil {
+				if strings.HasSuffix(filePath, "os-release") || strings.HasSuffix(filePath, "info/base-files.list") {
+					fmt.Printf("merging results for %s / %s\n", a.Type(), filePath)
+				}
 				result.Merge(ret)
+			} else {
+				if strings.HasSuffix(filePath, "os-release") || strings.HasSuffix(filePath, "info/base-files.list") {
+					fmt.Printf("analysis for %s / %s returned nil\n", a.Type(), filePath)
+				}
 			}
 		}(a, rc)
 	}
