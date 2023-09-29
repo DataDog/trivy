@@ -13,7 +13,6 @@ import (
 	dtypes "github.com/aquasecurity/trivy-db/pkg/types"
 	"github.com/aquasecurity/trivy-db/pkg/vulnsrc/vulnerability"
 	"github.com/aquasecurity/trivy/pkg/clock"
-	fos "github.com/aquasecurity/trivy/pkg/fanal/analyzer/os"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/report"
 	"github.com/aquasecurity/trivy/pkg/sbom/cyclonedx"
@@ -36,7 +35,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 				Metadata: types.Metadata{
 					Size: 1024,
 					OS: &ftypes.OS{
-						Family: fos.CentOS,
+						Family: ftypes.CentOS,
 						Name:   "8.3.2011",
 						Eosl:   true,
 					},
@@ -52,7 +51,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 					{
 						Target: "rails:latest (centos 8.3.2011)",
 						Class:  types.ClassOSPkg,
-						Type:   fos.CentOS,
+						Type:   ftypes.CentOS,
 						Packages: []ftypes.Package{
 							{
 								ID:              "binutils@2.30-93.el8",
@@ -107,10 +106,6 @@ func TestMarshaler_Marshal(t *testing.T) {
 											V3Vector: "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L",
 											V3Score:  5.3,
 										},
-									},
-									References: []string{
-										"http://lists.opensuse.org/opensuse-security-announce/2019-10/msg00072.html",
-										"http://lists.opensuse.org/opensuse-security-announce/2019-11/msg00008.html",
 									},
 									PublishedDate:    lo.ToPtr(time.Date(2018, 12, 31, 19, 29, 0, 0, time.UTC)),
 									LastModifiedDate: lo.ToPtr(time.Date(2019, 10, 31, 1, 15, 0, 0, time.UTC)),
@@ -195,8 +190,8 @@ func TestMarshaler_Marshal(t *testing.T) {
 					},
 					Component: &cdx.Component{
 						Type:       cdx.ComponentTypeContainer,
-						BOMRef:     "pkg:oci/rails@sha256:a27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177?repository_url=index.docker.io%2Flibrary%2Frails&arch=arm64",
-						PackageURL: "pkg:oci/rails@sha256:a27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177?repository_url=index.docker.io%2Flibrary%2Frails&arch=arm64",
+						BOMRef:     "pkg:oci/rails@sha256%3Aa27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177?arch=arm64&repository_url=index.docker.io%2Flibrary%2Frails",
+						PackageURL: "pkg:oci/rails@sha256%3Aa27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177?arch=arm64&repository_url=index.docker.io%2Flibrary%2Frails",
 						Name:       "rails:latest",
 						Properties: &[]cdx.Property{
 							{
@@ -468,7 +463,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 						Dependencies: lo.ToPtr([]string{}),
 					},
 					{
-						Ref: "pkg:oci/rails@sha256:a27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177?repository_url=index.docker.io%2Flibrary%2Frails&arch=arm64",
+						Ref: "pkg:oci/rails@sha256%3Aa27fd8080b517143cbbbab9dfb7c8571c40d67d534bbdee55bd6c473f432b177?arch=arm64&repository_url=index.docker.io%2Flibrary%2Frails",
 						Dependencies: &[]string{
 							"3ff14136-e09f-4df9-80ea-000000000002",
 							"3ff14136-e09f-4df9-80ea-000000000003",
@@ -525,16 +520,8 @@ func TestMarshaler_Marshal(t *testing.T) {
 							416,
 						},
 						Description: "In GNU Binutils 2.31.1, there is a use-after-free in the error function in elfcomm.c when called from the process_archive function in readelf.c via a crafted ELF file.",
-						Advisories: &[]cdx.Advisory{
-							{
-								URL: "http://lists.opensuse.org/opensuse-security-announce/2019-10/msg00072.html",
-							},
-							{
-								URL: "http://lists.opensuse.org/opensuse-security-announce/2019-11/msg00008.html",
-							},
-						},
-						Published: "2018-12-31T19:29:00+00:00",
-						Updated:   "2019-10-31T01:15:00+00:00",
+						Published:   "2018-12-31T19:29:00+00:00",
+						Updated:     "2019-10-31T01:15:00+00:00",
 						Affects: &[]cdx.Affects{
 							{
 								Ref: "pkg:rpm/centos/binutils@2.30-93.el8?arch=aarch64&distro=centos-8.3.2011",
@@ -559,7 +546,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 				Metadata: types.Metadata{
 					Size: 1024,
 					OS: &ftypes.OS{
-						Family: fos.CentOS,
+						Family: ftypes.CentOS,
 						Name:   "8.3.2011",
 						Eosl:   true,
 					},
@@ -574,7 +561,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 					{
 						Target: "centos:latest (centos 8.3.2011)",
 						Class:  types.ClassOSPkg,
-						Type:   fos.CentOS,
+						Type:   ftypes.CentOS,
 						Packages: []ftypes.Package{
 							{
 								ID:              "acl@2.2.53-1.el8",
@@ -771,7 +758,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 					{
 						BOMRef:  "3ff14136-e09f-4df9-80ea-000000000003",
 						Type:    cdx.ComponentTypeOS,
-						Name:    fos.CentOS,
+						Name:    string(ftypes.CentOS),
 						Version: "8.3.2011",
 						Properties: &[]cdx.Property{
 							{
@@ -835,7 +822,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 						},
 					},
 					{
-						BOMRef:  "pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&epoch=1&distro=centos-8.3.2011",
+						BOMRef:  "pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&distro=centos-8.3.2011&epoch=1",
 						Type:    cdx.ComponentTypeLibrary,
 						Name:    "acl",
 						Version: "2.2.53-1.el8",
@@ -846,7 +833,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 								},
 							},
 						},
-						PackageURL: "pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&epoch=1&distro=centos-8.3.2011",
+						PackageURL: "pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&distro=centos-8.3.2011&epoch=1",
 						Properties: &[]cdx.Property{
 							{
 								Name:  "aquasecurity:trivy:PkgID",
@@ -935,7 +922,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 					{
 						Ref: "3ff14136-e09f-4df9-80ea-000000000003",
 						Dependencies: &[]string{
-							"pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&epoch=1&distro=centos-8.3.2011",
+							"pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&distro=centos-8.3.2011&epoch=1",
 							// Trivy is unable to identify the direct OS packages as of today.
 							"pkg:rpm/centos/glibc@2.28-151.el8?arch=aarch64&distro=centos-8.3.2011",
 						},
@@ -949,7 +936,7 @@ func TestMarshaler_Marshal(t *testing.T) {
 						Dependencies: lo.ToPtr([]string{}),
 					},
 					{
-						Ref: "pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&epoch=1&distro=centos-8.3.2011",
+						Ref: "pkg:rpm/centos/acl@2.2.53-1.el8?arch=aarch64&distro=centos-8.3.2011&epoch=1",
 						Dependencies: &[]string{
 							"pkg:rpm/centos/glibc@2.28-151.el8?arch=aarch64&distro=centos-8.3.2011",
 						},

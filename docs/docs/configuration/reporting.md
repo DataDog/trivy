@@ -8,6 +8,7 @@ Trivy supports the following formats:
 - [SARIF](https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning)
 - Template
 - SBOM
+- GitHub dependency snapshot
 
 ### Table (Default)
 
@@ -62,6 +63,8 @@ The following packages/languages are currently supported:
     - Modules: go.mod
 - PHP
     - Composer
+- Java
+    - Maven: pom.xml
 
 This tree is the reverse of the npm list command.
 However, if you want to resolve a vulnerability in a particular indirect dependency, the reversed tree is useful to know where that dependency comes from and identify which package you actually need to update.
@@ -256,6 +259,20 @@ $ trivy image --format sarif -o report.sarif  golang:1.12-alpine
 
 This SARIF file can be uploaded to GitHub code scanning results, and there is a [Trivy GitHub Action][action] for automating this process.
 
+### GitHub dependency snapshot
+Trivy supports the following packages.
+
+- [OS packages][os_packages]
+- [Language-specific packages][language_packages]
+
+[GitHub dependency snapshots][github-sbom] can be generated with the `--format github` flag.
+
+```
+$ trivy image --format github -o report.gsbom alpine
+```
+
+This snapshot file can be [submitted][github-sbom-submit] to your GitHub repository.
+
 ### Template
 
 |     Scanner      | Supported |
@@ -387,3 +404,8 @@ $ trivy convert --format table --severity CRITICAL result.json
 [asff]: ../../tutorials/integrations/aws-security-hub.md
 [sarif]: https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/managing-results-from-code-scanning
 [sprig]: http://masterminds.github.io/sprig/
+[github-sbom]: https://docs.github.com/en/rest/dependency-graph/dependency-submission?apiVersion=2022-11-28#about-dependency-submissions
+[github-sbom-submit]: https://docs.github.com/en/rest/dependency-graph/dependency-submission?apiVersion=2022-11-28#create-a-snapshot-of-dependencies-for-a-repository
+
+[os_packages]: ../scanner/vulnerability.md#os-packages
+[language_packages]: ../scanner/vulnerability.md#language-specific-packages

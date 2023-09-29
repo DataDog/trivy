@@ -6,17 +6,15 @@ import (
 	"testing"
 
 	cdx "github.com/CycloneDX/cyclonedx-go"
+	"github.com/package-url/packageurl-go"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/aquasecurity/trivy-kubernetes/pkg/artifacts"
 	cmd "github.com/aquasecurity/trivy/pkg/commands/artifact"
-	"github.com/aquasecurity/trivy/pkg/purl"
-	"github.com/package-url/packageurl-go"
-
 	"github.com/aquasecurity/trivy/pkg/flag"
-
+	"github.com/aquasecurity/trivy/pkg/purl"
 	cyc "github.com/aquasecurity/trivy/pkg/sbom/cyclonedx"
 	"github.com/aquasecurity/trivy/pkg/sbom/cyclonedx/core"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestK8sClusterInfoReport(t *testing.T) {
@@ -31,6 +29,18 @@ func TestK8sClusterInfoReport(t *testing.T) {
 			name:        "test cluster info with resources",
 			clusterName: "test-cluster",
 			artifacts: []*artifacts.Artifact{
+				{
+					Namespace: "kube-system",
+					Kind:      "ClusterInfo",
+					Name:      "k8s.io/kubernetes",
+					RawResource: map[string]interface{}{
+						"Properties": map[string]string{
+							"Name": "kube-cluster",
+						},
+						"Name":    "kube-apiserver-kind-control-plane",
+						"Version": "1.21.1",
+					},
+				},
 				{
 					Namespace: "kube-system",
 					Kind:      "PodInfo",
@@ -72,8 +82,12 @@ func TestK8sClusterInfoReport(t *testing.T) {
 				},
 			},
 			want: &core.Component{
-				Type: cdx.ComponentTypePlatform,
-				Name: "test-cluster",
+				Type:    cdx.ComponentTypePlatform,
+				Name:    "kube-apiserver-kind-control-plane",
+				Version: "1.21.1",
+				Properties: []core.Property{
+					{Name: "Name", Value: "kube-cluster", Namespace: k8sCoreComponentNamespace},
+				},
 				Components: []*core.Component{
 					{
 						Type: cdx.ComponentTypeApplication,
@@ -140,13 +154,12 @@ func TestK8sClusterInfoReport(t *testing.T) {
 								},
 								Components: []*core.Component{
 									{
-										Type:    cdx.ComponentTypeLibrary,
+										Type:    cdx.ComponentTypeApplication,
 										Name:    "k8s.io/kubelet",
 										Version: "1.21.1",
 										Properties: []core.Property{
 											{Name: k8sComponentType, Value: "node", Namespace: k8sCoreComponentNamespace},
 											{Name: k8sComponentName, Value: "k8s.io/kubelet", Namespace: k8sCoreComponentNamespace},
-											{Name: "PkgType", Value: "golang", Namespace: ""},
 										},
 										PackageURL: &purl.PackageURL{
 											PackageURL: packageurl.PackageURL{
@@ -158,13 +171,12 @@ func TestK8sClusterInfoReport(t *testing.T) {
 										},
 									},
 									{
-										Type:    cdx.ComponentTypeLibrary,
+										Type:    cdx.ComponentTypeApplication,
 										Name:    "github.com/containerd/containerd",
 										Version: "1.5.2",
 										Properties: []core.Property{
 											{Name: k8sComponentType, Value: "node", Namespace: k8sCoreComponentNamespace},
 											{Name: k8sComponentName, Value: "github.com/containerd/containerd", Namespace: k8sCoreComponentNamespace},
-											{Name: "PkgType", Value: "golang", Namespace: ""},
 										},
 										PackageURL: &purl.PackageURL{
 											PackageURL: packageurl.PackageURL{

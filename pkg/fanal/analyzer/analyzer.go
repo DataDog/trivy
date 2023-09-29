@@ -16,7 +16,7 @@ import (
 	"golang.org/x/xerrors"
 
 	dio "github.com/aquasecurity/go-dep-parser/pkg/io"
-	aos "github.com/aquasecurity/trivy/pkg/fanal/analyzer/os"
+	fos "github.com/aquasecurity/trivy/pkg/fanal/analyzer/os"
 	"github.com/aquasecurity/trivy/pkg/fanal/log"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/misconf"
@@ -197,7 +197,10 @@ func (r *AnalysisResult) Sort() {
 
 	// Language-specific packages
 	sort.Slice(r.Applications, func(i, j int) bool {
-		return r.Applications[i].FilePath < r.Applications[j].FilePath
+		if r.Applications[i].FilePath != r.Applications[j].FilePath {
+			return r.Applications[i].FilePath < r.Applications[j].FilePath
+		}
+		return r.Applications[i].Type < r.Applications[j].Type
 	})
 
 	for _, app := range r.Applications {
@@ -434,7 +437,7 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 				Content:  rc,
 				Options:  opts,
 			})
-			if err != nil && !errors.Is(err, aos.AnalyzeOSError) {
+			if err != nil && !errors.Is(err, fos.AnalyzeOSError) {
 				log.Logger.Debugf("Analysis error: %s", err)
 				return
 			}

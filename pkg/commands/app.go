@@ -14,7 +14,6 @@ import (
 	"golang.org/x/xerrors"
 
 	awsScanner "github.com/aquasecurity/defsec/pkg/scanners/cloud/aws"
-
 	awscommands "github.com/aquasecurity/trivy/pkg/cloud/aws/commands"
 	"github.com/aquasecurity/trivy/pkg/commands/artifact"
 	"github.com/aquasecurity/trivy/pkg/commands/convert"
@@ -443,12 +442,14 @@ func NewRepositoryCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 	repoFlags.ReportFlagGroup.ExitOnEOL = nil    // disable '--exit-on-eol'
 
 	cmd := &cobra.Command{
-		Use:     "repository [flags] REPO_URL",
+		Use:     "repository [flags] (REPO_PATH | REPO_URL)",
 		Aliases: []string{"repo"},
 		GroupID: groupScanning,
-		Short:   "Scan a remote repository",
+		Short:   "Scan a repository",
 		Example: `  # Scan your remote git repository
-  $ trivy repo https://github.com/knqyf263/trivy-ci-test`,
+  $ trivy repo https://github.com/knqyf263/trivy-ci-test
+  # Scan your local git repository
+  $ trivy repo /path/to/your/repository`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if err := repoFlags.Bind(cmd); err != nil {
 				return xerrors.Errorf("flag bind error: %w", err)
@@ -580,6 +581,11 @@ func NewServerCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 		RemoteFlagGroup:   flag.NewServerFlags(),
 		RegistryFlagGroup: flag.NewRegistryFlagGroup(),
 	}
+
+	// java-db only works on client side.
+	serverFlags.DBFlagGroup.DownloadJavaDBOnly = nil // disable '--download-java-db-only'
+	serverFlags.DBFlagGroup.SkipJavaDBUpdate = nil   // disable '--skip-java-db-update'
+	serverFlags.DBFlagGroup.JavaDBRepository = nil   // disable '--java-db-repository'
 
 	cmd := &cobra.Command{
 		Use:     "server [flags]",

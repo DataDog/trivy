@@ -20,7 +20,7 @@ import (
 )
 
 // NewDriver returns a driver according to the library type
-func NewDriver(libType string) (Driver, bool) {
+func NewDriver(libType ftypes.LangType) (Driver, bool) {
 	var ecosystem dbTypes.Ecosystem
 	var comparer compare.Comparer
 
@@ -65,9 +65,14 @@ func NewDriver(libType string) (Driver, bool) {
 		// https://www.swift.org/package-manager/#importing-dependencies
 		ecosystem = vulnerability.Swift
 		comparer = compare.GenericComparer{}
+	case ftypes.Bitnami:
+		ecosystem = vulnerability.Bitnami
+		comparer = compare.GenericComparer{}
 	case ftypes.Cocoapods:
-		log.Logger.Warn("CocoaPods is supported for SBOM, not for vulnerability scanning")
-		return Driver{}, false
+		// CocoaPods uses RubyGems version specifiers
+		// https://guides.cocoapods.org/making/making-a-cocoapod.html#cocoapods-versioning-specifics
+		ecosystem = vulnerability.Cocoapods
+		comparer = rubygems.Comparer{}
 	case ftypes.CondaPkg:
 		log.Logger.Warn("Conda package is supported for SBOM, not for vulnerability scanning")
 		return Driver{}, false

@@ -8,10 +8,11 @@ import (
 	"testing"
 
 	"github.com/aquasecurity/trivy/pkg/mapfs"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/stretchr/testify/assert"
+	"github.com/aquasecurity/trivy/pkg/mapfs"
 )
 
 func Test_dpkgAnalyzer_Analyze(t *testing.T) {

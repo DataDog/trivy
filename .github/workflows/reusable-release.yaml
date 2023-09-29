@@ -27,7 +27,7 @@ jobs:
       contents: read  # Not required for public repositories, but for clarity
     steps:
       - name: Maximize build space
-        uses: easimon/maximize-build-space@v7
+        uses: easimon/maximize-build-space@v8
         with:
           root-reserve-mb: 35840 # The Go cache (`~/.cache/go-build` and `~/go/pkg`) requires a lot of storage space.
           remove-android: 'true'
@@ -36,7 +36,7 @@ jobs:
           remove-haskell: 'true'
 
       - name: Cosign install
-        uses: sigstore/cosign-installer@a5d81fb6bdbcbb3d239e864d6552820420254494
+        uses: sigstore/cosign-installer@4a861528be5e691840a69536975ada1d4c30349d
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -69,7 +69,7 @@ jobs:
           password: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v3.6.0
         with:
           fetch-depth: 0
 
@@ -93,7 +93,7 @@ jobs:
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
-          version: v1.16.2
+          version: v1.20.0
           args: release -f=${{ inputs.goreleaser_config}} ${{ inputs.goreleaser_options}}
         env:
           GITHUB_TOKEN: ${{ secrets.ORG_REPO_TOKEN }}

@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	k8sCoreComponentNamespace = core.Namespace + "k8s:component" + ":"
+	k8sCoreComponentNamespace = core.Namespace + "resource:"
 	k8sComponentType          = "Type"
 	k8sComponentName          = "Name"
 	k8sComponentNode          = "node"
@@ -71,7 +71,7 @@ func (s *Scanner) Scan(ctx context.Context, artifactsData []*artifacts.Artifact)
 	}()
 
 	if s.opts.Format == types.FormatCycloneDX {
-		rootComponent, err := clusterInfoToReportResources(artifactsData, s.cluster)
+		rootComponent, err := clusterInfoToReportResources(artifactsData)
 		if err != nil {
 			return report.Report{}, err
 		}
@@ -197,12 +197,14 @@ const (
 	oci                = "oci"
 	kubelet            = "k8s.io/kubelet"
 	pod                = "PodInfo"
+	clusterInfo        = "ClusterInfo"
 	nodeInfo           = "NodeInfo"
 	nodeCoreComponents = "node-core-components"
 )
 
-func clusterInfoToReportResources(allArtifact []*artifacts.Artifact, clusterName string) (*core.Component, error) {
+func clusterInfoToReportResources(allArtifact []*artifacts.Artifact) (*core.Component, error) {
 	coreComponents := make([]*core.Component, 0)
+	var cInfo *core.Component
 	for _, artifact := range allArtifact {
 		switch artifact.Kind {
 		case pod:
@@ -235,13 +237,20 @@ func clusterInfoToReportResources(allArtifact []*artifacts.Artifact, clusterName
 					Name:       name,
 					Version:    cDigest,
 					Properties: []core.Property{
-						{Name: cyc.PropertyPkgID, Value: fmt.Sprintf("%s:%s", name, version)},
-						{Name: cyc.PropertyPkgType, Value: oci},
+						{
+							Name:  cyc.PropertyPkgID,
+							Value: fmt.Sprintf("%s:%s", name, version),
+						},
+						{
+							Name:  cyc.PropertyPkgType,
+							Value: oci,
+						},
 					},
 				})
 			}
 			rootComponent := &core.Component{
 				Name:       comp.Name,
+				Version:    comp.Version,
 				Type:       cdx.ComponentTypeApplication,
 				Properties: toProperties(comp.Properties, k8sCoreComponentNamespace),
 				Components: imageComponents,
@@ -254,13 +263,26 @@ func clusterInfoToReportResources(allArtifact []*artifacts.Artifact, clusterName
 				return nil, err
 			}
 			coreComponents = append(coreComponents, nodeComponent(nf))
+		case clusterInfo:
+			var cf bom.ClusterInfo
+			err := ms.Decode(artifact.RawResource, &cf)
+			if err != nil {
+				return nil, err
+			}
+			cInfo = &core.Component{
+				Name:       cf.Name,
+				Version:    cf.Version,
+				Properties: toProperties(cf.Properties, k8sCoreComponentNamespace),
+			}
 		default:
 			return nil, fmt.Errorf("resource kind %s is not supported", artifact.Kind)
 		}
 	}
 	rootComponent := &core.Component{
-		Name:       clusterName,
+		Name:       cInfo.Name,
+		Version:    cInfo.Version,
 		Type:       cdx.ComponentTypePlatform,
+		Properties: cInfo.Properties,
 		Components: coreComponents,
 	}
 	return rootComponent, nil
@@ -323,39 +345,65 @@ func nodeComponent(nf bom.NodeInfo) *core.Component {
 				Name:    osName,
 				Version: osVersion,
 				Properties: []core.Property{
-					{Name: "Class", Value: types.ClassOSPkg},
-					{Name: "Type", Value: osName},
+					{
+						Name:  "Class",
+						Value: string(types.ClassOSPkg),
+					},
+					{
+						Name:  "Type",
+						Value: osName,
+					},
 				},
 			},
 			{
 				Type: cdx.ComponentTypeApplication,
 				Name: nodeCoreComponents,
 				Properties: []core.Property{
-					{Name: "Class", Value: types.ClassLangPkg},
-					{Name: "Type", Value: golang},
+					{
+						Name:  "Class",
+						Value: string(types.ClassLangPkg),
+					},
+					{
+						Name:  "Type",
+						Value: golang,
+					},
 				},
 				Components: []*core.Component{
 					{
-						Type:    cdx.ComponentTypeLibrary,
+						Type:    cdx.ComponentTypeApplication,
 						Name:    kubelet,
 						Version: kubeletVersion,
 						Properties: []core.Property{
-							{Name: k8sComponentType, Value: k8sComponentNode, Namespace: k8sCoreComponentNamespace},
-							{Name: k8sComponentName, Value: kubelet, Namespace: k8sCoreComponentNamespace},
-							{Name: cyc.PropertyPkgType, Value: golang},
+							{
+								Name:      k8sComponentType,
+								Value:     k8sComponentNode,
+								Namespace: k8sCoreComponentNamespace,
+							},
+							{
+								Name:      k8sComponentName,
+								Value:     kubelet,
+								Namespace: k8sCoreComponentNamespace,
+							},
 						},
 						PackageURL: &purl.PackageURL{
 							PackageURL: *packageurl.NewPackageURL(golang, "", kubelet, kubeletVersion, packageurl.Qualifiers{}, ""),
 						},
 					},
 					{
-						Type:    cdx.ComponentTypeLibrary,
+						Type:    cdx.ComponentTypeApplication,
 						Name:    runtimeName,
 						Version: runtimeVersion,
 						Properties: []core.Property{
-							{Name: k8sComponentType, Value: k8sComponentNode, Namespace: k8sCoreComponentNamespace},
-							{Name: k8sComponentName, Value: runtimeName, Namespace: k8sCoreComponentNamespace},
-							{Name: cyc.PropertyPkgType, Value: golang},
+							{
+								Name:      k8sComponentType,
+								Value:     k8sComponentNode,
+								Namespace: k8sCoreComponentNamespace,
+							},
+							{
+								Name:      k8sComponentName,
+								Value:     runtimeName,
+								Namespace: k8sCoreComponentNamespace,
+							},
 						},
 						PackageURL: &purl.PackageURL{
 							PackageURL: *packageurl.NewPackageURL(golang, "", runtimeName, runtimeVersion, packageurl.Qualifiers{}, ""),
