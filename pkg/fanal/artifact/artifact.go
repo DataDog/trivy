@@ -16,6 +16,7 @@ type Option struct {
 	DisabledHandlers  []types.HandlerType
 	SkipFiles         []string
 	SkipDirs          []string
+	OnlyDirs          []string
 	FilePatterns      []string
 	NoProgress        bool
 	Insecure          bool
@@ -59,6 +60,7 @@ func (o *Option) Sort() {
 	})
 	sort.Strings(o.SkipFiles)
 	sort.Strings(o.SkipDirs)
+	sort.Strings(o.OnlyDirs)
 	sort.Strings(o.FilePatterns)
 }
 

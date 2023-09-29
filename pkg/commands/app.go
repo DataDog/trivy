@@ -634,6 +634,7 @@ func NewConfigCommand(globalFlags *flag.GlobalFlagGroup) *cobra.Command {
 		SkipDirs:     &flag.SkipDirsFlag,
 		SkipFiles:    &flag.SkipFilesFlag,
 		FilePatterns: &flag.FilePatternsFlag,
+		OnlyDirs:     &flag.OnlyDirsFlag,
 	}
 
 	configFlags := &flag.Flags{

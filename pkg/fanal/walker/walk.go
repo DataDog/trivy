@@ -32,15 +32,23 @@ type WalkFunc func(filePath string, info os.FileInfo, opener analyzer.Opener) er
 type walker struct {
 	skipFiles []string
 	skipDirs  []string
+	onlyDirs  []string
 	slow      bool
 }
 
-func newWalker(skipFiles, skipDirs []string, slow bool) walker {
+func newWalker(skipFiles, skipDirs, onlyDirs []string, slow bool) walker {
 	var cleanSkipFiles, cleanSkipDirs []string
 	for _, skipFile := range skipFiles {
 		skipFile = filepath.ToSlash(filepath.Clean(skipFile))
 		skipFile = strings.TrimLeft(skipFile, "/")
 		cleanSkipFiles = append(cleanSkipFiles, skipFile)
+	}
+
+	var cleanOnlyDirs []string
+	for _, onlyDir := range onlyDirs {
+		onlyDir = filepath.ToSlash(filepath.Clean(onlyDir))
+		onlyDir = strings.TrimLeft(onlyDir, "/")
+		cleanOnlyDirs = append(cleanOnlyDirs, onlyDir)
 	}
 
 	for _, skipDir := range append(skipDirs, SystemDirs...) {
@@ -52,6 +60,7 @@ func newWalker(skipFiles, skipDirs []string, slow bool) walker {
 	return walker{
 		skipFiles: cleanSkipFiles,
 		skipDirs:  cleanSkipDirs,
+		onlyDirs:  cleanOnlyDirs,
 		slow:      slow,
 	}
 }
@@ -89,6 +98,16 @@ func (w *walker) shouldSkipDir(dir string) bool {
 			log.Logger.Debugf("Skipping directory: %s", dir)
 			return true
 		}
+	}
+
+	// If onlyDirs is set then scan only these ones
+	if dir != "." && len(w.onlyDirs) > 0 {
+		for _, onlyDir := range w.onlyDirs {
+			if strings.HasPrefix(dir, onlyDir) || strings.HasPrefix(onlyDir, dir) {
+				return false
+			}
+		}
+		return true
 	}
 
 	return false
