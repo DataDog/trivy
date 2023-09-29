@@ -12,7 +12,6 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/aquasecurity/trivy/pkg/mapfs"
 )
 
 func Test_dpkgAnalyzer_Analyze(t *testing.T) {
