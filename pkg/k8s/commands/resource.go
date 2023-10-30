@@ -24,7 +24,7 @@ func resourceRun(ctx context.Context, args []string, opts flag.Options, cluster 
 
 	var trivyk trivyk8s.TrivyK8S
 
-	trivyk = trivyk8s.New(cluster, log.Logger, trivyk8s.WithExcludeOwned(opts.ExcludeOwned))
+	trivyk = trivyk8s.New(cluster, log.Logger.ZapLogger(), trivyk8s.WithExcludeOwned(opts.ExcludeOwned))
 
 	if opts.AllNamespaces {
 		trivyk = trivyk.AllNamespaces()

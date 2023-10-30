@@ -40,7 +40,7 @@ type OpenVEX struct {
 }
 
 func newOpenVEX(vex openvex.VEX) VEX {
-	logger := log.Logger.With(zap.String("VEX format", "OpenVEX"))
+	logger := log.Logger.ZapLogger().With(zap.String("VEX format", "OpenVEX"))
 
 	return &OpenVEX{
 		vex:    vex,
@@ -93,7 +93,7 @@ func newCycloneDX(cdxSBOM *ftypes.CycloneDX, vex *cdx.BOM) *CycloneDX {
 	return &CycloneDX{
 		sbom:       cdxSBOM,
 		statements: stmts,
-		logger:     log.Logger.With(zap.String("VEX format", "CycloneDX")),
+		logger:     log.Logger.ZapLogger().With(zap.String("VEX format", "CycloneDX")),
 	}
 }
 

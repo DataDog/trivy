@@ -23,13 +23,13 @@ func clusterRun(ctx context.Context, opts flag.Options, cluster k8s.Cluster) err
 	var err error
 	switch opts.Format {
 	case types.FormatCycloneDX:
-		artifacts, err = trivyk8s.New(cluster, log.Logger).ListClusterBomInfo(ctx)
+		artifacts, err = trivyk8s.New(cluster, log.Logger.ZapLogger()).ListClusterBomInfo(ctx)
 		if err != nil {
 			return xerrors.Errorf("get k8s artifacts with node info error: %w", err)
 		}
 	case types.FormatJSON, types.FormatTable:
 		if opts.Scanners.AnyEnabled(types.MisconfigScanner) && slices.Contains(opts.Components, "infra") {
-			artifacts, err = trivyk8s.New(cluster, log.Logger, trivyk8s.WithExcludeOwned(opts.ExcludeOwned)).ListArtifactAndNodeInfo(ctx,
+			artifacts, err = trivyk8s.New(cluster, log.Logger.ZapLogger(), trivyk8s.WithExcludeOwned(opts.ExcludeOwned)).ListArtifactAndNodeInfo(ctx,
 				trivyk8s.WithScanJobNamespace(opts.NodeCollectorNamespace),
 				trivyk8s.WithIgnoreLabels(opts.ExcludeNodes),
 				trivyk8s.WithScanJobImageRef(opts.NodeCollectorImageRef),
@@ -38,7 +38,7 @@ func clusterRun(ctx context.Context, opts flag.Options, cluster k8s.Cluster) err
 				return xerrors.Errorf("get k8s artifacts with node info error: %w", err)
 			}
 		} else {
-			artifacts, err = trivyk8s.New(cluster, log.Logger).ListArtifacts(ctx)
+			artifacts, err = trivyk8s.New(cluster, log.Logger.ZapLogger()).ListArtifacts(ctx)
 			if err != nil {
 				return xerrors.Errorf("get k8s artifacts error: %w", err)
 			}
