@@ -8,42 +8,38 @@ import (
 	xlog "github.com/masahiro331/go-xfs-filesystem/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"golang.org/x/xerrors"
 
 	flog "github.com/aquasecurity/trivy/pkg/fanal/log"
 )
 
 var (
 	// Logger is the global variable for logging
-	Logger      *zap.SugaredLogger
+	Logger = flog.NewLazyLogger(func() (*zap.SugaredLogger, error) {
+		return newZapLogger(false, false)
+	})
 	debugOption bool
 )
-
-func init() {
-	// Set the default logger
-	Logger, _ = NewLogger(false, false) // nolint: errcheck
-}
 
 // InitLogger initialize the logger variable
 func InitLogger(debug, disable bool) (err error) {
 	debugOption = debug
-	Logger, err = NewLogger(debug, disable)
-	if err != nil {
-		return xerrors.Errorf("failed to initialize a logger: %w", err)
-	}
+
+	logger := flog.NewLazyLogger(func() (*zap.SugaredLogger, error) {
+		return newZapLogger(debug, disable)
+	})
 
 	// Set logger for fanal
-	flog.SetLogger(Logger)
+	flog.SetLogger(logger.ZapLogger())
 
 	// Set logger for go-xfs-filesystem
-	xlog.SetLogger(Logger)
+	xlog.SetLogger(logger.ZapLogger())
 
 	return nil
 
 }
 
-// NewLogger is the factory method to return the instance of logger
-func NewLogger(debug, disable bool) (*zap.SugaredLogger, error) {
+// newZapLogger is the factory method to return the instance of logger
+func newZapLogger(debug, disable bool) (*zap.SugaredLogger, error) {
 	// First, define our level-handling logic.
 	errorPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= zapcore.ErrorLevel

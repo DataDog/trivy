@@ -18,9 +18,9 @@ func namespaceRun(ctx context.Context, opts flag.Options, cluster k8s.Cluster) e
 	}
 	var trivyk trivyk8s.TrivyK8S
 	if opts.AllNamespaces {
-		trivyk = trivyk8s.New(cluster, log.Logger).AllNamespaces()
+		trivyk = trivyk8s.New(cluster, log.Logger.ZapLogger()).AllNamespaces()
 	} else {
-		trivyk = trivyk8s.New(cluster, log.Logger).Namespace(getNamespace(opts, cluster.GetCurrentNamespace()))
+		trivyk = trivyk8s.New(cluster, log.Logger.ZapLogger()).Namespace(getNamespace(opts, cluster.GetCurrentNamespace()))
 	}
 
 	artifacts, err := trivyk.ListArtifacts(ctx)
