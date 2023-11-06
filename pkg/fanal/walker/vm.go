@@ -60,6 +60,9 @@ func (w *VM) Walk(vreader *io.SectionReader, root string, fn WalkFunc) error {
 		return xerrors.Errorf("failed to new disk driver: %w", err)
 	}
 
+	passed := 0
+	var partitionError error
+
 	for {
 		partition, err := driver.Next()
 		if err != nil {
@@ -77,8 +80,17 @@ func (w *VM) Walk(vreader *io.SectionReader, root string, fn WalkFunc) error {
 		// Walk each partition
 		if err = w.diskWalk(root, partition); err != nil {
 			log.Logger.Warnf("Partition error: %s", err.Error())
+			partitionError = err
 		}
+
+		passed++
 	}
+
+	// Couldn't walk any partition.
+	if passed == 0 && partitionError != nil {
+		return xerrors.Errorf("Partition error: %w", partitionError)
+	}
+
 	return nil
 }
 
