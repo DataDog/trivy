@@ -81,16 +81,15 @@ func (w *walker) shouldSkipFile(filePath string) bool {
 	}
 
 	if len(w.onlyDirs) > 0 {
-		dir := filepath.ToSlash(filepath.Dir(filePath))
 		for _, onlyDir := range w.onlyDirs {
-			match, err := doublestar.Match(onlyDir.pattern, dir)
+			match, err := doublestar.Match(onlyDir.pattern, filePath)
 			if err != nil {
 				return false // return early if bad pattern
 			} else if match {
-				log.Logger.Debugf("Skipping file: %s", filePath)
 				return false
 			}
 		}
+		log.Logger.Debugf("Skipping file: %s", filePath)
 		return true
 	}
 
