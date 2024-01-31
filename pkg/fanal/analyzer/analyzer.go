@@ -354,6 +354,9 @@ func NewAnalyzerGroup(opt AnalyzerOptions) (AnalyzerGroup, error) {
 	}
 
 	for analyzerType, init := range postAnalyzers {
+		if slices.Contains(opt.DisabledAnalyzers, analyzerType) {
+			continue
+		}
 		a, err := init(opt)
 		if err != nil {
 			return AnalyzerGroup{}, xerrors.Errorf("post-analyzer init error: %w", err)
