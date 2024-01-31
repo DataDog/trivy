@@ -3,10 +3,7 @@ package secret
 import (
 	"fmt"
 
-	"github.com/samber/lo"
-
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	iacRules "github.com/aquasecurity/trivy/pkg/iac/rules"
 )
 
 var (
@@ -80,16 +77,6 @@ const (
 
 	aws = `aws_?`
 )
-
-// This function is exported for trivy-plugin-aqua purposes only
-func GetSecretRulesMetadata() []iacRules.Check {
-	return lo.Map(builtinRules, func(rule Rule, i int) iacRules.Check {
-		return iacRules.Check{
-			Name:        rule.ID,
-			Description: rule.Title,
-		}
-	})
-}
 
 var builtinRules = []Rule{
 	{

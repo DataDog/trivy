@@ -2,46 +2,22 @@ package misconf
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/samber/lo"
-	"golang.org/x/xerrors"
 
+	"github.com/aquasecurity/defsec/pkg/scan"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/iac/detection"
-	"github.com/aquasecurity/trivy/pkg/iac/scan"
-	"github.com/aquasecurity/trivy/pkg/iac/scanners"
-	"github.com/aquasecurity/trivy/pkg/iac/scanners/azure/arm"
-	cfscanner "github.com/aquasecurity/trivy/pkg/iac/scanners/cloudformation"
-	cfparser "github.com/aquasecurity/trivy/pkg/iac/scanners/cloudformation/parser"
-	dfscanner "github.com/aquasecurity/trivy/pkg/iac/scanners/dockerfile"
-	helm2 "github.com/aquasecurity/trivy/pkg/iac/scanners/helm"
-	k8sscanner "github.com/aquasecurity/trivy/pkg/iac/scanners/kubernetes"
-	"github.com/aquasecurity/trivy/pkg/iac/scanners/options"
-	"github.com/aquasecurity/trivy/pkg/iac/scanners/terraform"
-	tfpscanner "github.com/aquasecurity/trivy/pkg/iac/scanners/terraformplan"
-	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/mapfs"
 
 	_ "embed"
 )
 
-var enablediacTypes = map[detection.FileType]types.ConfigType{
-	detection.FileTypeAzureARM:       types.AzureARM,
-	detection.FileTypeCloudFormation: types.CloudFormation,
-	detection.FileTypeTerraform:      types.Terraform,
-	detection.FileTypeDockerfile:     types.Dockerfile,
-	detection.FileTypeKubernetes:     types.Kubernetes,
-	detection.FileTypeHelm:           types.Helm,
-	detection.FileTypeTerraformPlan:  types.TerraformPlan,
-}
+var enablediacTypes = map[detection.FileType]types.ConfigType{}
 
 type ScannerOption struct {
 	Debug                    bool
@@ -70,312 +46,46 @@ func (o *ScannerOption) Sort() {
 }
 
 type Scanner struct {
-	fileType       detection.FileType
-	scanner        scanners.FSScanner
-	hasFilePattern bool
 }
 
 func NewAzureARMScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeAzureARM, filePatterns, opt)
+	return nil, fmt.Errorf("not supported")
 }
 
 func NewCloudFormationScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeCloudFormation, filePatterns, opt)
+	return nil, fmt.Errorf("not supported")
 }
 
 func NewDockerfileScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeDockerfile, filePatterns, opt)
+	return nil, fmt.Errorf("not supported")
 }
 
 func NewHelmScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeHelm, filePatterns, opt)
+	return nil, fmt.Errorf("not supported")
 }
 
 func NewKubernetesScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeKubernetes, filePatterns, opt)
+	return nil, fmt.Errorf("not supported")
 }
 
 func NewTerraformScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeTerraform, filePatterns, opt)
+	return nil, fmt.Errorf("not supported")
 }
 
 func NewTerraformPlanScanner(filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	return newScanner(detection.FileTypeTerraformPlan, filePatterns, opt)
-}
-
-func newScanner(t detection.FileType, filePatterns []string, opt ScannerOption) (*Scanner, error) {
-	opts, err := scannerOptions(t, opt)
-	if err != nil {
-		return nil, err
-	}
-
-	var scanner scanners.FSScanner
-	switch t {
-	case detection.FileTypeAzureARM:
-		scanner = arm.New(opts...)
-	case detection.FileTypeCloudFormation:
-		scanner = cfscanner.New(opts...)
-	case detection.FileTypeDockerfile:
-		scanner = dfscanner.NewScanner(opts...)
-	case detection.FileTypeHelm:
-		scanner = helm2.New(opts...)
-	case detection.FileTypeKubernetes:
-		scanner = k8sscanner.NewScanner(opts...)
-	case detection.FileTypeTerraform:
-		scanner = terraform.New(opts...)
-	case detection.FileTypeTerraformPlan:
-		scanner = tfpscanner.New(opts...)
-	}
-
-	return &Scanner{
-		fileType:       t,
-		scanner:        scanner,
-		hasFilePattern: hasFilePattern(t, filePatterns),
-	}, nil
+	return nil, fmt.Errorf("not supported")
 }
 
 func (s *Scanner) Scan(ctx context.Context, fsys fs.FS) ([]types.Misconfiguration, error) {
-	newfs, err := s.filterFS(fsys)
-	if err != nil {
-		return nil, xerrors.Errorf("fs filter error: %w", err)
-	} else if newfs == nil {
-		// Skip scanning if no relevant files are found
-		return nil, nil
-	}
-
-	log.Logger.Debugf("Scanning %s files for misconfigurations...", s.scanner.Name())
-	results, err := s.scanner.ScanFS(ctx, newfs, ".")
-	if err != nil {
-		var invalidContentError *cfparser.InvalidContentError
-		if errors.As(err, &invalidContentError) {
-			log.Logger.Errorf("scan %q was broken with InvalidContentError: %v", s.scanner.Name(), err)
-			return nil, nil
-		}
-		return nil, xerrors.Errorf("scan config error: %w", err)
-	}
-
-	configType := enablediacTypes[s.fileType]
-	misconfs := ResultsToMisconf(configType, s.scanner.Name(), results)
-
-	// Sort misconfigurations
-	for _, misconf := range misconfs {
-		sort.Sort(misconf.Successes)
-		sort.Sort(misconf.Warnings)
-		sort.Sort(misconf.Failures)
-	}
-
-	return misconfs, nil
+	return nil, fmt.Errorf("not supported")
 }
 
 func (s *Scanner) filterFS(fsys fs.FS) (fs.FS, error) {
-	mfs, ok := fsys.(*mapfs.FS)
-	if !ok {
-		// Unable to filter this filesystem
-		return fsys, nil
-	}
-
-	var foundRelevantFile bool
-	filter := func(path string, d fs.DirEntry) (bool, error) {
-		file, err := fsys.Open(path)
-		if err != nil {
-			return false, err
-		}
-		rs, ok := file.(io.ReadSeeker)
-		if !ok {
-			return false, xerrors.Errorf("type assertion error: %w", err)
-		}
-		defer file.Close()
-
-		if !s.hasFilePattern && !detection.IsType(path, rs, s.fileType) {
-			return true, nil
-		}
-		foundRelevantFile = true
-		return false, nil
-	}
-	newfs, err := mfs.FilterFunc(filter)
-	if err != nil {
-		return nil, xerrors.Errorf("fs filter error: %w", err)
-	}
-	if !foundRelevantFile {
-		return nil, nil
-	}
-	return newfs, nil
-}
-
-func scannerOptions(t detection.FileType, opt ScannerOption) ([]options.ScannerOption, error) {
-	opts := []options.ScannerOption{
-		options.ScannerWithSkipRequiredCheck(true),
-		options.ScannerWithEmbeddedPolicies(!opt.DisableEmbeddedPolicies),
-		options.ScannerWithEmbeddedLibraries(!opt.DisableEmbeddedLibraries),
-	}
-
-	policyFS, policyPaths, err := CreatePolicyFS(opt.PolicyPaths)
-	if err != nil {
-		return nil, err
-	}
-	if policyFS != nil {
-		opts = append(opts, options.ScannerWithPolicyFilesystem(policyFS))
-	}
-
-	dataFS, dataPaths, err := CreateDataFS(opt.DataPaths, opt.K8sVersion)
-	if err != nil {
-		return nil, err
-	}
-	opts = append(opts,
-		options.ScannerWithDataDirs(dataPaths...),
-		options.ScannerWithDataFilesystem(dataFS),
-	)
-
-	if opt.Debug {
-		opts = append(opts, options.ScannerWithDebug(&log.PrefixedLogger{Name: "misconf"}))
-	}
-
-	if opt.Trace {
-		opts = append(opts, options.ScannerWithPerResultTracing(true))
-	}
-
-	if opt.RegoOnly {
-		opts = append(opts, options.ScannerWithRegoOnly(true))
-	}
-
-	if len(policyPaths) > 0 {
-		opts = append(opts, options.ScannerWithPolicyDirs(policyPaths...))
-	}
-
-	if len(opt.DataPaths) > 0 {
-		opts = append(opts, options.ScannerWithDataDirs(opt.DataPaths...))
-	}
-
-	if len(opt.Namespaces) > 0 {
-		opts = append(opts, options.ScannerWithPolicyNamespaces(opt.Namespaces...))
-	}
-
-	switch t {
-	case detection.FileTypeHelm:
-		return addHelmOpts(opts, opt), nil
-	case detection.FileTypeTerraform:
-		return addTFOpts(opts, opt)
-	case detection.FileTypeCloudFormation:
-		return addCFOpts(opts, opt)
-	default:
-		return opts, nil
-	}
-}
-
-func hasFilePattern(t detection.FileType, filePatterns []string) bool {
-	for _, pattern := range filePatterns {
-		if strings.HasPrefix(pattern, fmt.Sprintf("%s:", t)) {
-			return true
-		}
-	}
-	return false
-}
-
-func addTFOpts(opts []options.ScannerOption, scannerOption ScannerOption) ([]options.ScannerOption, error) {
-	if len(scannerOption.TerraformTFVars) > 0 {
-		configFS, err := createConfigFS(scannerOption.TerraformTFVars)
-		if err != nil {
-			return nil, xerrors.Errorf("failed to create Terraform config FS: %w", err)
-		}
-		opts = append(
-			opts,
-			terraform.ScannerWithTFVarsPaths(scannerOption.TerraformTFVars...),
-			terraform.ScannerWithConfigsFileSystem(configFS),
-		)
-	}
-
-	opts = append(opts,
-		terraform.ScannerWithAllDirectories(true),
-		terraform.ScannerWithSkipDownloaded(scannerOption.TfExcludeDownloaded),
-	)
-
-	return opts, nil
-}
-
-func addCFOpts(opts []options.ScannerOption, scannerOption ScannerOption) ([]options.ScannerOption, error) {
-	if len(scannerOption.CloudFormationParamVars) > 0 {
-		configFS, err := createConfigFS(scannerOption.CloudFormationParamVars)
-		if err != nil {
-			return nil, xerrors.Errorf("failed to create CloudFormation config FS: %w", err)
-		}
-		opts = append(
-			opts,
-			cfscanner.WithParameterFiles(scannerOption.CloudFormationParamVars...),
-			cfscanner.WithConfigsFS(configFS),
-		)
-	}
-	return opts, nil
-}
-
-func addHelmOpts(opts []options.ScannerOption, scannerOption ScannerOption) []options.ScannerOption {
-	if len(scannerOption.HelmValueFiles) > 0 {
-		opts = append(opts, helm2.ScannerWithValuesFile(scannerOption.HelmValueFiles...))
-	}
-
-	if len(scannerOption.HelmValues) > 0 {
-		opts = append(opts, helm2.ScannerWithValues(scannerOption.HelmValues...))
-	}
-
-	if len(scannerOption.HelmFileValues) > 0 {
-		opts = append(opts, helm2.ScannerWithFileValues(scannerOption.HelmFileValues...))
-	}
-
-	if len(scannerOption.HelmStringValues) > 0 {
-		opts = append(opts, helm2.ScannerWithStringValues(scannerOption.HelmStringValues...))
-	}
-
-	return opts
-}
-
-func createConfigFS(paths []string) (fs.FS, error) {
-	mfs := mapfs.New()
-	for _, path := range paths {
-		if err := mfs.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil && !errors.Is(err, fs.ErrExist) {
-			return nil, xerrors.Errorf("create dir error: %w", err)
-		}
-		if err := mfs.WriteFile(path, path); err != nil {
-			return nil, xerrors.Errorf("write file error: %w", err)
-		}
-	}
-	return mfs, nil
+	return fsys, fmt.Errorf("not supported")
 }
 
 func CreatePolicyFS(policyPaths []string) (fs.FS, []string, error) {
-	if len(policyPaths) == 0 {
-		return nil, nil, nil
-	}
-
-	mfs := mapfs.New()
-	for _, p := range policyPaths {
-		abs, err := filepath.Abs(p)
-		if err != nil {
-			return nil, nil, xerrors.Errorf("failed to derive absolute path from '%s': %w", p, err)
-		}
-		fi, err := os.Stat(abs)
-		if errors.Is(err, os.ErrNotExist) {
-			return nil, nil, xerrors.Errorf("policy file %q not found", abs)
-		} else if err != nil {
-			return nil, nil, xerrors.Errorf("file %q stat error: %w", abs, err)
-		}
-
-		if fi.IsDir() {
-			if err = mfs.CopyFilesUnder(abs); err != nil {
-				return nil, nil, xerrors.Errorf("mapfs file copy error: %w", err)
-			}
-		} else {
-			if err := mfs.MkdirAll(filepath.Dir(abs), os.ModePerm); err != nil && !errors.Is(err, fs.ErrExist) {
-				return nil, nil, xerrors.Errorf("mapfs mkdir error: %w", err)
-			}
-			if err := mfs.WriteFile(abs, abs); err != nil {
-				return nil, nil, xerrors.Errorf("mapfs write error: %w", err)
-			}
-		}
-	}
-
-	// policy paths are no longer needed as fs.FS contains only needed files now.
-	policyPaths = []string{"."}
-
-	return mfs, policyPaths, nil
+	return nil, nil, fmt.Errorf("not supported")
 }
 
 func CreateDataFS(dataPaths []string, opts ...string) (fs.FS, []string, error) {

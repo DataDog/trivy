@@ -5,7 +5,6 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/config"
-	"github.com/aquasecurity/trivy/pkg/iac/detection"
 	"github.com/aquasecurity/trivy/pkg/misconf"
 )
 
@@ -34,5 +33,5 @@ func newTerraformConfigAnalyzer(opts analyzer.AnalyzerOptions) (analyzer.PostAna
 
 // Required overrides config.Analyzer.Required() and checks if the given file is a Terraform file.
 func (*terraformConfigAnalyzer) Required(filePath string, _ os.FileInfo) bool {
-	return detection.IsTerraformFile(filePath)
+	return false
 }
