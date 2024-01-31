@@ -1,7 +1,5 @@
 package analyzer
 
-import "github.com/aquasecurity/trivy-iac/pkg/detection"
-
 type Type string
 
 const (
@@ -107,13 +105,13 @@ const (
 	// =================
 	// Structured Config
 	// =================
-	TypeAzureARM       Type = Type(detection.FileTypeAzureARM)
-	TypeCloudFormation Type = Type(detection.FileTypeCloudFormation)
-	TypeDockerfile     Type = Type(detection.FileTypeDockerfile)
-	TypeHelm           Type = Type(detection.FileTypeHelm)
-	TypeKubernetes     Type = Type(detection.FileTypeKubernetes)
-	TypeTerraform      Type = Type(detection.FileTypeTerraform)
-	TypeTerraformPlan  Type = Type(detection.FileTypeTerraformPlan)
+	TypeAzureARM       Type = Type(FileTypeAzureARM)
+	TypeCloudFormation Type = Type(FileTypeCloudFormation)
+	TypeDockerfile     Type = Type(FileTypeDockerfile)
+	TypeHelm           Type = Type(FileTypeHelm)
+	TypeKubernetes     Type = Type(FileTypeKubernetes)
+	TypeTerraform      Type = Type(FileTypeTerraform)
+	TypeTerraformPlan  Type = Type(FileTypeTerraformPlan)
 
 	// ========
 	// License
@@ -130,6 +128,22 @@ const (
 	// =======
 	TypeRedHatContentManifestType Type = "redhat-content-manifest"
 	TypeRedHatDockerfileType      Type = "redhat-dockerfile"
+)
+
+type FileType string
+
+const (
+	FileTypeCloudFormation FileType = "cloudformation"
+	FileTypeTerraform      FileType = "terraform"
+	FileTypeTerraformPlan  FileType = "terraformplan"
+	FileTypeDockerfile     FileType = "dockerfile"
+	FileTypeKubernetes     FileType = "kubernetes"
+	FileTypeRbac           FileType = "rbac"
+	FileTypeYAML           FileType = "yaml"
+	FileTypeTOML           FileType = "toml"
+	FileTypeJSON           FileType = "json"
+	FileTypeHelm           FileType = "helm"
+	FileTypeAzureARM       FileType = "azure-arm"
 )
 
 var (
