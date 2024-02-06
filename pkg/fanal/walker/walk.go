@@ -117,7 +117,12 @@ func (w *walker) shouldSkipDir(dir string) bool {
 
 	if dir != "" && dir != "." && len(w.onlyDirs) > 0 {
 		for _, onlyDir := range w.onlyDirs {
-			if onlyDir.base == "." || strings.HasPrefix(onlyDir.base+"/", dir+"/") || strings.HasPrefix(dir+"/", onlyDir.base+"/") {
+			if onlyDir.base == "." || strings.HasPrefix(onlyDir.base+"/", dir+"/") {
+				return false
+			}
+			if match, err := doublestar.Match(onlyDir.pattern, dir+"/"); err != nil {
+				return false // return early if bad pattern
+			} else if match {
 				return false
 			}
 		}
