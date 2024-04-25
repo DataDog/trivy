@@ -80,6 +80,10 @@ type WalkDirFunc func(path string, d fs.DirEntry, r io.Reader) error
 func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, fn WalkDirFunc) error {
 	return fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
+			if os.IsPermission(err) {
+				return nil
+			}
+
 			return err
 		} else if !d.Type().IsRegular() || !required(path, d) {
 			return nil
@@ -87,6 +91,10 @@ func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, fn WalkDirFu
 
 		f, err := fsys.Open(path)
 		if err != nil {
+			if os.IsPermission(err) {
+				return nil
+			}
+
 			return xerrors.Errorf("file open error: %w", err)
 		}
 		defer f.Close()
