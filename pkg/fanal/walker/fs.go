@@ -1,6 +1,7 @@
 package walker
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -25,7 +26,7 @@ func NewFS(skipFiles, skipDirs, onlyDirs []string, parallel int, errCallback Err
 	if errCallback == nil {
 		errCallback = func(pathname string, err error) error {
 			// ignore permission errors
-			if os.IsPermission(err) {
+			if errors.Is(err, fs.ErrPermission) {
 				return nil
 			}
 			// halt traversal on any other error
