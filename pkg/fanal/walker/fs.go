@@ -111,7 +111,7 @@ func (w FS) walkSlow(fsys fs.FS, root string, walkFn fastWalkFunc) error {
 		}
 		info, err := d.Info()
 		if err != nil {
-			return xerrors.Errorf("file info error: %w", err)
+			return w.errCallback(path, xerrors.Errorf("file info error: %w", err))
 		}
 		return walkFn(path, info)
 		//return walkFn(string(filepath.Separator)+path, info)
