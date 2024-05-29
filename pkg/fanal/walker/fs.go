@@ -74,14 +74,16 @@ func (w FS) Walk(fsys fs.FS, root string, fn WalkFunc) error {
 		}
 
 		if err = fn(relPath, fi, w.fileOpener(fsys, pathname)); err != nil {
-			return xerrors.Errorf("failed to analyze file: %w", err)
+			if !errors.Is(err, fs.ErrNotExist) {
+				return xerrors.Errorf("failed to analyze file '%s': %w", pathname, err)
+			}
 		}
 		return nil
 	}
 
 	if w.parallel <= 1 {
 		// In series: fast, with higher CPU/memory
-		return w.walkSlow(fsys, root, walkFn)
+		return w.walkSlow(root, walkFn)
 	}
 
 	// In parallel: slow, with lower CPU/memory
@@ -103,9 +105,19 @@ func (w FS) walkFast(root string, walkFn fastWalkFunc) error {
 	return nil
 }
 
-func (w FS) walkSlow(fsys fs.FS, root string, walkFn fastWalkFunc) error {
+func (w FS) walkSlow(root string, walkFn fastWalkFunc) (err error) {
 	log.Logger.Debugf("Walk the file tree rooted at '%s' in series", root)
-	err := fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
+
+	relPath := "."
+	dirFS := root
+	if filepath.IsAbs(root) {
+		dirFS = "/"
+		if relPath, err = filepath.Rel("/", root); err != nil {
+			return xerrors.Errorf("failed to make %s relative to '/': %w", root, err)
+		}
+	}
+
+	err = fs.WalkDir(os.DirFS(dirFS), relPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return w.errCallback(path, err)
 		}
