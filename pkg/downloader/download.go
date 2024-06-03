@@ -1,11 +1,15 @@
 package downloader
 
 import (
+	"compress/bzip2"
+	"compress/gzip"
 	"context"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
 
-	getter "github.com/hashicorp/go-getter"
-	"golang.org/x/exp/maps"
 	"golang.org/x/xerrors"
 )
 
@@ -30,31 +34,46 @@ func DownloadToTempDir(ctx context.Context, url string) (string, error) {
 
 // Download downloads the configured source to the destination.
 func Download(ctx context.Context, src, dst, pwd string) error {
-	// go-getter doesn't allow the dst directory already exists if the src is directory.
-	_ = os.RemoveAll(dst)
+	var rc io.ReadCloser
 
-	var opts []getter.ClientOption
+	u, err := url.ParseRequestURI(src)
+	if err != nil {
+		return xerrors.Errorf("failed to parse url: %w", err)
+	}
+	if u.Scheme != "" {
+		resp, err := http.Get(src)
+		if err != nil {
+			return xerrors.Errorf("failed to get: %w", err)
+		}
+		rc = resp.Body
+	} else {
+		f, err := os.Open(src)
+		if err != nil {
+			return xerrors.Errorf("failed to open: %w", err)
+		}
+		rc = f
+	}
+	defer rc.Close()
 
-	// Clone the global map so that it will not be accessed concurrently.
-	getters := maps.Clone(getter.Getters)
-
-	// Overwrite the file getter so that a file will be copied
-	getters["file"] = &getter.FileGetter{Copy: true}
-
-	// Build the client
-	client := &getter.Client{
-		Ctx:     ctx,
-		Src:     src,
-		Dst:     dst,
-		Pwd:     pwd,
-		Getters: getters,
-		Mode:    getter.ClientModeAny,
-		Options: opts,
+	r, err := uncompress(rc, src)
+	if err != nil {
+		return xerrors.Errorf("failed to uncompress: %w", err)
 	}
 
-	if err := client.Get(); err != nil {
-		return xerrors.Errorf("failed to download: %w", err)
+	err = Untar(r, dst)
+	if err != nil {
+		return xerrors.Errorf("failed to untar: %w", err)
 	}
 
 	return nil
+}
+
+func uncompress(r io.Reader, name string) (io.Reader, error) {
+	switch filepath.Ext(name) {
+	case ".bz2":
+		return bzip2.NewReader(r), nil
+	case ".gz":
+		return gzip.NewReader(r)
+	}
+	return r, nil
 }
