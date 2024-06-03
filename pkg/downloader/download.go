@@ -2,19 +2,19 @@ package downloader
 
 import (
 	"cmp"
+	"compress/bzip2"
+	"compress/gzip"
 	"context"
+	"crypto/tls"
 	"errors"
-	"maps"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/go-github/v62/github"
-	"github.com/hashicorp/go-getter"
-	"github.com/samber/lo"
 	"golang.org/x/xerrors"
 
 	xhttp "github.com/aquasecurity/trivy/pkg/x/http"
@@ -24,10 +24,9 @@ import (
 var ErrSkipDownload = errors.New("skip download")
 
 type Options struct {
-	Insecure   bool
-	Auth       Auth
-	ETag       string
-	ClientMode getter.ClientMode
+	Insecure bool
+	Auth     Auth
+	ETag     string
 }
 
 type Auth struct {
@@ -56,69 +55,47 @@ func DownloadToTempDir(ctx context.Context, src string, opts Options) (string, e
 }
 
 // Download downloads the configured source to the destination.
-func Download(ctx context.Context, src, dst, pwd string, opts Options) (_ string, err error) {
-	dst = filepath.Clean(dst)
+func Download(ctx context.Context, src, dst, pwd string, opts Options) (string, error) {
+	var rc io.ReadCloser
 
-	// go-getter won't create dst if it already exists, so we always rename it aside.
-	// We restore it only on a 304 (ErrSkipDownload).
-	// On any other outcome the backup is dropped,
-	// so a genuine failure never resurrects stale files.
-	cleanup := func(bool) {}
-	if opts.ETag != "" {
-		if cleanup, err = backupDst(dst); err != nil {
-			return "", xerrors.Errorf("failed to back up dst: %w", err)
+	u, err := url.ParseRequestURI(src)
+	if err != nil {
+		return "", xerrors.Errorf("failed to parse url: %w", err)
+	}
+	if u.Scheme != "" {
+		insecure := false
+		if opts.Insecure {
+			insecure = true
 		}
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
+		}
+		client := &http.Client{Transport: tr}
+		resp, err := client.Get(src)
+		if err != nil {
+			return "", xerrors.Errorf("failed to get: %w", err)
+		}
+		rc = resp.Body
 	} else {
-		_ = os.RemoveAll(dst)
+		f, err := os.Open(src)
+		if err != nil {
+			return "", xerrors.Errorf("failed to open: %w", err)
+		}
+		rc = f
 	}
-	// err is a named result, so every return below sets it before this runs.
-	defer func() {
-		cleanup(errors.Is(err, ErrSkipDownload))
-	}()
+	defer rc.Close()
 
-	var clientOpts []getter.ClientOption
-	if opts.Insecure {
-		clientOpts = append(clientOpts, getter.WithInsecure())
-	}
-
-	// Clone the global map so that it will not be accessed concurrently.
-	getters := maps.Clone(getter.Getters)
-
-	// Overwrite the file getter so that a file will be copied
-	getters["file"] = &getter.FileGetter{Copy: true}
-
-	// Since "httpGetter" is a global pointer and the state is shared,
-	// once it is executed without "WithInsecure()",
-	// it cannot enable WithInsecure() afterwards because its state is preserved.
-	// Therefore, we need to create a new "HttpGetter" instance every time.
-	// cf. https://github.com/hashicorp/go-getter/blob/5a63fd9c0d5b8da8a6805e8c283f46f0dacb30b3/get.go#L63-L65
-	transport := NewCustomTransport(opts)
-	httpGetter := &getter.HttpGetter{
-		Netrc: true,
-		Client: &http.Client{
-			Transport: transport,
-			Timeout:   time.Minute * 5,
-		},
-	}
-	getters["http"] = httpGetter
-	getters["https"] = httpGetter
-
-	// Build the client
-	client := &getter.Client{
-		Ctx:     ctx,
-		Src:     src,
-		Dst:     dst,
-		Pwd:     pwd,
-		Getters: getters,
-		Mode:    lo.Ternary(opts.ClientMode == 0, getter.ClientModeAny, opts.ClientMode),
-		Options: clientOpts,
+	r, err := uncompress(rc, src)
+	if err != nil {
+		return "", xerrors.Errorf("failed to uncompress: %w", err)
 	}
 
-	if err = client.Get(); err != nil {
-		return "", xerrors.Errorf("failed to download %s: %w", src, err)
+	err = Untar(r, dst)
+	if err != nil {
+		return "", xerrors.Errorf("failed to untar: %w", err)
 	}
 
-	return transport.newETag, nil
+	return "", nil
 }
 
 type CustomTransport struct {
@@ -208,4 +185,20 @@ func newGitHubClient(token string) *github.Client {
 		client = client.WithAuthToken(token)
 	}
 	return client
+}
+
+func httpTransport(insecure bool) *http.Transport {
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
+	return tr
+}
+
+func uncompress(r io.Reader, name string) (io.Reader, error) {
+	switch filepath.Ext(name) {
+	case ".bz2":
+		return bzip2.NewReader(r), nil
+	case ".gz":
+		return gzip.NewReader(r)
+	}
+	return r, nil
 }
