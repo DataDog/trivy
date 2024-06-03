@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/hashicorp/go-getter"
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
 
@@ -169,7 +168,6 @@ func (r *Repository) downloadManifest(ctx context.Context, opts Options) error {
 			Password: r.Password,
 			Token:    r.Token,
 		},
-		ClientMode: getter.ClientModeFile,
 	})
 	if err != nil {
 		_ = os.RemoveAll(r.dir)
