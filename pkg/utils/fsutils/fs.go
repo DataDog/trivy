@@ -105,3 +105,9 @@ func RequiredExt(exts ...string) WalkDirRequiredFunc {
 		return slices.Contains(exts, filepath.Ext(filePath))
 	}
 }
+
+func RequiredAll() WalkDirRequiredFunc {
+	return func(_ string, _ fs.DirEntry) bool {
+		return true
+	}
+}
