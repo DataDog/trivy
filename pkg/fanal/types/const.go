@@ -140,3 +140,10 @@ const (
 
 	MixLock = "mix.lock"
 )
+
+// Detectable executable types
+const (
+	PythonExecutable LangType = "python"
+	NodeJsExecutable LangType = "nodejs"
+	PhpExecutable    LangType = "php"
+)
