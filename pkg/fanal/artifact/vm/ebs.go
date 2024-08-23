@@ -9,7 +9,6 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/cache"
-	"github.com/aquasecurity/trivy/pkg/cloud/aws/config"
 	"github.com/aquasecurity/trivy/pkg/fanal/artifact"
 	"github.com/aquasecurity/trivy/pkg/log"
 )
@@ -27,17 +26,7 @@ type EBS struct {
 }
 
 func newEBS(snapshotID string, vm Storage, region, endpoint string) (*EBS, error) {
-	ebs, err := ebsfile.New(context.TODO(), config.MakeAWSOptions(region, endpoint)...)
-	if err != nil {
-		return nil, xerrors.Errorf("new ebsfile error: %w", err)
-	}
-
-	return &EBS{
-		Storage:    vm,
-		logger:     log.WithPrefix("ebs"),
-		snapshotID: snapshotID,
-		ebs:        ebs,
-	}, nil
+	return nil, xerrors.New("pkg/cloud not implemented")
 }
 
 func (a *EBS) Inspect(ctx context.Context) (artifact.Reference, error) {
