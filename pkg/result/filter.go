@@ -3,12 +3,9 @@ package result
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"slices"
 	"sort"
 
-	"github.com/open-policy-agent/opa/rego"
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
 
@@ -216,110 +213,7 @@ func summarize(status types.MisconfStatus, summary *types.MisconfSummary) {
 }
 
 func applyPolicy(ctx context.Context, result *types.Result, policyFile string) error {
-	policy, err := os.ReadFile(policyFile)
-	if err != nil {
-		return xerrors.Errorf("unable to read the policy file: %w", err)
-	}
-
-	query, err := rego.New(
-		rego.Query("data.trivy.ignore"),
-		rego.Module("lib.rego", module),
-		rego.Module("trivy.rego", string(policy)),
-	).PrepareForEval(ctx)
-	if err != nil {
-		return xerrors.Errorf("unable to prepare for eval: %w", err)
-	}
-
-	policyFile = filepath.ToSlash(filepath.Clean(policyFile))
-
-	// Vulnerabilities
-	var filteredVulns []types.DetectedVulnerability
-	for _, vuln := range result.Vulnerabilities {
-		ignored, err := evaluate(ctx, query, vuln)
-		if err != nil {
-			return err
-		}
-		if ignored {
-			result.ModifiedFindings = append(result.ModifiedFindings,
-				types.NewModifiedFinding(vuln, types.FindingStatusIgnored, "Filtered by Rego", policyFile))
-			continue
-		}
-		filteredVulns = append(filteredVulns, vuln)
-	}
-	result.Vulnerabilities = filteredVulns
-
-	// Misconfigurations
-	var filteredMisconfs []types.DetectedMisconfiguration
-	for _, misconf := range result.Misconfigurations {
-		ignored, err := evaluate(ctx, query, misconf)
-		if err != nil {
-			return err
-		}
-		if ignored {
-			result.MisconfSummary.Exceptions++
-			switch misconf.Status {
-			case types.MisconfStatusFailure:
-				result.MisconfSummary.Failures--
-			case types.MisconfStatusPassed:
-				result.MisconfSummary.Successes--
-			}
-			result.ModifiedFindings = append(result.ModifiedFindings,
-				types.NewModifiedFinding(misconf, types.FindingStatusIgnored, "Filtered by Rego", policyFile))
-			continue
-		}
-		filteredMisconfs = append(filteredMisconfs, misconf)
-	}
-	result.Misconfigurations = filteredMisconfs
-
-	// Secrets
-	var filteredSecrets []types.DetectedSecret
-	for _, scrt := range result.Secrets {
-		ignored, err := evaluate(ctx, query, scrt)
-		if err != nil {
-			return err
-		}
-		if ignored {
-			result.ModifiedFindings = append(result.ModifiedFindings,
-				types.NewModifiedFinding(scrt, types.FindingStatusIgnored, "Filtered by Rego", policyFile))
-			continue
-		}
-		filteredSecrets = append(filteredSecrets, scrt)
-	}
-	result.Secrets = filteredSecrets
-
-	// Licenses
-	var filteredLicenses []types.DetectedLicense
-	for _, lic := range result.Licenses {
-		ignored, err := evaluate(ctx, query, lic)
-		if err != nil {
-			return err
-		}
-		if ignored {
-			result.ModifiedFindings = append(result.ModifiedFindings,
-				types.NewModifiedFinding(lic, types.FindingStatusIgnored, "Filtered by Rego", policyFile))
-			continue
-		}
-		filteredLicenses = append(filteredLicenses, lic)
-	}
-	result.Licenses = filteredLicenses
-
-	return nil
-}
-
-func evaluate(ctx context.Context, query rego.PreparedEvalQuery, input any) (bool, error) {
-	results, err := query.Eval(ctx, rego.EvalInput(input))
-	if err != nil {
-		return false, xerrors.Errorf("unable to evaluate the policy: %w", err)
-	} else if len(results) == 0 {
-		// Handle undefined result.
-		return false, nil
-	}
-	ignore, ok := results[0].Expressions[0].Value.(bool)
-	if !ok {
-		// Handle unexpected result type.
-		return false, xerrors.New("the policy must return boolean")
-	}
-	return ignore, nil
+	return xerrors.New("rego not implemented")
 }
 
 func shouldOverwrite(oldVuln, newVuln types.DetectedVulnerability) bool {
