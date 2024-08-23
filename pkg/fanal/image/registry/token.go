@@ -5,9 +5,6 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/authn"
 
-	"github.com/aquasecurity/trivy/pkg/fanal/image/registry/azure"
-	"github.com/aquasecurity/trivy/pkg/fanal/image/registry/ecr"
-	"github.com/aquasecurity/trivy/pkg/fanal/image/registry/google"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 )
@@ -15,12 +12,6 @@ import (
 var (
 	registries []Registry
 )
-
-func init() {
-	RegisterRegistry(&google.Registry{})
-	RegisterRegistry(&ecr.ECR{})
-	RegisterRegistry(&azure.Registry{})
-}
 
 type Registry interface {
 	CheckOptions(domain string, option types.RegistryOptions) error
