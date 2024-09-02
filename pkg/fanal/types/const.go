@@ -194,3 +194,11 @@ const (
 	JuliaProject  = "Project.toml"
 	JuliaManifest = "Manifest.toml"
 )
+
+// Detectable executable types
+const (
+	PythonExecutable LangType = "python"
+	NodeJsExecutable LangType = "nodejs"
+	PhpExecutable    LangType = "php"
+	JavaExecutable   LangType = "java"
+)
