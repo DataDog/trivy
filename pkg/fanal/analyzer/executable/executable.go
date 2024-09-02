@@ -5,12 +5,9 @@ import (
 	"os"
 	"regexp"
 
-	"golang.org/x/xerrors"
-
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/executable/nodejs"
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/executable/python"
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/executable/php"
-	"github.com/aquasecurity/trivy/pkg/digest"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
@@ -78,10 +75,6 @@ func (a executableAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisIn
 		return nil, nil
 	}
 
-	dig, err := digest.CalcSHA256(input.Content)
-	if err != nil {
-		return nil, xerrors.Errorf("sha256 error: %w", err)
-	}
 	isDetectableLib, binaryType, err := isDetectableLibraryExecutable(input.Info)
 	if isDetectableLib && binaryType != "" && err == nil {
 		var res *analyzer.AnalysisResult = nil
@@ -97,16 +90,11 @@ func (a executableAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisIn
 			return nil, err
 		}
 		if res != nil {
-			res.Digests = map[string]string{input.FilePath: dig.String()}
 			return res, nil
 		}
 	}
 
-	return &analyzer.AnalysisResult{
-		Digests: map[string]string{
-			input.FilePath: dig.String(),
-		},
-	}, nil
+	return nil, nil
 }
 
 func (a executableAnalyzer) Required(_ string, fileInfo os.FileInfo) bool {
