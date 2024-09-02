@@ -452,12 +452,20 @@ func disabledAnalyzers(opts flag.Options) []analyzer.Type {
 		analyzers = append(analyzers, analyzer.TypeHistoryDockerfile)
 	}
 
-	// Skip executable file analysis if Rekor isn't a specified SBOM source.
-	if !slices.Contains(opts.SBOMSources, types.SBOMSourceRekor) {
-		analyzers = append(analyzers, analyzer.TypeExecutable)
-	}
-
 	return analyzers
+}
+
+func disabledHandlers(opts flag.Options) []ftypes.HandlerType {
+	var handlers []ftypes.HandlerType
+	// Disable the post handler for filtering system file when detection priority is comprehensive.
+	if opts.DetectionPriority == ftypes.PriorityComprehensive {
+		handlers = append(handlers, ftypes.SystemFileFilteringPostHandler)
+	}
+	// Skip unpackaged executable file analysis with Rekor if Rekor isn't a specificed SBOM source.
+	if !slices.Contains(opts.SBOMSources, types.SBOMSourceRekor) {
+		handlers = append(handlers, ftypes.UnpackagedPostHandler)
+	}
+	return handlers
 }
 
 func filterMisconfigAnalyzers(included, all []analyzer.Type) ([]analyzer.Type, error) {
@@ -537,10 +545,6 @@ func (r *runner) initScannerConfig(opts flag.Options) (ScannerConfig, types.Scan
 		fileChecksum = true
 	}
 
-	// Disable the post handler for filtering system file when detection priority is comprehensive.
-	disabledHandlers := lo.Ternary(opts.DetectionPriority == ftypes.PriorityComprehensive,
-		[]ftypes.HandlerType{ftypes.SystemFileFilteringPostHandler}, nil)
-
 	return ScannerConfig{
 		Target:             target,
 		CacheOptions:       opts.CacheOpts(),
@@ -548,7 +552,7 @@ func (r *runner) initScannerConfig(opts flag.Options) (ScannerConfig, types.Scan
 		ServerOption:       opts.ClientScannerOpts(),
 		ArtifactOption: artifact.Option{
 			DisabledAnalyzers: disabledAnalyzers(opts),
-			DisabledHandlers:  disabledHandlers,
+			DisabledHandlers:  disabledHandlers(opts),
 			FilePatterns:      opts.FilePatterns,
 			Parallel:          opts.Parallel,
 			Offline:           opts.OfflineScan,
