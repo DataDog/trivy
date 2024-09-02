@@ -113,7 +113,10 @@ require (
 	modernc.org/sqlite v1.40.1
 )
 
-require github.com/invopop/jsonschema v0.13.0
+require (
+	github.com/invopop/jsonschema v0.13.0
+	rsc.io/binaryregexp v0.2.0
+)
 
 require (
 	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.6-20250718181942-e35f9b667443.1 // indirect

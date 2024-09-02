@@ -496,6 +496,8 @@ func purlType(t ftypes.TargetType) string {
 		return packageurl.TypeOCI
 	case ftypes.Julia:
 		return packageurl.TypeJulia
+	case ftypes.PythonExecutable, ftypes.PhpExecutable, ftypes.NodeJsExecutable, ftypes.JavaExecutable:
+		return packageurl.TypeGeneric
 	}
 	return string(t)
 }
