@@ -3,11 +3,7 @@ package flag
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
-
-	"github.com/samber/lo"
-	corev1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -114,7 +110,7 @@ type K8sFlagGroup struct {
 type K8sOptions struct {
 	KubeConfig             string
 	K8sVersion             string
-	Tolerations            []corev1.Toleration
+	Tolerations            []string
 	NodeCollectorImageRef  string
 	NodeCollectorNamespace string
 	ExcludeOwned           bool
@@ -133,7 +129,6 @@ func NewK8sFlagGroup() *K8sFlagGroup {
 	return &K8sFlagGroup{
 		KubeConfig:             KubeConfigFlag.Clone(),
 		K8sVersion:             K8sVersionFlag.Clone(),
-		Tolerations:            TolerationsFlag.Clone(),
 		DisableNodeCollector:   DisableNodeCollector.Clone(),
 		NodeCollectorNamespace: NodeCollectorNamespace.Clone(),
 		ExcludeOwned:           ExcludeOwned.Clone(),
@@ -158,7 +153,6 @@ func (f *K8sFlagGroup) Flags() []Flagger {
 		f.KubeConfig,
 		f.K8sVersion,
 		f.DisableNodeCollector,
-		f.Tolerations,
 		f.NodeCollectorNamespace,
 		f.ExcludeOwned,
 		f.ExcludeNodes,
@@ -175,11 +169,6 @@ func (f *K8sFlagGroup) Flags() []Flagger {
 
 func (f *K8sFlagGroup) ToOptions() (K8sOptions, error) {
 	if err := parseFlags(f); err != nil {
-		return K8sOptions{}, err
-	}
-
-	tolerations, err := optionToTolerations(f.Tolerations.Value())
-	if err != nil {
 		return K8sOptions{}, err
 	}
 
@@ -202,7 +191,6 @@ func (f *K8sFlagGroup) ToOptions() (K8sOptions, error) {
 	return K8sOptions{
 		KubeConfig:             f.KubeConfig.Value(),
 		K8sVersion:             f.K8sVersion.Value(),
-		Tolerations:            tolerations,
 		DisableNodeCollector:   f.DisableNodeCollector.Value(),
 		NodeCollectorNamespace: f.NodeCollectorNamespace.Value(),
 		ExcludeOwned:           f.ExcludeOwned.Value(),
@@ -216,41 +204,4 @@ func (f *K8sFlagGroup) ToOptions() (K8sOptions, error) {
 		IncludeNamespaces:      f.IncludeNamespaces.Value(),
 		Burst:                  f.Burst.Value(),
 	}, nil
-}
-
-func optionToTolerations(tolerationsOptions []string) ([]corev1.Toleration, error) {
-	var tolerations []corev1.Toleration
-	for _, toleration := range tolerationsOptions {
-		tolerationParts := strings.Split(toleration, ":")
-		if len(tolerationParts) < 2 {
-			return []corev1.Toleration{}, errors.New("toleration must include key and effect")
-		}
-		if corev1.TaintEffect(tolerationParts[1]) != corev1.TaintEffectNoSchedule &&
-			corev1.TaintEffect(tolerationParts[1]) != corev1.TaintEffectPreferNoSchedule &&
-			corev1.TaintEffect(tolerationParts[1]) != corev1.TaintEffectNoExecute {
-			return []corev1.Toleration{}, errors.New("toleration effect must be a valid value")
-		}
-		keyValue := strings.Split(tolerationParts[0], "=")
-		operator := corev1.TolerationOpEqual
-		if keyValue[1] == "" {
-			operator = corev1.TolerationOpExists
-		}
-		toleration := corev1.Toleration{
-			Key:      keyValue[0],
-			Value:    keyValue[1],
-			Operator: operator,
-			Effect:   corev1.TaintEffect(tolerationParts[1]),
-		}
-		var tolerationSec int
-		var err error
-		if len(tolerationParts) == 3 {
-			tolerationSec, err = strconv.Atoi(tolerationParts[2])
-			if err != nil {
-				return nil, errors.New("TolerationSeconds must must be a number")
-			}
-			toleration.TolerationSeconds = lo.ToPtr(int64(tolerationSec))
-		}
-		tolerations = append(tolerations, toleration)
-	}
-	return tolerations, nil
 }
