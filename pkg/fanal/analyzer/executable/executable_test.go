@@ -21,11 +21,7 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 		{
 			name:     "binary",
 			filePath: "testdata/binary",
-			want: &analyzer.AnalysisResult{
-				Digests: map[string]string{
-					"testdata/binary": "sha256:9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a",
-				},
-			},
+			want:     nil,
 		},
 		{
 			name:     "text",
@@ -36,9 +32,6 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 			name:     "Python binary",
 			filePath: "testdata/python2.7",
 			want: &analyzer.AnalysisResult{
-				Digests: map[string]string{
-					"testdata/python2.7": "sha256:c43714431f84c27aa30b4b2368d6570fcafdced12e2e9aa0efb10aeb5cbe5a6b",
-				},
 				Applications: []types.Application{
 					{
 						Type:     types.PythonExecutable,
@@ -58,9 +51,6 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 			name:     "Php Binary",
 			filePath: "testdata/php",
 			want: &analyzer.AnalysisResult{
-				Digests: map[string]string{
-					"testdata/php": "sha256:38afd180eaa357b320cffa30293052b7c732d2e4f8fa8cef9250ef00eef6491c",
-				},
 				Applications: []types.Application{
 					{
 						Type:     types.PhpExecutable,
@@ -80,9 +70,6 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 			name:     "NodeJS Binary",
 			filePath: "testdata/node",
 			want: &analyzer.AnalysisResult{
-				Digests: map[string]string{
-					"testdata/node": "sha256:a96e9711ed4fc86ede60e8992dac02e32edfb41949c8edc36d09318a26ac8c10",
-				},
 				Applications: []types.Application{
 					{
 						Type:     types.NodeJsExecutable,
@@ -102,9 +89,6 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 			name:     "Java Binary",
 			filePath: "testdata/java",
 			want: &analyzer.AnalysisResult{
-				Digests: map[string]string{
-					"testdata/java": "sha256:7f1933e84f8807520f5a9833d683d5603381f05686a477f6d8f6bdcc10bf694b",
-				},
 				Applications: []types.Application{
 					{
 						Type:     types.JavaExecutable,
