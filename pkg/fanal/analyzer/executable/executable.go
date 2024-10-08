@@ -2,14 +2,17 @@ package executable
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 
 	"golang.org/x/xerrors"
 
-	"github.com/aquasecurity/trivy/pkg/dependency/parser/executable/nodejs"
-	"github.com/aquasecurity/trivy/pkg/dependency/parser/executable/php"
-	"github.com/aquasecurity/trivy/pkg/dependency/parser/executable/python"
+	javaparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/java"
+	nodejsparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/nodejs"
+	phpparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/php"
+	pythonparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/python"
 	"github.com/aquasecurity/trivy/pkg/digest"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
@@ -41,6 +44,10 @@ func isDetectableLibraryExecutable(fileInfo os.FileInfo) (bool, types.TargetType
 	if isPhpExecutable {
 		return true, types.PhpExecutable, nil
 	}
+	isJavaExecutable := isDetectableJavaExecutable(fileInfo)
+	if isJavaExecutable {
+		return true, types.JavaExecutable, nil
+	}
 	return false, types.TargetType(""), nil
 }
 
@@ -71,6 +78,11 @@ func isDetectablePhpExecutable(fileInfo os.FileInfo) bool {
 	return (isPHPExecutable != nil || isPHPLib != nil || isPHPFpm != nil || isPHPCgi != nil)
 }
 
+func isDetectableJavaExecutable(fileInfo os.FileInfo) bool {
+	fmt.Println(fileInfo.Name())
+	return filepath.Base(fileInfo.Name()) == "java"
+}
+
 func (a executableAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
 	// Skip non-binaries
 	isBinary, err := utils.IsBinary(input.Content, input.Info.Size())
@@ -92,6 +104,8 @@ func (a executableAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisIn
 			res, err = language.Analyze(types.NodeJsExecutable, input.FilePath, input.Content, nodejsparser.NewParser())
 		case types.PhpExecutable:
 			res, err = language.Analyze(types.PhpExecutable, input.FilePath, input.Content, phpparser.NewParser())
+		case types.JavaExecutable:
+			res, err = language.Analyze(types.JavaExecutable, input.FilePath, input.Content, javaparser.NewParser())
 		}
 		if err != nil {
 			return nil, err

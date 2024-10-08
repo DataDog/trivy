@@ -161,4 +161,5 @@ const (
 	PythonExecutable LangType = "python"
 	NodeJsExecutable LangType = "nodejs"
 	PhpExecutable    LangType = "php"
+	JavaExecutable   LangType = "java"
 )

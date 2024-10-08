@@ -98,6 +98,28 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:     "Java Binary",
+			filePath: "testdata/java",
+			want: &analyzer.AnalysisResult{
+				Digests: map[string]string{
+					"testdata/java": "sha256:7f1933e84f8807520f5a9833d683d5603381f05686a477f6d8f6bdcc10bf694b",
+				},
+				Applications: []types.Application{
+					{
+						Type:     types.JavaExecutable,
+						FilePath: "testdata/java",
+						Packages: types.Packages{
+							{
+								ID:      "java@1.8.0_421-b09",
+								Name:    "java",
+								Version: "1.8.0_421-b09",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
