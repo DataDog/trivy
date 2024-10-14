@@ -48,26 +48,28 @@ func isDetectableLibraryExecutable(fileInfo os.FileInfo) (bool, types.TargetType
 	return false, types.TargetType(""), nil
 }
 
+var (
+	pythonLibNameRegex        = regexp.MustCompile("^libpython[0-9]+(?:[.0-9])+[a-z]?[.]so.*$")
+	pythonExecutableNameRegex = regexp.MustCompile("(?:.*/|^)python(?P<version>[0-9]+(?:[.0-9])+)?$")
+	nodejsExecutableNameRegex = regexp.MustCompile("(?:.*/|^)node(?P<version>[0-9]+(?:[.0-9])+)?$")
+	phpExecutableNameRegex    = regexp.MustCompile("(.*/|^)php[0-9]*$")
+	phpLibNameRegex           = regexp.MustCompile("(.*/|^)libphp[0-9a-z.-]*[.]so$")
+	phpFpmNameRegex           = regexp.MustCompile("(.*/|^)php-fpm[0-9]*$")
+	phpCgiNameRegex           = regexp.MustCompile("(.*/|^)php-cgi[0-9]*$")
+)
+
 func isDetectablePythonExecutable(fileInfo os.FileInfo) bool {
-	pythonLibNameRegex := regexp.MustCompile("^libpython[0-9]+(?:[.0-9])+[a-z]?[.]so.*$")
-	pythonExecutableNameRegex := regexp.MustCompile("(?:.*/|^)python(?P<version>[0-9]+(?:[.0-9])+)?$")
 	isPythonExecutable := pythonExecutableNameRegex.FindSubmatch([]byte(fileInfo.Name()))
 	isPythonLibSo := pythonLibNameRegex.FindSubmatch([]byte(fileInfo.Name()))
 	return (isPythonExecutable != nil || isPythonLibSo != nil)
 }
 
 func isDetectableNodeJsExecutable(fileInfo os.FileInfo) bool {
-	nodejsExecutableNameRegex := regexp.MustCompile("(?:.*/|^)node(?P<version>[0-9]+(?:[.0-9])+)?$")
 	isNodeJsExecutable := nodejsExecutableNameRegex.FindSubmatch([]byte(fileInfo.Name()))
 	return (isNodeJsExecutable != nil)
 }
 
 func isDetectablePhpExecutable(fileInfo os.FileInfo) bool {
-	phpExecutableNameRegex := regexp.MustCompile("(.*/|^)php[0-9]*$")
-	phpLibNameRegex := regexp.MustCompile("(.*/|^)libphp[0-9a-z.-]*[.]so$")
-	phpFpmNameRegex := regexp.MustCompile("(.*/|^)php-fpm[0-9]*$")
-	phpCgiNameRegex := regexp.MustCompile("(.*/|^)php-cgi[0-9]*$")
-
 	isPHPExecutable := phpExecutableNameRegex.FindSubmatch([]byte(fileInfo.Name()))
 	isPHPLib := phpLibNameRegex.FindSubmatch([]byte(fileInfo.Name()))
 	isPHPFpm := phpFpmNameRegex.FindSubmatch([]byte(fileInfo.Name()))

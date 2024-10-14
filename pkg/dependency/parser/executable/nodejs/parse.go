@@ -24,6 +24,8 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
+var versReg = regexp.MustCompile(`node\.js\/v(\d{1,3}\.\d{1,3}\.\d{1,3})`)
+
 // Parse scans file to try to report the NodeJS version.
 func (p *Parser) Parse(r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
@@ -54,16 +56,16 @@ func findVers(x exe.Exe) (vers, mod string) {
 		return
 	}
 
-	re := regexp.MustCompile(`node\.js\/v(\d{1,3}\.\d{1,3}\.\d{1,3})`)
-	// split by null characters
-	items := bytes.Split(data, []byte("\000"))
-	for _, s := range items {
+	for len(data) > 0 {
 		// Extract the version number
-		match := re.FindSubmatch(s)
+		// split by null characters
+		head, tail, _ := bytes.Cut(data, []byte("\000"))
+		match := versReg.FindSubmatch(head)
 		if match != nil {
 			vers = string(match[1])
 			break
 		}
+		data = tail
 	}
 
 	return "node", vers
