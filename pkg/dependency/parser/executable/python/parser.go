@@ -25,6 +25,8 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
+var versReg = regexp.MustCompile(`^\d{1,4}\.\d{1,4}\.\d{1,4}[-._a-zA-Z0-9]*$`)
+
 // Parse scans file to try to report the Python version.
 func (p *Parser) Parse(r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
@@ -56,16 +58,16 @@ func findVers(x exe.Exe) (mod, vers string) {
 	}
 
 	// Python's version pattern is [NUL]3.11.2[NUL]
-	re := regexp.MustCompile(`^\d{1,4}\.\d{1,4}\.\d{1,4}[-._a-zA-Z0-9]*$`)
-	// split by null characters, this is important so that we don't match for version number-like strings without the null character
-	items := bytes.Split(data, []byte("\000"))
-	for _, s := range items {
+	for len(data) > 0 {
 		// Extract the version number
-		match := re.FindSubmatch(s)
+		// split by null characters, this is important so that we don't match for version number-like strings without the null character
+		head, tail, _ := bytes.Cut(data, []byte("\000"))
+		match := versReg.FindSubmatch(head)
 		if match != nil {
 			vers = string(match[0])
 			break
 		}
+		data = tail
 	}
 
 	return "python", vers
