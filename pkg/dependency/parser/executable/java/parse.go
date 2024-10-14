@@ -23,6 +23,8 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
+var versReg = binaryregexp.MustCompile(`(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+)\x00openjdk)?\x00java(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+))?\x00`)
+
 // Parse scans file to try to report the Python version.
 func (p *Parser) Parse(r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
@@ -53,8 +55,7 @@ func findVers(x exe.Exe) (vers, mod string) {
 		return
 	}
 
-	re := binaryregexp.MustCompile(`(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+)\x00openjdk)?\x00java(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+))?\x00`)
-	match := re.FindSubmatch(data)
+	match := versReg.FindSubmatch(data)
 	if match != nil {
 		if match[3] != nil {
 			vers = string(match[3])

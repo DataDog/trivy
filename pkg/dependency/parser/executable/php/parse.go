@@ -25,6 +25,8 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
+var versReg = regexp.MustCompile(`(?m)X-Powered-By: PHP\/(?P<version>[0-9]+\.[0-9]+\.[0-9]+(beta[0-9]+|alpha[0-9]+|RC[0-9]+)?)`)
+
 // Parse scans file to try to report the Python version.
 func (p *Parser) Parse(r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
@@ -55,16 +57,16 @@ func findVers(x exe.Exe) (vers, mod string) {
 		return
 	}
 
-	re := regexp.MustCompile(`(?m)X-Powered-By: PHP\/(?P<version>[0-9]+\.[0-9]+\.[0-9]+(beta[0-9]+|alpha[0-9]+|RC[0-9]+)?)`)
-	// split by null characters
-	items := bytes.Split(data, []byte("\000"))
-	for _, s := range items {
+	for len(data) > 0 {
 		// Extract the version number
-		match := re.FindSubmatch(s)
+		// split by null characters
+		head, tail, _ := bytes.Cut(data, []byte("\000"))
+		match := versReg.FindSubmatch(head)
 		if match != nil {
 			vers = string(match[1])
 			break
 		}
+		data = tail
 	}
 
 	return "php", vers

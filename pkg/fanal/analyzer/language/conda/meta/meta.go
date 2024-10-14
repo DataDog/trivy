@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/conda/meta"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
@@ -27,6 +28,9 @@ func (a metaAnalyzer) Analyze(_ context.Context, input analyzer.AnalysisInput) (
 	return language.AnalyzePackage(types.CondaPkg, input.FilePath, input.Content, p, input.Options.FileChecksum)
 }
 func (a metaAnalyzer) Required(filePath string, _ os.FileInfo) bool {
+	if !strings.HasSuffix(filePath, ".json") || !strings.Contains(filePath, "conda-meta") {
+		return false
+	}
 	return fileRegex.MatchString(filepath.ToSlash(filePath))
 }
 
