@@ -3,6 +3,7 @@ package registry
 import (
 	"context"
 
+	"github.com/aquasecurity/trivy/pkg/fanal/image/registry/ecr"
 	"github.com/google/go-containerregistry/pkg/authn"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/image/registry/intf"
@@ -13,6 +14,10 @@ import (
 var (
 	registries []intf.Registry
 )
+
+func init() {
+	RegisterRegistry(&ecr.ECR{})
+}
 
 func RegisterRegistry(registry intf.Registry) {
 	registries = append(registries, registry)
