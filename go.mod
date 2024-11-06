@@ -112,7 +112,11 @@ require (
 	modernc.org/sqlite v1.40.1
 )
 
-require github.com/invopop/jsonschema v0.13.0
+require (
+	github.com/containerd/continuity v0.4.5
+	github.com/google/wire v0.6.0
+	github.com/invopop/jsonschema v0.13.0
+)
 
 require (
 	buf.build/gen/go/bufbuild/bufplugin/protocolbuffers/go v1.36.6-20250718181942-e35f9b667443.1 // indirect
@@ -175,7 +179,6 @@ require (
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/containerd/cgroups/v3 v3.1.0 // indirect
 	github.com/containerd/containerd/api v1.10.0 // indirect
-	github.com/containerd/continuity v0.4.5 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fifo v1.1.0 // indirect
