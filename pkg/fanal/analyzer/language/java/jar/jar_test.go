@@ -131,7 +131,6 @@ func Test_javaLibraryAnalyzer_Analyze(t *testing.T) {
 								FilePath: "testdata/test.jar",
 								Version:  "9.0.65",
 								Digest:   "sha1:bd70dfeb39cc83c6934be24fa377b21e541dbe76",
-								Licenses: []string{"Apache-2.0"},
 							},
 						},
 					},

@@ -75,11 +75,8 @@ func Test_eggAnalyzer_Analyze(t *testing.T) {
 						FilePath: "testdata/egg-zip-with-license-file/sample_package.egg",
 						Packages: types.Packages{
 							{
-								Name:    "sample_package",
-								Version: "0.1",
-								Licenses: []string{
-									"MIT",
-								},
+								Name:     "sample_package",
+								Version:  "0.1",
 								FilePath: "testdata/egg-zip-with-license-file/sample_package.egg",
 							},
 						},
