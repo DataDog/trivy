@@ -62,7 +62,7 @@ func (w *FS) WalkDirFunc(root string, fn WalkFunc, opt Option) fs.WalkDirFunc {
 				return filepath.SkipDir
 			}
 			return nil
-		case !d.Type().IsRegular():
+		case !opt.AllFiles && !d.Type().IsRegular():
 			return nil
 		case utils.SkipPath(relPath, opt.SkipFiles):
 			return nil
