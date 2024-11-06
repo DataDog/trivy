@@ -19,7 +19,7 @@ type Option struct {
 	SkipFiles []string
 	SkipDirs  []string
 	OnlyDirs  []string
+	AllFiles  bool
 }
 
 type WalkFunc func(filePath string, info os.FileInfo, opener analyzer.Opener) error
-
