@@ -111,14 +111,8 @@ func Test_packagingAnalyzer_Analyze(t *testing.T) {
 						FilePath: "typing_extensions-4.4.0.dist-info/METADATA",
 						Packages: []types.Package{
 							{
-								Name:    "typing_extensions",
-								Version: "4.4.0",
-								Licenses: []string{
-									"BeOpen",
-									"CNRI-Python-GPL-Compatible",
-									"LicenseRef-MIT-Lucent",
-									"Python-2.0",
-								},
+								Name:     "typing_extensions",
+								Version:  "4.4.0",
 								FilePath: "typing_extensions-4.4.0.dist-info/METADATA",
 							},
 						},
