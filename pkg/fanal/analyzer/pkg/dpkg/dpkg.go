@@ -77,7 +77,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		systemInstalledFiles = append(systemInstalledFiles, systemFiles...)
 		return nil
 	})
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, xerrors.Errorf("dpkg walk error: %w", err)
 	}
 
@@ -113,7 +113,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		packageInfos = append(packageInfos, infos...)
 		return nil
 	})
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, xerrors.Errorf("dpkg walk error: %w", err)
 	}
 
