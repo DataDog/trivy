@@ -55,7 +55,7 @@ func (l *License) Traverse(fsys fs.FS, root string) (map[string][]string, error)
 		}
 		return nil
 	}
-	if err := fsutils.WalkDir(fsys, root, fsutils.RequiredFile(types.NpmPkg), walkDirFunc); err != nil {
+	if err := fsutils.WalkDir(fsys, root, fsutils.RequiredFile(types.NpmPkg), nil, walkDirFunc); err != nil {
 		return nil, xerrors.Errorf("walk error: %w", err)
 	}
 
