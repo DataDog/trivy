@@ -110,7 +110,7 @@ func findDependsOn() (map[string][]string, error) {
 	}
 
 	deps := make(map[string][]string)
-	if err := fsutils.WalkDir(os.DirFS(dir), ".", required, nil, func(path string, d fs.DirEntry, r io.Reader) error {
+	if err := fsutils.WalkDir(os.DirFS(dir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		id, dependsOn, err := parsePubSpecYaml(r)
 		if err != nil {
 			log.Logger.Debugf("Unable to parse %q: %s", path, err)

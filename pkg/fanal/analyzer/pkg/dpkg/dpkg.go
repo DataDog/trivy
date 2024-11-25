@@ -65,9 +65,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 
 	errCallback := input.Options.WalkErrCallback
 	if errCallback == nil {
-		errCallback = func(_ string, err error) error {
-			return err
-		}
+		errCallback = fsutils.DefaultWalkErrorCallback
 	}
 
 	// parse list files

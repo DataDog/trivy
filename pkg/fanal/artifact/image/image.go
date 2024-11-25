@@ -252,7 +252,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 	opts := analyzer.AnalysisOptions{
 		Offline:         a.artifactOption.Offline,
 		FileChecksum:    a.artifactOption.FileChecksum,
-		WalkErrCallback: a.artifactOption.WalkOption.ErrorCallback,
+		WalkErrCallback: a.artifactOption.WalkOption.GetErrorCallback(),
 	}
 	result := analyzer.NewAnalysisResult()
 	limit := semaphore.New(a.artifactOption.Parallel)

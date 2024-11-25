@@ -8,6 +8,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/fanal/walker"
 	"github.com/aquasecurity/trivy/pkg/misconf"
+	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 )
 
 type Option struct {
@@ -49,6 +50,13 @@ type Option struct {
 // This option is only available when using Trivy as an imported library and not through CLI flags.
 type WalkOption struct {
 	ErrorCallback walker.ErrorCallback
+}
+
+func (wo *WalkOption) GetErrorCallback() walker.ErrorCallback {
+	if wo == nil || wo.ErrorCallback == nil {
+		return fsutils.DefaultWalkErrorCallback
+	}
+	return wo.ErrorCallback
 }
 
 func (o *Option) AnalyzerOptions() analyzer.AnalyzerOptions {

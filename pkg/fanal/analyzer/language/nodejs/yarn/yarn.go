@@ -306,7 +306,7 @@ func (a yarnAnalyzer) traverseWorkspaces(fsys fs.FS, dir string, workspaces []st
 			return nil, err
 		}
 		for _, match := range matches {
-			if err := fsutils.WalkDir(fsys, match, required, nil, walkDirFunc); err != nil {
+			if err := fsutils.WalkDir(fsys, match, required, fsutils.DefaultWalkErrorCallback, walkDirFunc); err != nil {
 				return nil, xerrors.Errorf("walk error: %w", err)
 			}
 		}
@@ -380,7 +380,7 @@ func (a yarnAnalyzer) traverseUnpluggedDir(fsys fs.FS) (map[string][]string, err
 func (a yarnAnalyzer) traverseCacheDir(fsys fs.FS) (map[string][]string, error) {
 	// Traverse .yarn/cache dir
 	licenses := make(map[string][]string)
-	err := fsutils.WalkDir(fsys, "cache", fsutils.RequiredExt(".zip"), nil,
+	err := fsutils.WalkDir(fsys, "cache", fsutils.RequiredExt(".zip"), fsutils.DefaultWalkErrorCallback,
 		func(filePath string, d fs.DirEntry, r io.Reader) error {
 			fi, err := d.Info()
 			if err != nil {
