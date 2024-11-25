@@ -108,7 +108,7 @@ func (a pnpmAnalyzer) Version() int {
 	return version
 }
 
-func (a pnpmAnalyzer) findLicenses(fsys fs.FS, lockPath string, errCallback func(path string, err error) error) (map[string][]string, error) {
+func (a pnpmAnalyzer) findLicenses(fsys fs.FS, lockPath string, errCallback func(filePath string, err error) error) (map[string][]string, error) {
 	dir := path.Dir(lockPath)
 	root := path.Join(dir, "node_modules")
 	if _, err := fs.Stat(fsys, root); errors.Is(err, fs.ErrNotExist) {

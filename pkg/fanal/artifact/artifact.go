@@ -4,13 +4,14 @@ import (
 	"context"
 	"sort"
 
-	"github.com/google/go-containerregistry/pkg/v1"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/fanal/walker"
 	"github.com/aquasecurity/trivy/pkg/misconf"
 	"github.com/aquasecurity/trivy/pkg/sbom/core"
+	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 )
 
 type Option struct {
@@ -75,6 +76,13 @@ func (o *Option) Sort() {
 	sort.Strings(o.WalkerOption.SkipDirs)
 	sort.Strings(o.WalkerOption.OnlyDirs)
 	sort.Strings(o.FilePatterns)
+}
+
+func (o *Option) GetWalkerErrorCallback() walker.ErrorCallback {
+	if o == nil || o.WalkerOption.ErrorCallback == nil {
+		return fsutils.DefaultWalkErrorCallback
+	}
+	return o.WalkerOption.ErrorCallback
 }
 
 type Artifact interface {

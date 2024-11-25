@@ -124,7 +124,7 @@ func (a npmLibraryAnalyzer) parseNpmPkgLock(fsys fs.FS, filePath string) (*types
 	return language.Parse(types.Npm, filePath, file, a.lockParser)
 }
 
-func (a npmLibraryAnalyzer) findLicenses(fsys fs.FS, lockPath string, errCallback func(path string, err error) error) (map[string][]string, error) {
+func (a npmLibraryAnalyzer) findLicenses(fsys fs.FS, lockPath string, errCallback func(filePath string, err error) error) (map[string][]string, error) {
 	dir := path.Dir(lockPath)
 	root := path.Join(dir, "node_modules")
 	if _, err := fs.Stat(fsys, root); errors.Is(err, fs.ErrNotExist) {

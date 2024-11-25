@@ -149,7 +149,7 @@ type PostAnalysisInput struct {
 type AnalysisOptions struct {
 	Offline         bool
 	FileChecksum    bool
-	WalkErrCallback func(path string, err error) error
+	WalkErrCallback func(string, error) error
 }
 
 type AnalysisResult struct {

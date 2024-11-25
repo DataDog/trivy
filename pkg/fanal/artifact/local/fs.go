@@ -75,7 +75,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 	opts := analyzer.AnalysisOptions{
 		Offline:         a.artifactOption.Offline,
 		FileChecksum:    a.artifactOption.FileChecksum,
-		WalkErrCallback: a.artifactOption.WalkerOption.ErrorCallback,
+		WalkErrCallback: a.artifactOption.GetWalkerErrorCallback(),
 	}
 
 	// Prepare filesystem for post analysis
