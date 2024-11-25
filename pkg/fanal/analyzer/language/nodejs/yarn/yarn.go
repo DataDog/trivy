@@ -74,7 +74,7 @@ func (a yarnAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		return filepath.Base(path) == types.YarnLock
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		parser := &parserWithPatterns{}
 		// Parse yarn.lock
 		app, err := language.Parse(types.Yarn, filePath, r, parser)
@@ -321,7 +321,7 @@ func (a yarnAnalyzer) traverseWorkspaces(fsys fs.FS, dir string, workspaces []st
 			return nil, err
 		}
 		for _, match := range matches {
-			if err := fsutils.WalkDir(fsys, match, required, walkDirFunc); err != nil {
+			if err := fsutils.WalkDir(fsys, match, required, nil, walkDirFunc); err != nil {
 				return nil, xerrors.Errorf("walk error: %w", err)
 			}
 		}
@@ -395,7 +395,7 @@ func (a yarnAnalyzer) traverseUnpluggedDir(fsys fs.FS) (map[string][]string, err
 func (a yarnAnalyzer) traverseCacheDir(fsys fs.FS) (map[string][]string, error) {
 	// Traverse .yarn/cache dir
 	licenses := make(map[string][]string)
-	err := fsutils.WalkDir(fsys, "cache", fsutils.RequiredExt(".zip"),
+	err := fsutils.WalkDir(fsys, "cache", fsutils.RequiredExt(".zip"), nil,
 		func(filePath string, d fs.DirEntry, r io.Reader) error {
 			fi, err := d.Info()
 			if err != nil {

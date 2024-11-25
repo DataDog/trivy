@@ -48,9 +48,9 @@ func (a pnpmAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		return filepath.Base(path) == types.PnpmLock
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		// Find licenses
-		licenses, err := a.findLicenses(input.FS, filePath)
+		licenses, err := a.findLicenses(input.FS, filePath, input.Options.WalkErrCallback)
 		if err != nil {
 			a.logger.Error("Unable to collect licenses", log.Err(err))
 			licenses = make(map[string][]string)
@@ -108,7 +108,7 @@ func (a pnpmAnalyzer) Version() int {
 	return version
 }
 
-func (a pnpmAnalyzer) findLicenses(fsys fs.FS, lockPath string) (map[string][]string, error) {
+func (a pnpmAnalyzer) findLicenses(fsys fs.FS, lockPath string, errCallback func(path string, err error) error) (map[string][]string, error) {
 	dir := path.Dir(lockPath)
 	root := path.Join(dir, "node_modules")
 	if _, err := fs.Stat(fsys, root); errors.Is(err, fs.ErrNotExist) {
@@ -126,7 +126,7 @@ func (a pnpmAnalyzer) findLicenses(fsys fs.FS, lockPath string) (map[string][]st
 	// Note that fs.FS is always slashed regardless of the platform,
 	// and path.Join should be used rather than filepath.Join.
 	licenses := make(map[string][]string)
-	err := fsutils.WalkDir(fsys, root, required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(fsys, root, required, errCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		pkg, err := a.packageJsonParser.Parse(r)
 		if err != nil {
 			return xerrors.Errorf("unable to parse %q: %w", filePath, err)
