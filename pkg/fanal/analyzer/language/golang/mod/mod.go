@@ -91,7 +91,7 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return filepath.Base(path) == types.GoMod || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, func(path string, _ fs.DirEntry, _ io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, _ io.Reader) error {
 		parser := &parserWithSkipIndirect{
 			Parser: a.modParser,
 		}

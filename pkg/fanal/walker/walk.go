@@ -15,11 +15,14 @@ var defaultSkipDirs = []string{
 	"dev",
 }
 
+type ErrorCallback func(filePath string, err error) error
+
 type Option struct {
-	SkipFiles []string
-	SkipDirs  []string
-	OnlyDirs  []string
-	AllFiles  bool
+	SkipFiles     []string
+	SkipDirs      []string
+	OnlyDirs      []string
+	AllFiles      bool
+	ErrorCallback ErrorCallback
 }
 
 type WalkFunc func(filePath string, info os.FileInfo, opener analyzer.Opener) error
