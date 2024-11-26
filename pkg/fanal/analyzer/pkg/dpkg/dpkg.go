@@ -63,8 +63,13 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 
 	packageFiles := make(map[string][]string)
 
+	errCallback := input.Options.WalkErrCallback
+	if errCallback == nil {
+		errCallback = fsutils.DefaultWalkErrorCallback
+	}
+
 	// parse list files
-	err = fsutils.WalkDir(input.FS, infoDir, fsutils.RequiredExt(".list"), func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(input.FS, infoDir, fsutils.RequiredExt(".list"), errCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		scanner := bufio.NewScanner(r)
 		systemFiles, err := a.parseDpkgInfoList(scanner)
 		if err != nil {
@@ -74,7 +79,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		systemInstalledFiles = append(systemInstalledFiles, systemFiles...)
 		return nil
 	})
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil {
 		return nil, xerrors.Errorf("dpkg walk error: %w", err)
 	}
 
@@ -82,10 +87,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	parseRootStatusFile := func() ([]types.PackageInfo, error) {
 		f, err := input.FS.Open(statusFile)
 		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil, nil
-			}
-			return nil, xerrors.Errorf("failed to open %s: %w", statusFile, err)
+			return nil, errCallback(statusFile, fmt.Errorf("failed to open %s: %w", statusFile, err))
 		}
 		defer f.Close()
 
@@ -102,7 +104,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	packageInfos = append(packageInfos, rootStatusInfos...)
 
 	// parse status files
-	err = fsutils.WalkDir(input.FS, statusDir, fsutils.RequiredAll(), func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(input.FS, statusDir, fsutils.RequiredAll(), errCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		infos, err := a.parseDpkgStatus(path, r, digests)
 		if err != nil {
 			return err
@@ -110,7 +112,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 		packageInfos = append(packageInfos, infos...)
 		return nil
 	})
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil {
 		return nil, xerrors.Errorf("dpkg walk error: %w", err)
 	}
 

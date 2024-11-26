@@ -50,7 +50,7 @@ func (a npmLibraryAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAn
 	}
 
 	var apps []types.Application
-	err := fsutils.WalkDir(input.FS, ".", required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		// Find all licenses from package.json files under node_modules dirs
 		licenses, err := a.findLicenses(input.FS, filePath)
 		if err != nil {
@@ -140,7 +140,7 @@ func (a npmLibraryAnalyzer) findLicenses(fsys fs.FS, lockPath string) (map[strin
 	// Note that fs.FS is always slashed regardless of the platform,
 	// and path.Join should be used rather than filepath.Join.
 	licenses := make(map[string]string)
-	err := fsutils.WalkDir(fsys, root, required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(fsys, root, required, fsutils.DefaultWalkErrorCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		pkg, err := a.packageParser.Parse(r)
 		if err != nil {
 			return xerrors.Errorf("unable to parse %q: %w", filePath, err)
