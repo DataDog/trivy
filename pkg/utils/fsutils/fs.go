@@ -110,11 +110,11 @@ func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, errCallback 
 
 		f, err := fsys.Open(path)
 		if err != nil {
-			oErr := fmt.Errorf("file open error: %w", err)
+			errOpen := fmt.Errorf("file open error: %w", err)
 			if errCallback != nil {
-				return errCallback(path, oErr)
+				return errCallback(path, errOpen)
 			}
-			return oErr
+			return errOpen
 		}
 		defer f.Close()
 
