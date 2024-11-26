@@ -169,8 +169,9 @@ func (f FilePatterns) Match(filePath string) bool {
 }
 
 type AnalysisOptions struct {
-	Offline      bool
-	FileChecksum bool
+	Offline         bool
+	FileChecksum    bool
+	WalkErrCallback func(string, error) error
 }
 
 type AnalysisResult struct {
@@ -485,6 +486,11 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, eg *errgroup.Group, lim
 			ag.logger.Debug("Permission error", log.FilePath(filePath))
 			break
 		} else if err != nil {
+			if opts.WalkErrCallback != nil {
+				if errCb := opts.WalkErrCallback(filePath, err); errCb == nil {
+					break
+				}
+			}
 			return xerrors.Errorf("unable to open %s: %w", filePath, err)
 		}
 

@@ -69,7 +69,7 @@ func (a packagingAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostA
 		return filepath.Base(path) == "METADATA" || isEggFile(path) || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		rsa, ok := r.(xio.ReadSeekerAt)
 		if !ok {
 			return xerrors.New("invalid reader")

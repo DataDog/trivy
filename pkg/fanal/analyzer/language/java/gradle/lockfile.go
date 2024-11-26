@@ -55,7 +55,7 @@ func (a gradleLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 	}
 
 	var apps []types.Application
-	err = fsutils.WalkDir(input.FS, ".", required, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		var app *types.Application
 		app, err = language.Parse(ctx, types.Gradle, filePath, r, a.parser)
 		if err != nil {

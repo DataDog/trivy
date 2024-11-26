@@ -48,7 +48,7 @@ func (a poetryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return filepath.Base(path) == types.PoetryLock || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		// Parse poetry.lock
 		app, err := a.parsePoetryLock(ctx, path, r)
 		if err != nil {
