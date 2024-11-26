@@ -34,7 +34,7 @@ func NewLicense(pkgManager string, classifierConfidenceLevel float64) *License {
 	}
 }
 
-func (l *License) Traverse(fsys fs.FS, root string) (map[string][]string, error) {
+func (l *License) Traverse(fsys fs.FS, root string, errCallback fsutils.WalkDirErrorCallback) (map[string][]string, error) {
 	if _, err := fs.Stat(fsys, root); errors.Is(err, fs.ErrNotExist) {
 		l.logger.Info(fmt.Sprintf(`Run "%s install" to collect the license information of packages`, l.pkgManager),
 			log.String("dir", root))
@@ -72,7 +72,7 @@ func (l *License) Traverse(fsys fs.FS, root string) (map[string][]string, error)
 	required := func(p string, _ fs.DirEntry) bool {
 		return nodepkg.IsPackageRoot(p)
 	}
-	if err := fsutils.WalkDir(fsys, root, required, walkDirFunc); err != nil {
+	if err := fsutils.WalkDir(fsys, root, required, errCallback, walkDirFunc); err != nil {
 		return nil, xerrors.Errorf("walk error: %w", err)
 	}
 

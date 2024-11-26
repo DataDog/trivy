@@ -48,9 +48,9 @@ func (a pnpmAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 		return filepath.Base(path) == types.PnpmLock || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		// Find licenses
-		licenses, err := a.license.Traverse(input.FS, path.Join(path.Dir(filePath), "node_modules"))
+		licenses, err := a.license.Traverse(input.FS, path.Join(path.Dir(filePath), "node_modules"), input.Options.WalkErrCallback)
 		if err != nil {
 			a.logger.Error("Unable to collect licenses", log.Err(err))
 			licenses = make(map[string][]string)
