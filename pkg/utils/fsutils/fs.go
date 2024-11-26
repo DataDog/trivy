@@ -1,6 +1,7 @@
 package fsutils
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -67,17 +68,23 @@ func FileExists(filename string) bool {
 	return err == nil && !f.IsDir()
 }
 
+func DefaultWalkErrorCallback(_ string, err error) error {
+	if errors.Is(err, fs.ErrPermission) {
+		return nil
+	}
+	return err
+}
+
 type WalkDirRequiredFunc func(path string, d fs.DirEntry) bool
 
 type WalkDirFunc func(path string, d fs.DirEntry, r io.Reader) error
 
-func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, fn WalkDirFunc) error {
+func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, errCallback func(_ string, _ error) error, fn WalkDirFunc) error {
 	return fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			if os.IsPermission(err) {
-				return nil
+			if errCallback != nil {
+				return errCallback(path, err)
 			}
-
 			return err
 		} else if !d.Type().IsRegular() || !required(path, d) {
 			return nil
@@ -85,11 +92,11 @@ func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, fn WalkDirFu
 
 		f, err := fsys.Open(path)
 		if err != nil {
-			if os.IsPermission(err) {
-				return nil
+			errOpen := fmt.Errorf("file open error: %w", err)
+			if errCallback != nil {
+				return errCallback(path, errOpen)
 			}
-
-			return xerrors.Errorf("file open error: %w", err)
+			return errOpen
 		}
 		defer f.Close()
 

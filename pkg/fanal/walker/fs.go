@@ -29,7 +29,7 @@ func (w *FS) Walk(root string, opt Option, fn WalkFunc) error {
 	opt.OnlyDirs = w.BuildSkipPaths(root, opt.OnlyDirs)
 
 	walkDirFunc := w.WalkDirFunc(root, fn, opt)
-	walkDirFunc = w.onError(walkDirFunc)
+	walkDirFunc = w.onError(walkDirFunc, opt)
 
 	// Walk the filesystem
 	if err := filepath.WalkDir(root, walkDirFunc); err != nil {
@@ -83,7 +83,7 @@ func (w *FS) WalkDirFunc(root string, fn WalkFunc, opt Option) fs.WalkDirFunc {
 	}
 }
 
-func (w *FS) onError(wrapped fs.WalkDirFunc) fs.WalkDirFunc {
+func (w *FS) onError(wrapped fs.WalkDirFunc, opt Option) fs.WalkDirFunc {
 	return func(filePath string, d fs.DirEntry, err error) error {
 		err = wrapped(filePath, d, err)
 		switch {
@@ -94,6 +94,12 @@ func (w *FS) onError(wrapped fs.WalkDirFunc) fs.WalkDirFunc {
 		case os.IsPermission(err):
 			return nil
 		case err != nil:
+			if opt.ErrorCallback != nil {
+				err = opt.ErrorCallback(filePath, err)
+				if err == nil {
+					return nil
+				}
+			}
 			// halt traversal on any other error
 			return xerrors.Errorf("unknown error with %s: %w", filePath, err)
 		}
