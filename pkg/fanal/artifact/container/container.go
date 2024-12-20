@@ -11,8 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	ltypes "github.com/DataDog/datadog-agentless-scanner/local/trivy/pkg/fanal/types"
-
 	"github.com/containerd/continuity/devices"
 	"github.com/docker/docker/pkg/system"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -47,7 +45,7 @@ type Walker interface {
 
 type Artifact struct {
 	logger         *log.Logger
-	container      ltypes.Container
+	container      types.Container
 	cache          cache.ArtifactCache
 	walker         Walker
 	analyzer       analyzer.AnalyzerGroup
@@ -63,7 +61,7 @@ type LayerInfo struct {
 	CreatedBy string // can be empty
 }
 
-func NewArtifact(ctr ltypes.Container, c cache.ArtifactCache, w Walker, opt artifact.Option) (artifact.Artifact, error) {
+func NewArtifact(ctr types.Container, c cache.ArtifactCache, w Walker, opt artifact.Option) (artifact.Artifact, error) {
 	handlerManager, err := handler.NewManager(opt)
 	if err != nil {
 		return nil, xerrors.Errorf("handler init error: %w", err)
@@ -453,7 +451,7 @@ func (a Artifact) guessBaseLayers(diffIDs []string, configFile *v1.ConfigFile) [
 	return baseDiffIDs
 }
 
-func rootFiles(layers []ltypes.LayerPath, files []string) []string {
+func rootFiles(layers []types.LayerPath, files []string) []string {
 	s := make([]string, 0)
 	for _, layer := range layers {
 		for _, file := range files {

@@ -3,7 +3,7 @@ package container
 import (
 	"golang.org/x/xerrors"
 
-	"github.com/DataDog/datadog-agentless-scanner/local/trivy/pkg/fanal/types"
+	"github.com/aquasecurity/trivy/pkg/fanal/types"
 
 	"github.com/distribution/reference"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -14,7 +14,7 @@ type container struct {
 	refTagged    reference.NamedTagged
 	imageID      string
 	configFile   *v1.ConfigFile
-	layers       []types.LayerPath
+	layers       []types.LayerPathLayerPath
 }
 
 func NewContainer(refCanonical reference.Canonical, refTagged reference.NamedTagged, imageID string, configFile *v1.ConfigFile, layers []types.LayerPath) *container {
