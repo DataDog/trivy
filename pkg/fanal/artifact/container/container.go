@@ -72,14 +72,6 @@ func NewArtifact(ctr types.Container, c cache.ArtifactCache, w Walker, opt artif
 		return nil, xerrors.Errorf("analyzer group error: %w", err)
 	}
 
-	// Root SkipFiles, SkipDirs and OnlyDirs list of files to each layer path.
-	opt.WalkerOption.SkipFiles = rootFiles(ctr.Layers(), opt.WalkerOption.SkipFiles)
-	opt.WalkerOption.SkipDirs = rootFiles(ctr.Layers(), opt.WalkerOption.SkipDirs)
-	opt.WalkerOption.OnlyDirs = rootFiles(ctr.Layers(), opt.WalkerOption.OnlyDirs)
-
-	// Don't skip non-regular files.
-	opt.WalkerOption.AllFiles = true
-
 	return Artifact{
 		logger:         log.WithPrefix("container"),
 		container:      ctr,
