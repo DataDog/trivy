@@ -1,7 +1,6 @@
 package all
 
 import (
-	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/buildinfo"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/executable"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/language/c/conan"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/language/conda/environment"
