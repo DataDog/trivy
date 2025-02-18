@@ -43,21 +43,29 @@ func newJavaLibraryAnalyzer(options analyzer.AnalyzerOptions) (analyzer.PostAnal
 }
 
 func (a *javaLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
-	// TODO: think about the sonatype API and "--offline"
-	client, err := javadb.NewClient()
-	if err != nil {
-		return nil, xerrors.Errorf("Unable to initialize the Java DB: %s", err)
-	}
-	defer func() { _ = client.Close() }()
+	offline := input.Options.OfflineJar
 
-	// Skip analyzing JAR files as the nil client means the Java DB was not downloaded successfully.
-	if client == nil {
-		return nil, nil
+	var javadbClient jar.Client
+
+	if !offline {
+		// TODO: think about the sonatype API and "--offline"
+		client, err := javadb.NewClient()
+		if err != nil {
+			return nil, xerrors.Errorf("Unable to initialize the Java DB: %s", err)
+		}
+		defer func() { _ = client.Close() }()
+
+		// Skip analyzing JAR files as the nil client means the Java DB was not downloaded successfully.
+		if client == nil {
+			return nil, nil
+		}
+
+		javadbClient = client
 	}
 
 	// It will be called on each JAR file
 	onFile := func(path string, info fs.FileInfo, r xio.ReadSeekerAt) (*types.Application, error) {
-		p := jar.NewParser(client, jar.WithSize(info.Size()), jar.WithFilePath(path))
+		p := jar.NewParser(javadbClient, jar.WithSize(info.Size()), jar.WithOffline(offline), jar.WithFilePath(path))
 		return language.ParsePackage(ctx, types.Jar, path, r, p, input.Options.FileChecksum)
 	}
 
@@ -70,7 +78,7 @@ func (a *javaLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Po
 		return nil
 	}
 
-	err = parallel.WalkDir(ctx, input.FS, ".", a.parallel, onFile, onResult)
+	err := parallel.WalkDir(ctx, input.FS, ".", a.parallel, onFile, onResult)
 	result := &analyzer.AnalysisResult{
 		Applications: apps,
 	}

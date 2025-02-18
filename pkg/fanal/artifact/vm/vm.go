@@ -91,6 +91,7 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 
 	opts := analyzer.AnalysisOptions{
 		Offline:         a.artifactOption.Offline,
+		OfflineJar:      a.artifactOption.OfflineJar,
 		FileChecksum:    a.artifactOption.FileChecksum,
 		WalkErrCallback: a.artifactOption.GetWalkerErrorCallback(),
 	}

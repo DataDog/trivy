@@ -277,9 +277,10 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 
 	// Prepare variables
 	opts := analyzer.AnalysisOptions{
-		Offline:         a.artifactOption.Offline,
-		FileChecksum:    a.artifactOption.FileChecksum,
-		WalkErrCallback: a.artifactOption.GetWalkerErrorCallback(),
+		Offline:             a.artifactOption.Offline,
+		OfflineJar:          a.artifactOption.OfflineJar,
+		FileChecksum:        a.artifactOption.FileChecksum,
+		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
 		PostAnalyzerTimeout: a.artifactOption.PostAnalyzerTimeout,
 	}
 	result := analyzer.NewAnalysisResult()
