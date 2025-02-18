@@ -2,7 +2,6 @@ package executable
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -78,7 +77,6 @@ func isDetectablePhpExecutable(fileInfo os.FileInfo) bool {
 }
 
 func isDetectableJavaExecutable(fileInfo os.FileInfo) bool {
-	fmt.Println(fileInfo.Name())
 	return filepath.Base(fileInfo.Name()) == "java"
 }
 
