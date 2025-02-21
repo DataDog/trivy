@@ -82,7 +82,7 @@ require (
 	github.com/samber/lo v1.47.0
 	github.com/sassoftware/go-rpmutils v0.4.0
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0
-	github.com/sigstore/rekor v1.3.6
+	github.com/sigstore/rekor v1.3.6 // indirect
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sosedoff/gitkit v0.4.0
 	github.com/spdx/tools-golang v0.5.5 // v0.5.3 with necessary changes. Can be upgraded to version 0.5.4 after release.
