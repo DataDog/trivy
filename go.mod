@@ -40,7 +40,6 @@ require (
 	github.com/gocsaf/csaf/v3 v3.6.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-containerregistry v0.22.1
-	github.com/google/go-github/v62 v62.0.0
 	github.com/google/jsonschema-go v0.4.3
 	github.com/google/licenseclassifier/v2 v2.0.0
 	github.com/google/uuid v1.6.0
