@@ -1,7 +1,6 @@
 package downloader
 
 import (
-	"cmp"
 	"compress/bzip2"
 	"compress/gzip"
 	"context"
@@ -12,12 +11,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/google/go-github/v62/github"
 	"golang.org/x/xerrors"
 
-	xhttp "github.com/aquasecurity/trivy/pkg/x/http"
 	xos "github.com/aquasecurity/trivy/pkg/x/os"
 )
 
@@ -96,101 +92,6 @@ func Download(ctx context.Context, src, dst, pwd string, opts Options) (string, 
 	}
 
 	return "", nil
-}
-
-type CustomTransport struct {
-	insecure   bool
-	auth       Auth
-	cachedETag string
-	newETag    string
-}
-
-func NewCustomTransport(opts Options) *CustomTransport {
-	return &CustomTransport{
-		insecure:   opts.Insecure,
-		auth:       opts.Auth,
-		cachedETag: opts.ETag,
-	}
-}
-
-func (t *CustomTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	if t.cachedETag != "" {
-		req.Header.Set("If-None-Match", t.cachedETag)
-	}
-	if t.auth.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+t.auth.Token)
-	} else if t.auth.Username != "" || t.auth.Password != "" {
-		req.SetBasicAuth(t.auth.Username, t.auth.Password)
-	}
-
-	transport := xhttp.RoundTripper(req.Context(), xhttp.WithInsecure(t.insecure))
-	if req.URL.Host == "github.com" {
-		transport = NewGitHubTransport(req.URL, t.auth.Token)
-	}
-
-	res, err := transport.RoundTrip(req)
-	if err != nil {
-		return nil, xerrors.Errorf("failed to round trip: %w", err)
-	}
-
-	switch res.StatusCode {
-	case http.StatusOK, http.StatusPartialContent:
-		// Update the ETag
-		t.newETag = res.Header.Get("ETag")
-	case http.StatusNotModified:
-		return nil, ErrSkipDownload
-	}
-
-	return res, nil
-}
-
-func NewGitHubTransport(u *url.URL, token string) http.RoundTripper {
-	client := newGitHubClient(token)
-	ss := strings.SplitN(u.Path, "/", 4)
-	if len(ss) < 4 || strings.HasPrefix(ss[3], "archive/") || strings.HasPrefix(ss[3], "releases/") ||
-		strings.HasPrefix(ss[3], "tags/") {
-		// Use the default transport from go-github for authentication
-		return client.Client().Transport
-	}
-
-	return &GitHubContentTransport{
-		owner:    ss[1],
-		repo:     ss[2],
-		filePath: ss[3],
-		client:   client,
-	}
-}
-
-// GitHubContentTransport is a round tripper for downloading the GitHub content.
-type GitHubContentTransport struct {
-	owner    string
-	repo     string
-	filePath string
-	client   *github.Client
-}
-
-// RoundTrip calls the GitHub API to download the content.
-func (t *GitHubContentTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	_, res, err := t.client.Repositories.DownloadContents(req.Context(), t.owner, t.repo, t.filePath, nil)
-	if err != nil {
-		return nil, xerrors.Errorf("failed to get the file content: %w", err)
-	}
-	return res.Response, nil
-}
-
-func newGitHubClient(token string) *github.Client {
-	client := github.NewClient(xhttp.Client())
-	token = cmp.Or(token, os.Getenv("GITHUB_TOKEN"))
-	if token != "" {
-		client = client.WithAuthToken(token)
-	}
-	return client
-}
-
-func httpTransport(insecure bool) *http.Transport {
-	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: insecure}
-	return tr
 }
 
 func uncompress(r io.Reader, name string) (io.Reader, error) {
