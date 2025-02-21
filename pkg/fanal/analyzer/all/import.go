@@ -44,5 +44,4 @@ import (
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/pkg/dpkg"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/pkg/rpm"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/repo/apk"
-	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/sbom"
 )
