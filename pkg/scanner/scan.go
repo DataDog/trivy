@@ -9,7 +9,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/artifact"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
-	"github.com/aquasecurity/trivy/pkg/report"
 	"github.com/aquasecurity/trivy/pkg/types"
 )
 
@@ -66,7 +65,7 @@ func (s Scanner) ScanArtifact(ctx context.Context, options types.ScanOptions) (t
 	}
 
 	return types.Report{
-		SchemaVersion: report.SchemaVersion,
+		SchemaVersion: 2,
 		CreatedAt:     clock.Now(ctx),
 		ArtifactName:  artifactInfo.Name,
 		ArtifactType:  artifactInfo.Type,
