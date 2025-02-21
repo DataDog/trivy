@@ -8,10 +8,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/in-toto/in-toto-golang/in_toto"
 	"golang.org/x/xerrors"
 
-	"github.com/aquasecurity/trivy/pkg/attestation"
 	"github.com/aquasecurity/trivy/pkg/sbom/core"
 	"github.com/aquasecurity/trivy/pkg/sbom/cyclonedx"
 	sbomio "github.com/aquasecurity/trivy/pkg/sbom/io"
@@ -145,40 +143,7 @@ func DetectFormat(r io.ReadSeeker) (Format, error) {
 		return FormatUnknown, xerrors.Errorf("seek error: %w", err)
 	}
 
-	// Try in-toto attestation
-	format, ok := decodeAttestCycloneDXJSONFormat(r)
-	if ok {
-		return format, nil
-	}
-
 	return FormatUnknown, nil
-}
-
-func decodeAttestCycloneDXJSONFormat(r io.ReadSeeker) (Format, bool) {
-	var s attestation.Statement
-
-	if err := json.NewDecoder(r).Decode(&s); err != nil {
-		return "", false
-	}
-
-	if s.PredicateType != in_toto.PredicateCycloneDX && s.PredicateType != PredicateCycloneDXBeforeV05 {
-		return "", false
-	}
-
-	if s.Predicate == nil {
-		return "", false
-	}
-
-	m, ok := s.Predicate.(map[string]any)
-	if !ok {
-		return "", false
-	}
-
-	if _, ok := m["Data"]; ok {
-		return FormatLegacyCosignAttestCycloneDXJSON, true
-	}
-
-	return FormatAttestCycloneDXJSON, true
 }
 
 func Decode(ctx context.Context, f io.Reader, format Format) (types.SBOM, error) {
@@ -191,25 +156,6 @@ func Decode(ctx context.Context, f io.Reader, format Format) (types.SBOM, error)
 	switch format {
 	case FormatCycloneDXJSON:
 		v = &cyclonedx.BOM{BOM: bom}
-		decoder = json.NewDecoder(f)
-	case FormatAttestCycloneDXJSON:
-		// dsse envelope
-		//   => in-toto attestation
-		//     => CycloneDX JSON
-		v = &attestation.Statement{
-			Predicate: &cyclonedx.BOM{BOM: bom},
-		}
-		decoder = json.NewDecoder(f)
-	case FormatLegacyCosignAttestCycloneDXJSON:
-		// dsse envelope
-		//   => in-toto attestation
-		//     => cosign predicate
-		//       => CycloneDX JSON
-		v = &attestation.Statement{
-			Predicate: &attestation.CosignPredicate{
-				Data: &cyclonedx.BOM{BOM: bom},
-			},
-		}
 		decoder = json.NewDecoder(f)
 	case FormatSPDXJSON:
 		v = &spdx.SPDX{BOM: bom}
