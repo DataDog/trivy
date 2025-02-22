@@ -2,7 +2,6 @@ package image
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -107,15 +106,6 @@ func (a Artifact) Inspect(ctx context.Context) (ref artifact.Reference, err erro
 	}()
 	if err := a.checkImageSize(ctx, diffIDs); err != nil {
 		return artifact.Reference{}, err
-	}
-
-	// Try retrieving a remote SBOM document
-	if res, err := a.retrieveRemoteSBOM(ctx); err == nil {
-		// Found SBOM
-		return res, nil
-	} else if !errors.Is(err, errNoSBOMFound) {
-		// Fail on unexpected error, otherwise it falls into the usual scanning.
-		return artifact.Reference{}, xerrors.Errorf("remote SBOM fetching error: %w", err)
 	}
 
 	// Try to detect base layers.
