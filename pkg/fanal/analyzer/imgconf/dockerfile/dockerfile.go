@@ -10,7 +10,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
-	"github.com/aquasecurity/trivy/pkg/fanal/image"
+	imageutils "github.com/aquasecurity/trivy/pkg/fanal/image/utils"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/iac/detection"
 	"github.com/aquasecurity/trivy/pkg/mapfs"
@@ -79,7 +79,7 @@ func (a *historyAnalyzer) Analyze(ctx context.Context, input analyzer.ConfigAnal
 func imageConfigToDockerfile(cfg *v1.ConfigFile) []byte {
 	dockerfile := new(bytes.Buffer)
 	var userFound bool
-	baseLayerIndex := image.GuessBaseImageIndex(cfg.History)
+	baseLayerIndex := imageutils.GuessBaseImageIndex(cfg.History)
 	for i := baseLayerIndex + 1; i < len(cfg.History); i++ {
 		h := cfg.History[i]
 		var createdBy string
