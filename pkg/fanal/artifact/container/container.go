@@ -22,7 +22,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/artifact"
 	"github.com/aquasecurity/trivy/pkg/fanal/handler"
-	"github.com/aquasecurity/trivy/pkg/fanal/image"
+	imageutils "github.com/aquasecurity/trivy/pkg/fanal/image/utils"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/fanal/walker"
 	"github.com/aquasecurity/trivy/pkg/log"
@@ -418,7 +418,7 @@ func (a Artifact) guessBaseLayers(diffIDs []string, configFile *v1.ConfigFile) [
 		return nil
 	}
 
-	baseImageIndex := image.GuessBaseImageIndex(configFile.History)
+	baseImageIndex := imageutils.GuessBaseImageIndex(configFile.History)
 	if baseImageIndex < 0 {
 		baseImageIndex = 0
 	}
