@@ -3,7 +3,6 @@ package parallel
 import (
 	"context"
 
-	"github.com/cheggaaa/pb/v3"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -46,13 +45,6 @@ func NewPipeline[T, U any](numWorkers int, progress bool, items []T,
 // Do executes pipeline processing.
 // It exits when any error occurs.
 func (p *Pipeline[T, U]) Do(ctx context.Context) error {
-	// progress bar
-	var bar *pb.ProgressBar
-	if p.progress {
-		bar = pb.StartNew(len(p.items))
-		defer bar.Finish()
-	}
-
 	g, ctx := errgroup.WithContext(ctx)
 	itemCh := make(chan T)
 
@@ -60,9 +52,6 @@ func (p *Pipeline[T, U]) Do(ctx context.Context) error {
 	g.Go(func() error {
 		defer close(itemCh)
 		for _, item := range p.items {
-			if p.progress {
-				bar.Increment()
-			}
 			select {
 			case itemCh <- item:
 			case <-ctx.Done():
