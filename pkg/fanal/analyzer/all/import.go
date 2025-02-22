@@ -1,7 +1,6 @@
 package all
 
 import (
-	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/buildinfo"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/config/all"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/executable"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/imgconf/apk"
