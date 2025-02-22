@@ -30,7 +30,7 @@ require (
 	github.com/bitnami/go-version v0.0.0-20231130084017-bb00604d650c
 	github.com/bmatcuk/doublestar/v4 v4.9.1
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/cheggaaa/pb/v3 v3.1.7
+	github.com/cheggaaa/pb/v3 v3.1.7 // indirect
 	github.com/containerd/containerd/v2 v2.2.0
 	github.com/containerd/platforms v1.0.0-rc.2
 	github.com/distribution/reference v0.6.0
