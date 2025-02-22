@@ -29,7 +29,6 @@ require (
 	github.com/bitnami/go-version v0.0.0-20231130084017-bb00604d650c
 	github.com/bmatcuk/doublestar/v4 v4.10.3
 	github.com/cenkalti/backoff/v6 v6.0.1
-	github.com/cheggaaa/pb/v3 v3.2.1
 	github.com/containerd/containerd/v2 v2.4.2
 	github.com/containerd/platforms v1.0.0-rc.5
 	github.com/distribution/reference v0.6.0
@@ -163,6 +162,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/cheggaaa/pb/v3 v3.2.1 // indirect
 	github.com/cli/browser v1.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
