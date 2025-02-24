@@ -33,8 +33,7 @@ type ScannerOption struct {
 	TfExcludeDownloaded     bool
 	K8sVersion              string
 
-	FilePatterns      []string
-	ConfigFileSchemas []*ConfigFileSchema
+	FilePatterns []string
 
 	DisabledCheckIDs []string
 	SkipFiles        []string
