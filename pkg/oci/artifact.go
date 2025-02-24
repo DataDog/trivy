@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/cheggaaa/pb/v3"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
@@ -152,24 +151,11 @@ func (a *Artifact) Download(ctx context.Context, dir string, opt DownloadOption)
 }
 
 func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir string, quiet bool) error {
-	size, err := layer.Size()
-	if err != nil {
-		return xerrors.Errorf("size error: %w", err)
-	}
-
 	rc, err := layer.Compressed()
 	if err != nil {
 		return xerrors.Errorf("failed to fetch the layer: %w", err)
 	}
 	defer rc.Close()
-
-	// Show progress bar
-	bar := pb.Full.Start64(size)
-	if quiet {
-		bar.SetWriter(io.Discard)
-	}
-	pr := bar.NewProxyReader(rc)
-	defer bar.Finish()
 
 	// https://github.com/hashicorp/go-getter/issues/326
 	tempDir, err := os.MkdirTemp("", "trivy")
@@ -187,7 +173,7 @@ func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir s
 	}()
 
 	// Download the layer content into a temporal file
-	if _, err = io.Copy(f, pr); err != nil {
+	if _, err = io.Copy(f, rc); err != nil {
 		return xerrors.Errorf("copy error: %w", err)
 	}
 
