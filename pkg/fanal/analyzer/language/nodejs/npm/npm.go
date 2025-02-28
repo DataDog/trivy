@@ -51,9 +51,9 @@ func (a npmLibraryAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAn
 	}
 
 	var apps []types.Application
-	err := fsutils.WalkDir(input.FS, ".", required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		// Find all licenses from package.json files under node_modules dirs
-		licenses, err := a.findLicenses(input.FS, filePath)
+		licenses, err := a.findLicenses(input.FS, filePath, input.Options.WalkErrCallback)
 		if err != nil {
 			a.logger.Error("Unable to collect licenses", log.Err(err))
 			licenses = make(map[string][]string)
@@ -124,7 +124,7 @@ func (a npmLibraryAnalyzer) parseNpmPkgLock(fsys fs.FS, filePath string) (*types
 	return language.Parse(types.Npm, filePath, file, a.lockParser)
 }
 
-func (a npmLibraryAnalyzer) findLicenses(fsys fs.FS, lockPath string) (map[string][]string, error) {
+func (a npmLibraryAnalyzer) findLicenses(fsys fs.FS, lockPath string, errCallback func(filePath string, err error) error) (map[string][]string, error) {
 	dir := path.Dir(lockPath)
 	root := path.Join(dir, "node_modules")
 	if _, err := fs.Stat(fsys, root); errors.Is(err, fs.ErrNotExist) {
@@ -142,7 +142,7 @@ func (a npmLibraryAnalyzer) findLicenses(fsys fs.FS, lockPath string) (map[strin
 	// Note that fs.FS is always slashed regardless of the platform,
 	// and path.Join should be used rather than filepath.Join.
 	licenses := make(map[string][]string)
-	err := fsutils.WalkDir(fsys, root, required, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(fsys, root, required, errCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		pkg, err := a.packageParser.Parse(r)
 		if err != nil {
 			return xerrors.Errorf("unable to parse %q: %w", filePath, err)

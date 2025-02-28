@@ -58,7 +58,7 @@ func (a pubSpecLockAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostA
 		return filepath.Base(path) == types.PubSpecLock
 	}
 
-	err = fsutils.WalkDir(input.FS, ".", required, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(types.Pub, path, r, a.parser)
 		if err != nil {
 			return xerrors.Errorf("unable to parse %q: %w", path, err)
@@ -111,7 +111,7 @@ func (a pubSpecLockAnalyzer) findDependsOn() (map[string][]string, error) {
 	}
 
 	deps := make(map[string][]string)
-	if err := fsutils.WalkDir(os.DirFS(dir), ".", required, func(path string, d fs.DirEntry, r io.Reader) error {
+	if err := fsutils.WalkDir(os.DirFS(dir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		id, dependsOn, err := parsePubSpecYaml(r)
 		if err != nil {
 			a.logger.Debug("Unable to parse pubspec.yaml", log.FilePath(path), log.Err(err))

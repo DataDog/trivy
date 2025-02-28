@@ -147,8 +147,9 @@ type PostAnalysisInput struct {
 }
 
 type AnalysisOptions struct {
-	Offline      bool
-	FileChecksum bool
+	Offline         bool
+	FileChecksum    bool
+	WalkErrCallback func(string, error) error
 }
 
 type AnalysisResult struct {
@@ -423,6 +424,12 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 			ag.logger.Debug("Permission error", log.FilePath(filePath))
 			break
 		} else if err != nil {
+			if opts.WalkErrCallback != nil {
+				err = opts.WalkErrCallback(filePath, err)
+				if err == nil {
+					break
+				}
+			}
 			return xerrors.Errorf("unable to open %s: %w", filePath, err)
 		}
 
