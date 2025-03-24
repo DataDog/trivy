@@ -18,7 +18,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/java/jar"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
-	"github.com/aquasecurity/trivy/pkg/oci"
 )
 
 const (
@@ -96,21 +95,6 @@ func (u *Updater) isNewDB(ctx context.Context, meta db.Metadata) bool {
 		return true
 	}
 	return false
-}
-
-func (u *Updater) downloadDB(ctx context.Context) error {
-	log.InfoContext(ctx, "Downloading Java DB...")
-
-	artifacts := oci.NewArtifacts(u.repos, u.registryOption)
-	downloadOpt := oci.DownloadOption{
-		MediaType: mediaType,
-		Quiet:     u.quiet,
-	}
-	if err := artifacts.Download(ctx, u.dbDir, downloadOpt); err != nil {
-		return xerrors.Errorf("failed to download Java DB: %w", err)
-	}
-
-	return nil
 }
 
 func Init(cacheDir string, javaDBRepositories []name.Reference, skip, quiet bool, registryOption ftypes.RegistryOptions) {
