@@ -12,7 +12,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/google/wire"
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
@@ -81,21 +80,24 @@ func NewArtifact(rootPath string, c cache.ArtifactCache, w Walker, opt artifact.
 		artifactOption: opt,
 	}
 
-	art.logger.Debug("Analyzing...", log.String("root", art.rootPath),
-		lo.Ternary(opt.Original != "", log.String("original", opt.Original), log.Nil))
+	/*
+		art.logger.Debug("Analyzing...", log.String("root", art.rootPath),
+			lo.Ternary(opt.Original != "", log.String("original", opt.Original), log.Nil))
 
-	// Check if the directory is a git repository and clean
-	if hash, err := gitCommitHash(art.rootPath); err == nil {
-		art.logger.Debug("Using the latest commit hash for calculating cache key", log.String("commit_hash", hash))
-		art.commitHash = hash
-	} else if !errors.Is(err, git.ErrRepositoryNotExists) {
-		// Only log if the file path is a git repository
-		art.logger.Debug("Random cache key will be used", log.Err(err))
-	}
+		// Check if the directory is a git repository and clean
+		if hash, err := gitCommitHash(art.rootPath); err == nil {
+			art.logger.Debug("Using the latest commit hash for calculating cache key", log.String("commit_hash", hash))
+			art.commitHash = hash
+		} else if !errors.Is(err, git.ErrRepositoryNotExists) {
+			// Only log if the file path is a git repository
+			art.logger.Debug("Random cache key will be used", log.Err(err))
+		}
+	*/
 
 	return art, nil
 }
 
+/*
 // gitCommitHash returns the latest commit hash if the git repository is clean, otherwise returns an error
 func gitCommitHash(dir string) (string, error) {
 	repo, err := git.PlainOpen(dir)
@@ -127,6 +129,7 @@ func gitCommitHash(dir string) (string, error) {
 
 	return head.Hash().String(), nil
 }
+*/
 
 func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 	// Calculate cache key
