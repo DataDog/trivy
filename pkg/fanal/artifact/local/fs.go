@@ -12,8 +12,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
@@ -77,93 +75,7 @@ func NewArtifact(rootPath string, c cache.ArtifactCache, w Walker, opt artifact.
 		artifactOption: opt,
 	}
 
-	art.logger.Debug("Analyzing...", log.String("root", art.rootPath),
-		lo.Ternary(opt.Original != "", log.String("original", opt.Original), log.Nil))
-
-	// Check if the directory is a git repository and extract metadata
-	if art.isClean, art.repoMetadata, err = extractGitInfo(art.rootPath); err == nil {
-		// If git info is detected, change artifact type to repository
-		art.artifactOption.Type = types.TypeRepository
-		if art.isClean {
-			art.logger.Debug("Using the latest commit hash for calculating cache key",
-				log.String("commit_hash", art.repoMetadata.Commit))
-		} else {
-			art.logger.Debug("Repository is dirty, random cache key will be used")
-		}
-	} else if !errors.Is(err, git.ErrRepositoryNotExists) {
-		// Only log if the file path is a git repository
-		art.logger.Debug("Random cache key will be used", log.Err(err))
-	}
-
 	return art, nil
-}
-
-// extractGitInfo extracts git repository information including clean status and metadata
-// Returns clean status (for caching), metadata, and error
-func extractGitInfo(dir string) (bool, artifact.RepoMetadata, error) {
-	var metadata artifact.RepoMetadata
-
-	repo, err := git.PlainOpen(dir)
-	if err != nil {
-		return false, metadata, xerrors.Errorf("failed to open git repository: %w", err)
-	}
-
-	// Get HEAD commit
-	head, err := repo.Head()
-	if err != nil {
-		return false, metadata, xerrors.Errorf("failed to get HEAD: %w", err)
-	}
-
-	commit, err := repo.CommitObject(head.Hash())
-	if err != nil {
-		return false, metadata, xerrors.Errorf("failed to get commit object: %w", err)
-	}
-
-	// Extract basic commit metadata
-	metadata.Commit = head.Hash().String()
-	metadata.CommitMsg = strings.TrimSpace(commit.Message)
-	metadata.Author = commit.Author.String()
-	metadata.Committer = commit.Committer.String()
-
-	// Get branch name
-	if head.Name().IsBranch() {
-		metadata.Branch = head.Name().Short()
-	}
-
-	// Get all tag names that point to HEAD
-	if tags, err := repo.Tags(); err == nil {
-		var headTags []string
-		_ = tags.ForEach(func(tag *plumbing.Reference) error {
-			if tag.Hash() == head.Hash() {
-				headTags = append(headTags, tag.Name().Short())
-			}
-			return nil
-		})
-		metadata.Tags = headTags
-	}
-
-	// Get repository URL - prefer upstream, fallback to origin
-	remoteConfig, err := repo.Remote("upstream")
-	if err != nil {
-		remoteConfig, err = repo.Remote("origin")
-	}
-	if err == nil && len(remoteConfig.Config().URLs) > 0 {
-		metadata.RepoURL = sanitizeRemoteURL(remoteConfig.Config().URLs[0])
-	}
-
-	// Check if repository is clean for caching purposes
-	worktree, err := repo.Worktree()
-	if err != nil {
-		return false, metadata, xerrors.Errorf("failed to get worktree: %w", err)
-	}
-
-	status, err := worktree.Status()
-	if err != nil {
-		return false, metadata, xerrors.Errorf("failed to get status: %w", err)
-	}
-
-	// Return clean status and metadata
-	return status.IsClean(), metadata, nil
 }
 
 func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
