@@ -70,7 +70,7 @@ require (
 	github.com/mitchellh/hashstructure/v2 v2.0.2
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/buildkit v0.18.2
-	github.com/open-policy-agent/opa v1.1.0
+	github.com/open-policy-agent/opa v0.70.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/openvex/discovery v0.1.1-0.20240802171711-7c54efc57553
