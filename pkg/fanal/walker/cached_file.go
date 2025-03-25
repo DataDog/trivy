@@ -11,6 +11,14 @@ import (
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 )
 
+var cachedFileBufPool = sync.Pool{
+	New: func() interface{} {
+		const cachedFileBufPoolSize = 256 * 1024
+		b := make([]byte, cachedFileBufPoolSize)
+		return &b // classic pointer trick to avoid keep interface stack-allocated
+	},
+}
+
 // cachedFile represents a file cached in memory or storage according to the file size.
 type cachedFile struct {
 	once sync.Once
@@ -19,14 +27,24 @@ type cachedFile struct {
 	size   int64
 	reader io.Reader
 
-	content  []byte // It will be populated if this file is small
+	content  []byte // It will be populated if this file is small, or used as copy buffer if this file is large
 	filePath string // It will be populated if this file is large
 }
 
 func newCachedFile(size int64, r io.Reader) *cachedFile {
+	content := *cachedFileBufPool.Get().(*[]byte)
+	if size >= defaultSizeThreshold {
+		content = content[:cap(content)]
+	} else {
+		if cap(content) < int(size) {
+			content = make([]byte, size)
+		}
+		content = content[:size]
+	}
 	return &cachedFile{
-		size:   size,
-		reader: r,
+		reader:  r,
+		size:    size,
+		content: content,
 	}
 }
 
@@ -43,19 +61,21 @@ func (o *cachedFile) Open() (xio.ReadSeekCloserAt, error) {
 				return
 			}
 
-			if _, err = io.Copy(f, o.reader); err != nil {
+			// HACK: anonymous struct hack to actually reuse the buffer passed to
+			// CopyBuffer. Without this, the CopyBuffer will rely on os.genericReadFrom
+			// which will not reuse our buffer.
+			// ref: https://github.com/golang/go/issues/16474
+			if _, err = io.CopyBuffer(struct{ io.Writer }{f}, o.reader, o.content); err != nil {
 				o.err = xerrors.Errorf("failed to copy: %w", err)
 				return
 			}
-
 			o.filePath = f.Name()
 		} else {
-			b, err := io.ReadAll(o.reader)
+			_, err := io.ReadFull(o.reader, o.content)
 			if err != nil {
 				o.err = xerrors.Errorf("unable to read the file: %w", err)
 				return
 			}
-			o.content = b
 		}
 	})
 	if o.err != nil {
@@ -78,5 +98,6 @@ func (o *cachedFile) open() (xio.ReadSeekCloserAt, error) {
 }
 
 func (o *cachedFile) Clean() error {
+	cachedFileBufPool.Put(&o.content)
 	return os.Remove(o.filePath)
 }
