@@ -29,7 +29,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/semaphore"
 	trivyTypes "github.com/aquasecurity/trivy/pkg/types"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
-	xos "github.com/aquasecurity/trivy/pkg/x/os"
 	xslices "github.com/aquasecurity/trivy/pkg/x/slices"
 )
 
@@ -66,11 +65,6 @@ func NewArtifact(img types.Image, c cache.ArtifactCache, opt artifact.Option) (a
 		return nil, xerrors.Errorf("config analyzer group error: %w", err)
 	}
 
-	cacheDir, err := xos.MkdirTemp("", "image-layers-")
-	if err != nil {
-		return nil, xerrors.Errorf("failed to create a cache layers temp dir: %w", err)
-	}
-
 	return Artifact{
 		logger:         log.WithPrefix("image"),
 		image:          img,
@@ -81,7 +75,6 @@ func NewArtifact(img types.Image, c cache.ArtifactCache, opt artifact.Option) (a
 		handlerManager: handlerManager,
 
 		artifactOption: opt,
-		layerCacheDir:  cacheDir,
 	}, nil
 }
 
@@ -99,15 +92,6 @@ func (a Artifact) Inspect(ctx context.Context) (ref artifact.Reference, err erro
 
 	diffIDs := a.diffIDs(configFile)
 	a.logger.Debug("Detected diff ID", log.Any("diff_ids", diffIDs))
-
-	defer func() {
-		if rerr := os.RemoveAll(a.layerCacheDir); rerr != nil {
-			log.Error("Failed to remove layer cache", log.Err(rerr))
-		}
-	}()
-	if err := a.checkImageSize(ctx, diffIDs); err != nil {
-		return artifact.Reference{}, err
-	}
 
 	// Try to detect base layers.
 	baseDiffIDs := a.guessBaseLayers(diffIDs, configFile)
