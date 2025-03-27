@@ -432,8 +432,7 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, wg *sync.WaitGroup, lim
 			break
 		} else if err != nil {
 			if opts.WalkErrCallback != nil {
-				err = opts.WalkErrCallback(filePath, err)
-				if err == nil {
+				if errCb := opts.WalkErrCallback(filePath, err); errCb == nil {
 					break
 				}
 			}

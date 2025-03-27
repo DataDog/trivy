@@ -66,13 +66,8 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 
 	packageFiles := make(map[string][]string)
 
-	errCallback := input.Options.WalkErrCallback
-	if errCallback == nil {
-		errCallback = fsutils.DefaultWalkErrorCallback
-	}
-
 	// parse list files
-	err = fsutils.WalkDir(input.FS, infoDir, fsutils.RequiredExt(".list"), errCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(input.FS, infoDir, fsutils.RequiredExt(".list"), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		scanner := bufio.NewScanner(r)
 		systemFiles, err := a.parseDpkgInfoList(scanner)
 		if err != nil {
@@ -90,7 +85,14 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	parseRootStatusFile := func() ([]types.PackageInfo, error) {
 		f, err := input.FS.Open(statusFile)
 		if err != nil {
-			return nil, errCallback(statusFile, fmt.Errorf("failed to open %s: %w", statusFile, err))
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil, nil
+			}
+			errOpen := fmt.Errorf("failed to open %s: %w", statusFile, err)
+			if input.Options.WalkErrCallback != nil {
+				return nil, input.Options.WalkErrCallback(statusFile, errOpen)
+			}
+			return nil, errOpen
 		}
 		defer f.Close()
 
@@ -107,7 +109,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	packageInfos = append(packageInfos, rootStatusInfos...)
 
 	// parse status files
-	err = fsutils.WalkDir(input.FS, statusDir, fsutils.RequiredAll(), errCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(input.FS, statusDir, fsutils.RequiredAll(), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		infos, err := a.parseDpkgStatus(path, r, digests)
 		if err != nil {
 			return err
