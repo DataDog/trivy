@@ -1,8 +1,9 @@
 package javaparser
 
 import (
+	"regexp"
+
 	"golang.org/x/xerrors"
-	"rsc.io/binaryregexp"
 
 	"github.com/aquasecurity/trivy/pkg/dependency"
 	exe "github.com/aquasecurity/trivy/pkg/dependency/parser/executable"
@@ -12,7 +13,6 @@ import (
 
 var (
 	ErrUnrecognizedExe = xerrors.New("unrecognized executable format")
-	ErrNonPythonBinary = xerrors.New("non Python binary")
 )
 
 type Parser struct{}
@@ -21,7 +21,7 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
-var versReg = binaryregexp.MustCompile(`(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+)\x00openjdk)?\x00java(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+))?\x00`)
+var versReg = regexp.MustCompile(`(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+)\x00openjdk)?\x00java(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+))?\x00`)
 
 // Parse scans file to try to report the Python version.
 func (p *Parser) Parse(r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
