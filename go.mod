@@ -103,7 +103,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 	modernc.org/sqlite v1.60.1
-	rsc.io/binaryregexp v0.2.0
 )
 
 require (
