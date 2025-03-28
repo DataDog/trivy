@@ -1,5 +1,3 @@
-// Ported from https://github.com/golang/go/blob/e9c96835971044aa4ace37c7787de231bbde05d9/src/cmd/go/internal/version/version.go
-
 package javaparser
 
 import (
