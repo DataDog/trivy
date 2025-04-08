@@ -50,7 +50,8 @@ func (o *cachedFile) Open() (xio.ReadSeekCloserAt, error) {
 
 			o.filePath = f.Name()
 		} else {
-			b, err := io.ReadAll(o.reader)
+			b := make([]byte, 0, o.size)
+			_, err := readAll(o.reader, b)
 			if err != nil {
 				o.err = xerrors.Errorf("unable to read the file: %w", err)
 				return
@@ -79,4 +80,24 @@ func (o *cachedFile) open() (xio.ReadSeekCloserAt, error) {
 
 func (o *cachedFile) Clean() error {
 	return os.Remove(o.filePath)
+}
+
+// readAll works like io.ReadAll, except it takes a pre-allocated buffer. Useful
+// in our case when we know in advance the expected size of the reader content.
+func readAll(r io.Reader, b []byte) ([]byte, error) {
+	for {
+		n, err := r.Read(b[len(b):cap(b)])
+		b = b[:len(b)+n]
+		if err != nil {
+			if err == io.EOF {
+				err = nil
+			}
+			return b, err
+		}
+
+		if len(b) == cap(b) {
+			// Add more capacity (let append pick how much).
+			b = append(b, 0)[:len(b)]
+		}
+	}
 }
