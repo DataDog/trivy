@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/fs"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"golang.org/x/xerrors"
@@ -35,7 +34,7 @@ func NewLayerTar(opt Option) LayerTar {
 }
 
 func (w LayerTar) Walk(layer io.Reader, analyzeFn WalkFunc) ([]string, []string, error) {
-	var opqDirs, whFiles, skippedDirs []string
+	var opqDirs, whFiles []string
 	tr := tar.NewReader(layer)
 	for {
 		hdr, err := tr.Next()
@@ -66,7 +65,6 @@ func (w LayerTar) Walk(layer io.Reader, analyzeFn WalkFunc) ([]string, []string,
 		switch hdr.Typeflag {
 		case tar.TypeDir:
 			if utils.SkipPath(filePath, w.skipDirs) {
-				skippedDirs = append(skippedDirs, filePath)
 				continue
 			}
 		case tar.TypeReg:
@@ -78,7 +76,7 @@ func (w LayerTar) Walk(layer io.Reader, analyzeFn WalkFunc) ([]string, []string,
 			continue
 		}
 
-		if underSkippedDir(filePath, skippedDirs) {
+		if underSkippedDir(fileDir, w.skipDirs) {
 			continue
 		}
 
@@ -104,15 +102,14 @@ func (w LayerTar) processFile(filePath string, tr *tar.Reader, fi fs.FileInfo, a
 	return nil
 }
 
-func underSkippedDir(filePath string, skipDirs []string) bool {
-	for _, skipDir := range skipDirs {
-		rel, err := filepath.Rel(skipDir, filePath)
-		if err != nil {
-			return false
-		}
-		if !strings.HasPrefix(rel, parentDir) {
+func underSkippedDir(fileDir string, cleanSkipDirs []string) bool {
+	cleanFileDir := strings.TrimRight(fileDir, "/")
+	for len(cleanFileDir) > 0 {
+		if utils.SkipPath(cleanFileDir, cleanSkipDirs) {
 			return true
 		}
+		cleanFileDir, _ = path.Split(cleanFileDir)
+		cleanFileDir = strings.TrimRight(cleanFileDir, "/")
 	}
 	return false
 }
