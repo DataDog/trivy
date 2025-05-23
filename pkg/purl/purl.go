@@ -7,7 +7,7 @@ import (
 
 	cn "github.com/google/go-containerregistry/pkg/name"
 	version "github.com/knqyf263/go-rpm-version"
-	packageurl "github.com/package-url/packageurl-go"
+	"github.com/package-url/packageurl-go"
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
 
@@ -42,6 +42,10 @@ const (
 	NamespaceOCP = "ocp"
 
 	TypeUnknown = "unknown"
+
+	// Temporary type before being added in github.com/package-url/packageurl-go
+	// cf. https://github.com/package-url/purl-spec/issues/454
+	packageurlTypeBottlerocket = "bottlerocket"
 )
 
 type PackageURL packageurl.PackageURL
@@ -80,6 +84,8 @@ func New(t ftypes.TargetType, metadata types.Metadata, pkg ftypes.Package) (*Pac
 		if metadata.OS != nil {
 			namespace = string(metadata.OS.Family)
 		}
+	case packageurlTypeBottlerocket:
+		qualifiers = append(qualifiers, packageurl.Qualifiers{packageurl.Qualifier{Key: "distro", Value: fmt.Sprintf("bottlerocket-%s", metadata.OS.Name)}}...)
 	case packageurl.TypeApk:
 		var qs packageurl.Qualifiers
 		name, namespace, qs = parseApk(name, metadata.OS)
@@ -443,6 +449,7 @@ func parseJulia(pkgName, pkgUUID string) (string, string, packageurl.Qualifiers)
 	return namespace, name, qualifiers
 }
 
+// nolint: gocyclo
 func purlType(t ftypes.TargetType) string {
 	switch t {
 	case ftypes.Jar, ftypes.Pom, ftypes.Gradle, ftypes.Sbt:
@@ -484,6 +491,8 @@ func purlType(t ftypes.TargetType) string {
 		return packageurl.TypeRPM
 	case ftypes.PythonExecutable, ftypes.PhpExecutable, ftypes.NodeJsExecutable, ftypes.JavaExecutable:
 		return packageurl.TypeGeneric
+	case ftypes.Bottlerocket:
+		return packageurlTypeBottlerocket
 	case TypeOCI:
 		return packageurl.TypeOCI
 	case ftypes.Julia:
