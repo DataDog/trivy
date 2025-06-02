@@ -57,7 +57,7 @@ func (a juliaAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnaly
 		return filepath.Base(path) == types.JuliaManifest || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		// Parse Manifest.toml
 		app, err := a.parseJuliaManifest(ctx, path, r)
 		if err != nil {

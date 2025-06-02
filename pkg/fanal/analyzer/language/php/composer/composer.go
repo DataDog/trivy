@@ -50,7 +50,7 @@ func (a composerAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAn
 		return filepath.Base(path) == types.ComposerLock || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		// Parse composer.lock
 		app, err := a.parseComposerLock(ctx, path, r)
 		if err != nil {

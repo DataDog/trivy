@@ -63,7 +63,7 @@ func (a cargoAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnaly
 		return filepath.Base(path) == types.CargoLock || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		// Parse Cargo.lock
 		app, err := a.parseCargoLock(ctx, filePath, r)
 		if err != nil {

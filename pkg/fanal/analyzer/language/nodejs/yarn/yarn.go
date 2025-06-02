@@ -76,7 +76,7 @@ func (a yarnAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 		return filepath.Base(path) == types.YarnLock || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		parser := &parserWithPatterns{}
 		// Parse yarn.lock
 		app, err := language.Parse(ctx, types.Yarn, filePath, r, parser)
@@ -86,13 +86,13 @@ func (a yarnAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 			return nil
 		}
 
-		licenses, err := a.traverseLicenses(input.FS, filePath)
+		licenses, err := a.traverseLicenses(ctx, input.FS, filePath)
 		if err != nil {
 			a.logger.Debug("Unable to traverse licenses", log.Err(err))
 		}
 
 		// Parse package.json alongside yarn.lock to find direct deps and mark dev deps
-		if err = a.analyzeDependencies(input.FS, path.Dir(filePath), app, parser.patterns); err != nil {
+		if err = a.analyzeDependencies(ctx, input.FS, path.Dir(filePath), app, parser.patterns); err != nil {
 			a.logger.Warn("Unable to parse package.json to remove dev dependencies",
 				log.FilePath(path.Join(path.Dir(filePath), types.NpmPkg)), log.Err(err))
 		}
@@ -162,9 +162,9 @@ func (a yarnAnalyzer) Version() int {
 
 // analyzeDependencies analyzes the package.json file next to yarn.lock,
 // distinguishing between direct and transitive dependencies as well as production and development dependencies.
-func (a yarnAnalyzer) analyzeDependencies(fsys fs.FS, dir string, app *types.Application, patterns map[string][]string) error {
+func (a yarnAnalyzer) analyzeDependencies(ctx context.Context, fsys fs.FS, dir string, app *types.Application, patterns map[string][]string) error {
 	packageJsonPath := path.Join(dir, types.NpmPkg)
-	root, workspaces, err := a.parsePackageJSON(fsys, packageJsonPath)
+	root, workspaces, err := a.parsePackageJSON(ctx, fsys, packageJsonPath)
 	if errors.Is(err, fs.ErrNotExist) {
 		a.logger.Debug("package.json not found", log.FilePath(packageJsonPath))
 		return nil
@@ -194,7 +194,7 @@ func (a yarnAnalyzer) analyzeDependencies(fsys fs.FS, dir string, app *types.App
 	return nil
 }
 
-func (a yarnAnalyzer) parsePackageJSON(fsys fs.FS, filePath string) (packagejson.Package, []packagejson.Package, error) {
+func (a yarnAnalyzer) parsePackageJSON(ctx context.Context, fsys fs.FS, filePath string) (packagejson.Package, []packagejson.Package, error) {
 	// Parse package.json
 	f, err := fsys.Open(filePath)
 	if err != nil {
@@ -210,7 +210,7 @@ func (a yarnAnalyzer) parsePackageJSON(fsys fs.FS, filePath string) (packagejson
 	root.Package.ID = cmp.Or(root.Package.ID, filePath) // In case the package.json doesn't have a name or version
 	root.Package.Relationship = types.RelationshipRoot
 
-	workspaces, err := a.traverseWorkspaces(fsys, path.Dir(filePath), root.Workspaces)
+	workspaces, err := a.traverseWorkspaces(ctx, fsys, path.Dir(filePath), root.Workspaces)
 	if err != nil {
 		return packagejson.Package{}, nil, xerrors.Errorf("traverse workspaces error: %w", err)
 	}
@@ -356,7 +356,7 @@ func (a yarnAnalyzer) walkIndirectDependencies(pkg types.Package, pkgs map[strin
 	}
 }
 
-func (a yarnAnalyzer) traverseWorkspaces(fsys fs.FS, dir string, workspaces []string) ([]packagejson.Package, error) {
+func (a yarnAnalyzer) traverseWorkspaces(ctx context.Context, fsys fs.FS, dir string, workspaces []string) ([]packagejson.Package, error) {
 	var pkgs []packagejson.Package
 
 	required := func(path string, _ fs.DirEntry) bool {
@@ -382,7 +382,7 @@ func (a yarnAnalyzer) traverseWorkspaces(fsys fs.FS, dir string, workspaces []st
 			return nil, err
 		}
 		for _, match := range matches {
-			if err := fsutils.WalkDir(fsys, match, required, fsutils.DefaultWalkErrorCallback, walkDirFunc); err != nil {
+			if err := fsutils.WalkDir(ctx, fsys, match, required, fsutils.DefaultWalkErrorCallback, walkDirFunc); err != nil {
 				return nil, xerrors.Errorf("walk error: %w", err)
 			}
 		}
@@ -391,7 +391,7 @@ func (a yarnAnalyzer) traverseWorkspaces(fsys fs.FS, dir string, workspaces []st
 	return pkgs, nil
 }
 
-func (a yarnAnalyzer) traverseLicenses(fsys fs.FS, lockPath string) (map[string][]string, error) {
+func (a yarnAnalyzer) traverseLicenses(ctx context.Context, fsys fs.FS, lockPath string) (map[string][]string, error) {
 	sub, err := fs.Sub(fsys, path.Dir(lockPath))
 	if err != nil {
 		return nil, xerrors.Errorf("fs error: %w", err)
@@ -399,14 +399,14 @@ func (a yarnAnalyzer) traverseLicenses(fsys fs.FS, lockPath string) (map[string]
 	var errs error
 
 	// Yarn v1
-	licenses, err := a.traverseYarnClassicPkgs(sub)
+	licenses, err := a.traverseYarnClassicPkgs(ctx, sub)
 	if err == nil {
 		return licenses, nil
 	}
 	errs = multierror.Append(errs, err)
 
 	// Yarn v2+
-	licenses, err = a.traverseYarnModernPkgs(sub)
+	licenses, err = a.traverseYarnModernPkgs(ctx, sub)
 	if err == nil {
 		return licenses, nil
 	}
@@ -415,11 +415,11 @@ func (a yarnAnalyzer) traverseLicenses(fsys fs.FS, lockPath string) (map[string]
 	return nil, errs
 }
 
-func (a yarnAnalyzer) traverseYarnClassicPkgs(fsys fs.FS) (map[string][]string, error) {
-	return a.license.Traverse(fsys, "node_modules")
+func (a yarnAnalyzer) traverseYarnClassicPkgs(ctx context.Context, fsys fs.FS) (map[string][]string, error) {
+	return a.license.Traverse(ctx, fsys, "node_modules")
 }
 
-func (a yarnAnalyzer) traverseYarnModernPkgs(fsys fs.FS) (map[string][]string, error) {
+func (a yarnAnalyzer) traverseYarnModernPkgs(ctx context.Context, fsys fs.FS) (map[string][]string, error) {
 	sub, err := fs.Sub(fsys, ".yarn")
 	if err != nil {
 		return nil, xerrors.Errorf("fs error: %w", err)
@@ -428,13 +428,13 @@ func (a yarnAnalyzer) traverseYarnModernPkgs(fsys fs.FS) (map[string][]string, e
 	var errs error
 	licenses := make(map[string][]string)
 
-	if ll, err := a.traverseUnpluggedDir(sub); err != nil {
+	if ll, err := a.traverseUnpluggedDir(ctx, sub); err != nil {
 		errs = multierror.Append(errs, err)
 	} else {
 		licenses = lo.Assign(licenses, ll)
 	}
 
-	if ll, err := a.traverseCacheDir(sub); err != nil {
+	if ll, err := a.traverseCacheDir(ctx, sub); err != nil {
 		errs = multierror.Append(errs, err)
 	} else {
 		licenses = lo.Assign(licenses, ll)
@@ -447,16 +447,16 @@ func (a yarnAnalyzer) traverseYarnModernPkgs(fsys fs.FS) (map[string][]string, e
 	return licenses, nil
 }
 
-func (a yarnAnalyzer) traverseUnpluggedDir(fsys fs.FS) (map[string][]string, error) {
+func (a yarnAnalyzer) traverseUnpluggedDir(ctx context.Context, fsys fs.FS) (map[string][]string, error) {
 	// `unplugged` hold machine-specific build artifacts
 	// Traverse .yarn/unplugged dir
-	return a.license.Traverse(fsys, "unplugged")
+	return a.license.Traverse(ctx, fsys, "unplugged")
 }
 
-func (a yarnAnalyzer) traverseCacheDir(fsys fs.FS) (map[string][]string, error) {
+func (a yarnAnalyzer) traverseCacheDir(ctx context.Context, fsys fs.FS) (map[string][]string, error) {
 	// Traverse .yarn/cache dir
 	licenses := make(map[string][]string)
-	err := fsutils.WalkDir(fsys, "cache", fsutils.RequiredExt(".zip"), fsutils.DefaultWalkErrorCallback,
+	err := fsutils.WalkDir(ctx, fsys, "cache", fsutils.RequiredExt(".zip"), fsutils.DefaultWalkErrorCallback,
 		func(_ string, d fs.DirEntry, r io.Reader) error {
 			fi, err := d.Info()
 			if err != nil {
@@ -473,7 +473,7 @@ func (a yarnAnalyzer) traverseCacheDir(fsys fs.FS) (map[string][]string, error) 
 				return xerrors.Errorf("zip reader error: %w", err)
 			}
 
-			if l, err := a.license.Traverse(zr, "node_modules"); err != nil {
+			if l, err := a.license.Traverse(ctx, zr, "node_modules"); err != nil {
 				return xerrors.Errorf("license traverse error: %w", err)
 			} else {
 				licenses = lo.Assign(licenses, l)

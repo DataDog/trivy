@@ -66,7 +66,7 @@ func (a pipLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 
 	useMinVersion := a.detectionPriority == types.PriorityComprehensive
 
-	if err = fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(pathPath string, _ fs.DirEntry, r io.Reader) error {
+	if err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(pathPath string, _ fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(ctx, types.Pip, pathPath, r, pip.NewParser(useMinVersion))
 		if err != nil {
 			return xerrors.Errorf("unable to parse requirements.txt: %w", err)

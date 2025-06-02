@@ -1,6 +1,7 @@
 package gradle
 
 import (
+	"context"
 	"encoding/xml"
 	"io"
 	"io/fs"
@@ -65,7 +66,7 @@ func (props *Properties) UnmarshalXML(d *xml.Decoder, _ xml.StartElement) error 
 	return nil
 }
 
-func (a gradleLockAnalyzer) parsePoms() (map[string]pomXML, error) {
+func (a gradleLockAnalyzer) parsePoms(ctx context.Context) (map[string]pomXML, error) {
 	cacheDir := a.detectCacheDir()
 	// Cache dir is not found
 	if cacheDir == "" {
@@ -77,7 +78,7 @@ func (a gradleLockAnalyzer) parsePoms() (map[string]pomXML, error) {
 	}
 
 	var poms = make(map[string]pomXML)
-	err := fsutils.WalkDir(os.DirFS(cacheDir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, os.DirFS(cacheDir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		pom, err := parsePom(r, path)
 		if err != nil {
 			a.logger.Debug("Unable to parse pom", log.FilePath(path), log.Err(err))
