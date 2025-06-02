@@ -51,9 +51,9 @@ func (a bunLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 	}
 
 	var apps []types.Application
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, _ io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, _ io.Reader) error {
 		// Find all licenses from package.json files under node_modules dirs
-		licenses, err := a.license.Traverse(input.FS, path.Join(path.Dir(filePath), "node_modules"), input.Options.WalkErrCallback)
+		licenses, err := a.license.Traverse(ctx, input.FS, path.Join(path.Dir(filePath), "node_modules"), input.Options.WalkErrCallback)
 		if err != nil {
 			a.logger.Error("Unable to collect licenses", log.Err(err))
 			licenses = make(map[string][]string)
