@@ -54,7 +54,7 @@ var (
 	dpkgSrcCaptureRegexpNames = dpkgSrcCaptureRegexp.SubexpNames()
 )
 
-func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a dpkgAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	var systemInstalledFiles []string
 	var packageInfos []types.PackageInfo
 
@@ -67,7 +67,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	packageFiles := make(map[string][]string)
 
 	// parse list files
-	err = fsutils.WalkDir(input.FS, infoDir, fsutils.RequiredExt(".list"), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, infoDir, fsutils.RequiredExt(".list"), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		scanner := bufio.NewScanner(r)
 		systemFiles, err := a.parseDpkgInfoList(scanner)
 		if err != nil {
@@ -109,7 +109,7 @@ func (a dpkgAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysis
 	packageInfos = append(packageInfos, rootStatusInfos...)
 
 	// parse status files
-	err = fsutils.WalkDir(input.FS, statusDir, fsutils.RequiredAll(), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, statusDir, fsutils.RequiredAll(), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		infos, err := a.parseDpkgStatus(path, r, digests)
 		if err != nil {
 			return err

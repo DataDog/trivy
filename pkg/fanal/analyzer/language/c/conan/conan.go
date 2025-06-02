@@ -43,19 +43,19 @@ func newConanLockAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, er
 	}, nil
 }
 
-func (a conanLockAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a conanLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	required := func(filePath string, d fs.DirEntry) bool {
 		// we need all file got from `a.Required` function (conan.lock files) and from file-patterns.
 		return true
 	}
 
-	licenses, err := licensesFromCache(input.Options.WalkErrCallback)
+	licenses, err := licensesFromCache(ctx, input.Options.WalkErrCallback)
 	if err != nil {
 		a.logger.Debug("Unable to parse cache directory to obtain licenses", log.Err(err))
 	}
 
 	var apps []types.Application
-	if err = fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	if err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(types.Conan, filePath, r, a.parser)
 		if err != nil {
 			return xerrors.Errorf("%s parse error: %w", filePath, err)
@@ -86,7 +86,7 @@ func (a conanLockAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAna
 	}, nil
 }
 
-func licensesFromCache(errCallback func(path string, err error) error) (map[string]string, error) {
+func licensesFromCache(ctx context.Context, errCallback func(path string, err error) error) (map[string]string, error) {
 	cacheDir, err := detectCacheDir()
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func licensesFromCache(errCallback func(path string, err error) error) (map[stri
 	}
 
 	licenses := make(map[string]string)
-	if err := fsutils.WalkDir(os.DirFS(cacheDir), ".", required, errCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	if err := fsutils.WalkDir(ctx, os.DirFS(cacheDir), ".", required, errCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		scanner := bufio.NewScanner(r)
 		var name, license string
 		for scanner.Scan() {
