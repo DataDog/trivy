@@ -58,7 +58,7 @@ type packagingAnalyzer struct {
 }
 
 // PostAnalyze analyzes egg and wheel files.
-func (a packagingAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a packagingAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 
 	var apps []types.Application
 
@@ -66,7 +66,7 @@ func (a packagingAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAna
 		return filepath.Base(path) == "METADATA" || isEggFile(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, d fs.DirEntry, r io.Reader) error {
 		rsa, ok := r.(xio.ReadSeekerAt)
 		if !ok {
 			return xerrors.New("invalid reader")

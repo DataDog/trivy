@@ -50,14 +50,14 @@ func newJuliaAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error)
 	}, nil
 }
 
-func (a juliaAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a juliaAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	var apps []types.Application
 
 	required := func(path string, d fs.DirEntry) bool {
 		return filepath.Base(path) == types.JuliaManifest
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		// Parse Manifest.toml
 		app, err := a.parseJuliaManifest(path, r)
 		if err != nil {

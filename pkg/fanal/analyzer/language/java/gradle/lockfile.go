@@ -42,8 +42,8 @@ func newGradleLockAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, e
 	}, nil
 }
 
-func (a gradleLockAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
-	poms, err := a.parsePoms()
+func (a gradleLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+	poms, err := a.parsePoms(ctx)
 	if err != nil {
 		a.logger.Warn("Unable to get licenses and dependencies", log.Err(err))
 	}
@@ -53,7 +53,7 @@ func (a gradleLockAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAn
 	}
 
 	var apps []types.Application
-	err = fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		var app *types.Application
 		app, err = language.Parse(types.Gradle, filePath, r, a.parser)
 		if err != nil {

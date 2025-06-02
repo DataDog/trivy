@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"path"
 	"strings"
+	"context"
 
 	"golang.org/x/xerrors"
 
@@ -30,7 +31,7 @@ func NewLicense(classifierConfidenceLevel float64) *License {
 	}
 }
 
-func (l *License) Traverse(fsys fs.FS, root string) (map[string][]string, error) {
+func (l *License) Traverse(ctx context.Context, fsys fs.FS, root string) (map[string][]string, error) {
 	licenses := make(map[string][]string)
 	walkDirFunc := func(pkgJSONPath string, d fs.DirEntry, r io.Reader) error {
 		pkg, err := l.parser.Parse(r)
@@ -59,7 +60,7 @@ func (l *License) Traverse(fsys fs.FS, root string) (map[string][]string, error)
 		}
 		return nil
 	}
-	if err := fsutils.WalkDir(fsys, root, fsutils.RequiredFile(types.NpmPkg), fsutils.DefaultWalkErrorCallback, walkDirFunc); err != nil {
+	if err := fsutils.WalkDir(ctx, fsys, root, fsutils.RequiredFile(types.NpmPkg), fsutils.DefaultWalkErrorCallback, walkDirFunc); err != nil {
 		return nil, xerrors.Errorf("walk error: %w", err)
 	}
 
