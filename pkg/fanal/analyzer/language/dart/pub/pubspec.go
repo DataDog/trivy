@@ -49,7 +49,7 @@ func (a pubSpecLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Pos
 
 	// get all DependsOn from cache dir
 	// lib ID -> DependsOn names
-	allDependsOn, err := a.findDependsOn()
+	allDependsOn, err := a.findDependsOn(ctx)
 	if err != nil {
 		a.logger.Warn("Unable to parse cache dir", log.Err(err))
 	}
@@ -59,7 +59,7 @@ func (a pubSpecLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Pos
 		return true
 	}
 
-	err = fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(ctx, types.Pub, path, r, a.parser)
 		if err != nil {
 			return xerrors.Errorf("unable to parse %q: %w", path, err)
@@ -99,7 +99,7 @@ func (a pubSpecLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Pos
 	}, nil
 }
 
-func (a pubSpecLockAnalyzer) findDependsOn() (map[string][]string, error) {
+func (a pubSpecLockAnalyzer) findDependsOn(ctx context.Context) (map[string][]string, error) {
 	dir := cacheDir()
 	if !fsutils.DirExists(dir) {
 		a.logger.Debug("Cache dir not found. Need 'dart pub get' to fill dependency relationships",
@@ -112,7 +112,7 @@ func (a pubSpecLockAnalyzer) findDependsOn() (map[string][]string, error) {
 	}
 
 	deps := make(map[string][]string)
-	if err := fsutils.WalkDir(os.DirFS(dir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	if err := fsutils.WalkDir(ctx, os.DirFS(dir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		id, dependsOn, err := parsePubSpecYaml(r)
 		if err != nil {
 			a.logger.Debug("Unable to parse pubspec.yaml", log.FilePath(path), log.Err(err))

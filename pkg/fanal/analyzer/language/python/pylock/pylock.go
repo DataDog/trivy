@@ -48,7 +48,7 @@ func (a pylockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return a.matchLockFile(path) || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(ctx, types.PyLock, path, r, a.lockParser)
 		if err != nil {
 			return xerrors.Errorf("unable to parse pylock file: %w", err)

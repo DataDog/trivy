@@ -1,6 +1,7 @@
 package fsutils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -81,7 +82,7 @@ type WalkDirFunc func(path string, d fs.DirEntry, r io.Reader) error
 
 type WalkDirErrorCallback func(path string, err error) error
 
-func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, errCallback WalkDirErrorCallback, fn WalkDirFunc) error {
+func WalkDir(ctx context.Context, fsys fs.FS, root string, required WalkDirRequiredFunc, errCallback WalkDirErrorCallback, fn WalkDirFunc) error {
 	return fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if os.IsPermission(err) {
@@ -93,6 +94,12 @@ func WalkDir(fsys fs.FS, root string, required WalkDirRequiredFunc, errCallback 
 			return err
 		} else if !d.Type().IsRegular() || !required(path, d) {
 			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
 
 		f, err := fsys.Open(path)

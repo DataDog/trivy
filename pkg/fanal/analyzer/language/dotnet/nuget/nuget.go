@@ -64,7 +64,7 @@ func (a *nugetLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.P
 		return true
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, r io.Reader) error {
 		// Set the default parser
 		parser := a.lockParser
 
