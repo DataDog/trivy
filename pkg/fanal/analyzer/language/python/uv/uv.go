@@ -35,13 +35,13 @@ func NewUvAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	}, nil
 }
 
-func (a *uvAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a *uvAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	var apps []types.Application
 	required := func(path string, d fs.DirEntry) bool {
 		return filepath.Base(path) == types.UvLock
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		// Parse uv.lock
 		app, err := language.Parse(types.Uv, path, r, a.lockParser)
 		if err != nil {

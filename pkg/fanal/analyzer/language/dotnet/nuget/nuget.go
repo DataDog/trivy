@@ -52,7 +52,7 @@ func newNugetLibraryAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer,
 	}, nil
 }
 
-func (a *nugetLibraryAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a *nugetLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	var apps []types.Application
 	foundLicenses := make(map[string][]string)
 	if a.licenseParser.packagesDir == "" {
@@ -65,7 +65,7 @@ func (a *nugetLibraryAnalyzer) PostAnalyze(_ context.Context, input analyzer.Pos
 		return true
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		// Set the default parser
 		parser := a.lockParser
 

@@ -43,14 +43,14 @@ func newComposerAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, err
 	}, nil
 }
 
-func (a composerAnalyzer) PostAnalyze(_ context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a composerAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	var apps []types.Application
 
 	required := func(path string, d fs.DirEntry) bool {
 		return filepath.Base(path) == types.ComposerLock
 	}
 
-	err := fsutils.WalkDir(input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		// Parse composer.lock
 		app, err := a.parseComposerLock(path, r)
 		if err != nil {
