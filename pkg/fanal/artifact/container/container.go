@@ -86,11 +86,6 @@ func NewArtifact(ctr types.Container, c cache.ArtifactCache, w Walker, opt artif
 		walkerOption: opt.WalkerOption,
 	}
 
-	// Root SkipFiles, SkipDirs and OnlyDirs list of files to each layer path.
-	artifact.walkerOption.SkipFiles = rootFiles(ctr.Layers(), artifact.walkerOption.SkipFiles)
-	artifact.walkerOption.SkipDirs = rootFiles(ctr.Layers(), artifact.walkerOption.SkipDirs)
-	artifact.walkerOption.OnlyDirs = rootFiles(ctr.Layers(), artifact.walkerOption.OnlyDirs)
-
 	// Don't skip non-regular files.
 	artifact.walkerOption.AllFiles = true
 
@@ -457,14 +452,4 @@ func (a Artifact) guessBaseLayers(diffIDs []string, configFile *v1.ConfigFile) [
 		diffIDIndex++
 	}
 	return baseDiffIDs
-}
-
-func rootFiles(layers []types.LayerPath, files []string) []string {
-	s := make([]string, 0)
-	for _, layer := range layers {
-		for _, file := range files {
-			s = append(s, filepath.Join(layer.Path, file))
-		}
-	}
-	return s
 }
