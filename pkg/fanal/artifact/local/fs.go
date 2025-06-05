@@ -40,7 +40,7 @@ var (
 )
 
 type Walker interface {
-	Walk(root string, opt walker.Option, fn walker.WalkFunc) error
+	Walk(ctx context.Context, root string, opt walker.Option, fn walker.WalkFunc) error
 }
 
 type Artifact struct {
@@ -271,7 +271,7 @@ func (a Artifact) analyzeWithStaticPaths(ctx context.Context, wg *sync.WaitGroup
 func (a Artifact) analyzeWithTraversal(ctx context.Context, root, relativePath string, wg *sync.WaitGroup, limit *semaphore.Weighted,
 	result *analyzer.AnalysisResult, composite *analyzer.CompositeFS, opts analyzer.AnalysisOptions) error {
 
-	return a.walker.Walk(filepath.Join(root, relativePath), a.artifactOption.WalkerOption, func(filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	return a.walker.Walk(ctx, filepath.Join(root, relativePath), a.artifactOption.WalkerOption, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		filePath = path.Join(relativePath, filePath)
 		if err := a.analyzer.AnalyzeFile(ctx, wg, limit, result, root, filePath, info, opener, nil, opts); err != nil {
 			return xerrors.Errorf("analyze file (%s): %w", filePath, err)
