@@ -2,6 +2,7 @@ package walker
 
 import (
 	"archive/tar"
+	"context"
 	"io"
 	"io/fs"
 	"path"
@@ -34,7 +35,7 @@ func NewLayerTar(opt Option) LayerTar {
 	}
 }
 
-func (w LayerTar) Walk(layer io.Reader, analyzeFn WalkFunc) ([]string, []string, error) {
+func (w LayerTar) Walk(ctx context.Context, layer io.Reader, analyzeFn WalkFunc) ([]string, []string, error) {
 	var opqDirs, whFiles, skippedDirs []string
 	tr := tar.NewReader(layer)
 	for {
@@ -83,21 +84,21 @@ func (w LayerTar) Walk(layer io.Reader, analyzeFn WalkFunc) ([]string, []string,
 		}
 
 		// A regular file will reach here.
-		if err = w.processFile(filePath, tr, hdr.FileInfo(), analyzeFn); err != nil {
+		if err = w.processFile(ctx, filePath, tr, hdr.FileInfo(), analyzeFn); err != nil {
 			return nil, nil, xerrors.Errorf("failed to process the file: %w", err)
 		}
 	}
 	return opqDirs, whFiles, nil
 }
 
-func (w LayerTar) processFile(filePath string, tr *tar.Reader, fi fs.FileInfo, analyzeFn WalkFunc) error {
+func (w LayerTar) processFile(ctx context.Context, filePath string, tr *tar.Reader, fi fs.FileInfo, analyzeFn WalkFunc) error {
 	cf := newCachedFile(fi.Size(), tr)
 	defer func() {
 		// nolint
 		_ = cf.Clean()
 	}()
 
-	if err := analyzeFn(filePath, fi, cf.Open); err != nil {
+	if err := analyzeFn(ctx, filePath, fi, cf.Open); err != nil {
 		return xerrors.Errorf("failed to analyze file: %w", err)
 	}
 

@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"net/url"
 	"os"
 
@@ -28,7 +29,7 @@ var (
 )
 
 type Walker interface {
-	Walk(root string, opt walker.Option, fn walker.WalkFunc) error
+	Walk(ctx context.Context, root string, opt walker.Option, fn walker.WalkFunc) error
 }
 
 func NewArtifact(target string, c cache.ArtifactCache, w Walker, artifactOpt artifact.Option) (artifact.Artifact, func(), error) {

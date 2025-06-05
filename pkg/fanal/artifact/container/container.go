@@ -40,7 +40,7 @@ var (
 )
 
 type Walker interface {
-	Walk(root string, opt walker.Option, fn walker.WalkFunc) error
+	Walk(ctx context.Context, root string, opt walker.Option, fn walker.WalkFunc) error
 }
 
 type Artifact struct {
@@ -283,7 +283,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 	whFiles := make([]string, 0)
 	opqDirs := make([]string, 0)
 
-	err = a.walker.Walk(layerInfo.Path, a.walkerOption, func(filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	err = a.walker.Walk(ctx, layerInfo.Path, a.walkerOption, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		dir := layerInfo.Path
 
 		// When the directory is the same as the filePath, a file was given

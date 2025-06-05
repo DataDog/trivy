@@ -42,7 +42,7 @@ var (
 )
 
 type Walker interface {
-	Walk(*io.SectionReader, string, walker.Option, walker.WalkFunc) error
+	Walk(context.Context, *io.SectionReader, string, walker.Option, walker.WalkFunc) error
 }
 
 func NewArtifact(target string, c cache.ArtifactCache, w Walker, opt artifact.Option) (artifact.Artifact, error) {
@@ -110,7 +110,7 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 	defer composite.Cleanup()
 
 	// TODO: Always walk from the root directory. Consider whether there is a need to be able to set optional
-	err = a.walker.Walk(r, "/", a.artifactOption.WalkerOption, func(filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	err = a.walker.Walk(ctx, r, "/", a.artifactOption.WalkerOption, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		path := strings.TrimPrefix(filePath, "/")
 		if err := a.analyzer.AnalyzeFile(ctx, &wg, limit, result, "/", path, info, opener, nil, opts); err != nil {
 			return xerrors.Errorf("analyze file (%s): %w", path, err)
