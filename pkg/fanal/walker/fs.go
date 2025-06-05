@@ -1,6 +1,7 @@
 package walker
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"os"
@@ -22,13 +23,13 @@ func NewFS() *FS {
 }
 
 // Walk walks the filesystem rooted at root, calling fn for each unfiltered file.
-func (w *FS) Walk(root string, opt Option, fn WalkFunc) error {
+func (w *FS) Walk(ctx context.Context, root string, opt Option, fn WalkFunc) error {
 	opt.SkipFiles = w.BuildSkipPaths(root, opt.SkipFiles)
 	opt.SkipDirs = w.BuildSkipPaths(root, opt.SkipDirs)
 	opt.SkipDirs = append(opt.SkipDirs, defaultSkipDirs...)
 	opt.OnlyDirs = w.BuildSkipPaths(root, opt.OnlyDirs)
 
-	walkDirFunc := w.WalkDirFunc(root, fn, opt)
+	walkDirFunc := w.WalkDirFunc(ctx, root, fn, opt)
 	walkDirFunc = w.onError(walkDirFunc, opt)
 
 	// Walk the filesystem
@@ -39,7 +40,7 @@ func (w *FS) Walk(root string, opt Option, fn WalkFunc) error {
 	return nil
 }
 
-func (w *FS) WalkDirFunc(root string, fn WalkFunc, opt Option) fs.WalkDirFunc {
+func (w *FS) WalkDirFunc(ctx context.Context, root string, fn WalkFunc, opt Option) fs.WalkDirFunc {
 	return func(filePath string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -75,7 +76,13 @@ func (w *FS) WalkDirFunc(root string, fn WalkFunc, opt Option) fs.WalkDirFunc {
 			return xerrors.Errorf("file info error: %w", err)
 		}
 
-		if err = fn(relPath, info, fileOpener(filePath)); err != nil {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		if err = fn(ctx, relPath, info, fileOpener(filePath)); err != nil {
 			return xerrors.Errorf("failed to analyze file: %w", err)
 		}
 
