@@ -1,6 +1,7 @@
 package walker
 
 import (
+	"context"
 	"bytes"
 	"io"
 	"io/fs"
@@ -55,7 +56,7 @@ func NewVM() *VM {
 	}
 }
 
-func (w *VM) Walk(vreader *io.SectionReader, root string, opt Option, fn WalkFunc) error {
+func (w *VM) Walk(ctx context.Context, vreader *io.SectionReader, root string, opt Option, fn WalkFunc) error {
 	w.skipFiles = opt.SkipFiles
 	w.skipDirs = append(opt.SkipDirs, defaultSkipDirs...)
 
@@ -82,7 +83,7 @@ func (w *VM) Walk(vreader *io.SectionReader, root string, opt Option, fn WalkFun
 		}
 
 		// Walk each partition
-		if err = w.diskWalk(root, partition); err != nil {
+		if err = w.diskWalk(ctx, root, partition); err != nil {
 			w.logger.Warn("Partition error", log.Err(err))
 		}
 	}
@@ -90,7 +91,7 @@ func (w *VM) Walk(vreader *io.SectionReader, root string, opt Option, fn WalkFun
 }
 
 // Inject disk partitioning processes from externally with diskWalk.
-func (w *VM) diskWalk(root string, partition types.Partition) error {
+func (w *VM) diskWalk(ctx context.Context, root string, partition types.Partition) error {
 	w.logger.Debug("Found partition", log.String("name", partition.Name()))
 
 	sr := partition.GetSectionReader()
@@ -113,7 +114,7 @@ func (w *VM) diskWalk(root string, partition types.Partition) error {
 
 	err = fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
 		// Walk filesystem
-		return w.fsWalk(fsys, path, d, err)
+		return w.fsWalk(ctx, fsys, path, d, err)
 	})
 	if err != nil {
 		return xerrors.Errorf("filesystem walk error: %w", err)
@@ -121,7 +122,7 @@ func (w *VM) diskWalk(root string, partition types.Partition) error {
 	return nil
 }
 
-func (w *VM) fsWalk(fsys fs.FS, path string, d fs.DirEntry, err error) error {
+func (w *VM) fsWalk(ctx context.Context, fsys fs.FS, path string, d fs.DirEntry, err error) error {
 	if err != nil {
 		return xerrors.Errorf("fs.Walk error: %w", err)
 	}
@@ -156,7 +157,7 @@ func (w *VM) fsWalk(fsys fs.FS, path string, d fs.DirEntry, err error) error {
 	cvf := newCachedVMFile(fsys, pathName)
 	defer cvf.Clean()
 
-	if err = w.analyzeFn(path, fi, cvf.Open); err != nil {
+	if err = w.analyzeFn(ctx, path, fi, cvf.Open); err != nil {
 		return xerrors.Errorf("failed to analyze file: %w", err)
 	}
 	return nil

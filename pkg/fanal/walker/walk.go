@@ -1,6 +1,7 @@
 package walker
 
 import (
+	"context"
 	"os"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
@@ -25,4 +26,4 @@ type Option struct {
 	ErrorCallback ErrorCallback
 }
 
-type WalkFunc func(filePath string, info os.FileInfo, opener analyzer.Opener) error
+type WalkFunc func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error
