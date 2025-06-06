@@ -79,7 +79,7 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return filepath.Base(path) == types.GoMod || input.FilePatterns.Match(path)
 	}
 
-	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, _ io.Reader) error {
+	werr := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, _ fs.DirEntry, _ io.Reader) error {
 		// Parse go.mod
 		gomod, err := parse(ctx, input.FS, path, a.modParser)
 		if err != nil {
@@ -101,20 +101,23 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		apps = append(apps, *gomod)
 		return nil
 	})
-	if err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
-	}
 
-	if err = a.fillAdditionalData(ctx, input.FS, apps); err != nil {
+	if err := a.fillAdditionalData(ctx, input.FS, apps); err != nil {
 		a.logger.Warn("Unable to collect additional info", log.Err(err))
 	}
 
 	// Add orphan indirect dependencies under the main module
 	a.addOrphanIndirectDepsUnderRoot(apps)
 
-	return &analyzer.AnalysisResult{
+	result := &analyzer.AnalysisResult{
 		Applications: apps,
-	}, nil
+	}
+
+	if werr != nil {
+		return result, xerrors.Errorf("gomod walk error: %w", werr)
+	}
+
+	return result, nil
 }
 
 func (a *gomodAnalyzer) Required(filePath string, _ os.FileInfo) bool {
