@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 	"sort"
+	"time"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 
@@ -17,22 +18,23 @@ import (
 )
 
 type Option struct {
-	Type              types.ArtifactType
-	AnalyzerGroup     analyzer.Group // It is empty in OSS
-	DisabledAnalyzers []analyzer.Type
-	DisabledHandlers  []types.HandlerType
-	FilePatterns      []string
-	Parallel          int
-	NoProgress        bool
-	Insecure          bool
-	Offline           bool
-	AppDirs           []string
-	SBOMSources       []string
-	RekorURL          string
-	AWSRegion         string
-	AWSEndpoint       string
-	FileChecksum      bool // For SPDX
-	DetectionPriority types.DetectionPriority
+	Type                types.ArtifactType
+	AnalyzerGroup       analyzer.Group // It is empty in OSS
+	DisabledAnalyzers   []analyzer.Type
+	DisabledHandlers    []types.HandlerType
+	FilePatterns        []string
+	Parallel            int
+	NoProgress          bool
+	Insecure            bool
+	Offline             bool
+	AppDirs             []string
+	SBOMSources         []string
+	RekorURL            string
+	AWSRegion           string
+	AWSEndpoint         string
+	FileChecksum        bool // For SPDX
+	DetectionPriority   types.DetectionPriority
+	PostAnalyzerTimeout time.Duration
 
 	// MavenMirrors maps a Maven repository URL to an ordered list of fallback mirror URLs.
 	MavenMirrors map[string][]string
