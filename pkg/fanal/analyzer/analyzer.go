@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
@@ -169,9 +170,10 @@ func (f FilePatterns) Match(filePath string) bool {
 }
 
 type AnalysisOptions struct {
-	Offline         bool
-	FileChecksum    bool
-	WalkErrCallback func(string, error) error
+	Offline             bool
+	FileChecksum        bool
+	WalkErrCallback     func(string, error) error
+	PostAnalyzerTimeout time.Duration
 }
 
 type AnalysisResult struct {
@@ -578,14 +580,14 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			return xerrors.Errorf("unable to filter filesystem: %w", err)
 		}
 
-		res, err := ag.postAnalyze(ctx, a, PostAnalysisInput{
+		res, err := ag.postAnalyzeWithTimeout(ctx, a, PostAnalysisInput{
 			FS:           filteredFS,
 			FilePatterns: ag.filePatterns[a.Type()],
 			Options:      opts,
-		})
+		}, opts.PostAnalyzerTimeout)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
-				err = xerrors.Errorf("%s post analysis timeout after %d/%d results: %w", a.Type(), len(res.Applications), len(result.Applications), err)
+				err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), len(res.Applications), err)
 				errs = errors.Join(errs, err)
 			} else {
 				return xerrors.Errorf("post analysis error: %w", err)
@@ -596,6 +598,15 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 		}
 	}
 	return errs
+}
+
+func (ag AnalyzerGroup) postAnalyzeWithTimeout(ctx context.Context, a PostAnalyzer, input PostAnalysisInput, t time.Duration) (*AnalysisResult, error) {
+	if t > 0 {
+		ctx1, cancel := context.WithTimeout(ctx, t)
+		defer cancel()
+		ctx = ctx1
+	}
+	return ag.postAnalyze(ctx, a, input)
 }
 
 // PostAnalyzerFS returns a composite filesystem that contains multiple filesystems for each post-analyzer
