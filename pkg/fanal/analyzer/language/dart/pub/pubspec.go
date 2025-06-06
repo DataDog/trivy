@@ -89,13 +89,14 @@ func (a pubSpecLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Pos
 		apps = append(apps, *app)
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
+		return result, xerrors.Errorf("walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a pubSpecLockAnalyzer) findDependsOn(ctx context.Context) (map[string][]string, error) {
@@ -111,7 +112,7 @@ func (a pubSpecLockAnalyzer) findDependsOn(ctx context.Context) (map[string][]st
 	}
 
 	deps := make(map[string][]string)
-	if err := fsutils.WalkDir(ctx, os.DirFS(dir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err := fsutils.WalkDir(ctx, os.DirFS(dir), ".", required, fsutils.DefaultWalkErrorCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		id, dependsOn, err := parsePubSpecYaml(r)
 		if err != nil {
 			a.logger.Debug("Unable to parse pubspec.yaml", log.FilePath(path), log.Err(err))
@@ -122,8 +123,9 @@ func (a pubSpecLockAnalyzer) findDependsOn(ctx context.Context) (map[string][]st
 		}
 		return nil
 
-	}); err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
+	})
+	if err != nil {
+		return deps, xerrors.Errorf("walk error: %w", err)
 	}
 	return deps, nil
 }

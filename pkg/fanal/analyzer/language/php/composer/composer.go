@@ -69,13 +69,14 @@ func (a composerAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAn
 
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("composer walk error: %w", err)
+		return result, xerrors.Errorf("composer walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a composerAnalyzer) Required(filePath string, _ os.FileInfo) bool {

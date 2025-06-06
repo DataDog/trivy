@@ -99,12 +99,14 @@ func (a packagingAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostA
 		return nil
 	})
 
-	if err != nil {
-		return nil, xerrors.Errorf("python package walk error: %w", err)
-	}
-	return &analyzer.AnalysisResult{
+	result := &analyzer.AnalysisResult{
 		Applications: apps,
-	}, nil
+	}
+
+	if err != nil {
+		return result, xerrors.Errorf("python package walk error: %w", err)
+	}
+	return result, nil
 }
 
 type fileOpener func(filePath string) (io.ReadCloser, error)

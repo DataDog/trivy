@@ -78,13 +78,15 @@ func (a *javaLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Po
 		return nil
 	}
 
-	if err := parallel.WalkDir(ctx, input.FS, ".", a.parallel, onFile, onResult); err != nil {
-		return nil, xerrors.Errorf("walk dir error: %w", err)
+	err := parallel.WalkDir(ctx, input.FS, ".", a.parallel, onFile, onResult)
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
+	if err != nil {
+		return result, xerrors.Errorf("jar walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a *javaLibraryAnalyzer) Required(filePath string, _ os.FileInfo) bool {
