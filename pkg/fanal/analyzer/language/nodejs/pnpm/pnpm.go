@@ -78,13 +78,14 @@ func (a pnpmAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("pnpm walk error: %w", err)
+		return result, xerrors.Errorf("pnpm walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a pnpmAnalyzer) Required(filePath string, _ os.FileInfo) bool {
