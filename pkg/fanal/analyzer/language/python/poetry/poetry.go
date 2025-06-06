@@ -66,13 +66,14 @@ func (a poetryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("poetry walk error: %w", err)
+		return result, xerrors.Errorf("poetry walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a poetryAnalyzer) Required(filePath string, _ os.FileInfo) bool {

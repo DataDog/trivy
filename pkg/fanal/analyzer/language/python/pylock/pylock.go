@@ -67,13 +67,14 @@ func (a pylockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		apps = append(apps, *app)
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("pylock walk error: %w", err)
+		return result, xerrors.Errorf("pylock walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a pylockAnalyzer) Required(filePath string, _ os.FileInfo) bool {
