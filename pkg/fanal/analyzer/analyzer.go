@@ -486,6 +486,7 @@ func (ag AnalyzerGroup) RequiredPostAnalyzers(filePath string, info os.FileInfo)
 // The obtained results are merged into the "result".
 // This function may be called concurrently and must be thread-safe.
 func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeFS, result *AnalysisResult, opts AnalysisOptions) error {
+	var errs error
 	for _, a := range ag.postAnalyzers {
 		fsys, ok := compositeFS.Get(a.Type())
 		if !ok {
@@ -520,11 +521,17 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			Options: opts,
 		})
 		if err != nil {
-			return xerrors.Errorf("post analysis error: %w", err)
+			if errors.Is(err, context.DeadlineExceeded) {
+				err = xerrors.Errorf("%s post analysis timeout after %d/%d results: %w", a.Type(), len(res.Applications), len(result.Applications), err)
+				errs = errors.Join(errs, err)
+			} else {
+				return xerrors.Errorf("post analysis error: %w", err)
+			}
 		}
 		result.Merge(res)
 	}
-	return nil
+	return errs
+}
 }
 
 // PostAnalyzerFS returns a composite filesystem that contains multiple filesystems for each post-analyzer
