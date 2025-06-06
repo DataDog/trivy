@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"context"
+	"errors"
 
 	"golang.org/x/xerrors"
 
@@ -35,9 +36,10 @@ func NewScanner(driver Driver, ar artifact.Artifact) Scanner {
 // ScanArtifact scans the artifacts and returns results
 func (s Scanner) ScanArtifact(ctx context.Context, options types.ScanOptions) (types.Report, error) {
 	artifactInfo, err := s.artifact.Inspect(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		return types.Report{}, xerrors.Errorf("failed analysis: %w", err)
 	}
+	err1 := err
 	defer func() {
 		if err := s.artifact.Clean(artifactInfo); err != nil {
 			log.Warn("Failed to clean the artifact",
@@ -76,5 +78,5 @@ func (s Scanner) ScanArtifact(ctx context.Context, options types.ScanOptions) (t
 		},
 		Results: results,
 		BOM:     artifactInfo.BOM,
-	}, nil
+	}, err1
 }
