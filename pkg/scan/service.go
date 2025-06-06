@@ -3,6 +3,7 @@ package scan
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 
 	"github.com/samber/lo"
@@ -49,9 +50,10 @@ func NewService(backend Backend, ar artifact.Artifact) Service {
 // then delegates the actual scanning to the configured backend implementation.
 func (s Service) ScanArtifact(ctx context.Context, options types.ScanOptions) (types.Report, error) {
 	artifactInfo, err := s.artifact.Inspect(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		return types.Report{}, xerrors.Errorf("failed analysis: %w", err)
 	}
+	err1 := err
 	defer func() {
 		if err := s.artifact.Clean(artifactInfo); err != nil {
 			log.Warn("Failed to clean the artifact",
@@ -120,7 +122,7 @@ func (s Service) ScanArtifact(ctx context.Context, options types.ScanOptions) (t
 	// Fill fingerprints for all findings
 	fingerprint.Fill(&r)
 
-	return r, nil
+	return r, err1
 }
 
 // generateArtifactID generates a unique ID for the artifact based on its type

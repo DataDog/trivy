@@ -145,8 +145,11 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 
 	// Post-analysis
 	if err = a.analyzer.PostAnalyze(ctx, composite, result, opts); err != nil {
-		return artifact.Reference{}, xerrors.Errorf("post analysis error: %w", err)
+		if !errors.Is(err, context.DeadlineExceeded) {
+			return artifact.Reference{}, xerrors.Errorf("post analysis error: %w", err)
+		}
 	}
+	err1 := err
 
 	// Sort the analysis result for consistent results
 	result.Sort()
@@ -190,7 +193,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		ID:           cacheKey, // use a cache key as pseudo artifact ID
 		BlobIDs:      []string{cacheKey},
 		RepoMetadata: a.repoMetadata,
-	}, nil
+	}, err1
 }
 
 func (a Artifact) analyzeWithRootDir(ctx context.Context, eg *errgroup.Group, limit *semaphore.Weighted,
