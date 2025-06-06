@@ -75,13 +75,14 @@ func (a pnpmAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("pnpm walk error: %w", err)
+		return result, xerrors.Errorf("pnpm walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a pnpmAnalyzer) Required(filePath string, _ os.FileInfo) bool {
@@ -136,7 +137,7 @@ func (a pnpmAnalyzer) findLicenses(ctx context.Context, fsys fs.FS, lockPath str
 		return nil
 	})
 	if err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
+		return licenses, xerrors.Errorf("walk error: %w", err)
 	}
 	return licenses, nil
 }

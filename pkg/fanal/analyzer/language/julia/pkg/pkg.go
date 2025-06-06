@@ -76,13 +76,14 @@ func (a juliaAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnaly
 		apps = append(apps, *app)
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("julia walk error: %w", err)
+		return result, xerrors.Errorf("julia walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a juliaAnalyzer) Required(filePath string, _ os.FileInfo) bool {

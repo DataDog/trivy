@@ -106,13 +106,14 @@ func (a yarnAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("yarn walk error: %w", err)
+		return result, xerrors.Errorf("yarn walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a yarnAnalyzer) Required(filePath string, _ os.FileInfo) bool {
@@ -421,7 +422,7 @@ func (a yarnAnalyzer) traverseCacheDir(ctx context.Context, fsys fs.FS) (map[str
 		})
 
 	if err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
+		return licenses, xerrors.Errorf("walk error: %w", err)
 	}
 
 	return licenses, nil
