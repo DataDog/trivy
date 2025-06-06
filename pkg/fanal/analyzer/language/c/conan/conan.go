@@ -55,7 +55,7 @@ func (a conanLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostA
 	}
 
 	var apps []types.Application
-	if err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(types.Conan, filePath, r, a.parser)
 		if err != nil {
 			return xerrors.Errorf("%s parse error: %w", filePath, err)
@@ -77,13 +77,15 @@ func (a conanLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostA
 		sort.Sort(app.Packages)
 		apps = append(apps, *app)
 		return nil
-	}); err != nil {
+	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
+	if err != nil {
 		return nil, xerrors.Errorf("unable to parse conan lock file: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func licensesFromCache(ctx context.Context, errCallback func(path string, err error) error) (map[string]string, error) {
@@ -97,7 +99,7 @@ func licensesFromCache(ctx context.Context, errCallback func(path string, err er
 	}
 
 	licenses := make(map[string]string)
-	if err := fsutils.WalkDir(ctx, os.DirFS(cacheDir), ".", required, errCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, os.DirFS(cacheDir), ".", required, errCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
 		scanner := bufio.NewScanner(r)
 		var name, license string
 		for scanner.Scan() {
@@ -128,8 +130,9 @@ func licensesFromCache(ctx context.Context, errCallback func(path string, err er
 
 		licenses[name] = license
 		return nil
-	}); err != nil {
-		return nil, xerrors.Errorf("the Conan cache dir (%s) walk error: %w", cacheDir, err)
+	})
+	if err != nil {
+		return licenses, xerrors.Errorf("the Conan cache dir (%s) walk error: %w", cacheDir, err)
 	}
 	return licenses, nil
 }

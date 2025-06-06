@@ -55,13 +55,16 @@ func (a *uvAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysi
 
 		return nil
 	})
-	if err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
+
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	if err != nil {
+		return result, xerrors.Errorf("walk error: %w", err)
+	}
+
+	return result, nil
 }
 
 func (a *uvAnalyzer) Required(filePath string, _ os.FileInfo) bool {

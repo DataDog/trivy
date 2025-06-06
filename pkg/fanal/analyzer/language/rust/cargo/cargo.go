@@ -79,13 +79,14 @@ func (a cargoAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnaly
 
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("cargo walk error: %w", err)
+		return result, xerrors.Errorf("cargo walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a cargoAnalyzer) Required(filePath string, _ os.FileInfo) bool {

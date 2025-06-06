@@ -91,7 +91,7 @@ func (a gradleLockAnalyzer) parsePoms(ctx context.Context) (map[string]pomXML, e
 		return nil
 	})
 	if err != nil {
-		return nil, xerrors.Errorf("gradle licenses walk error: %w", err)
+		return poms, xerrors.Errorf("gradle licenses walk error: %w", err)
 	}
 
 	return poms, nil

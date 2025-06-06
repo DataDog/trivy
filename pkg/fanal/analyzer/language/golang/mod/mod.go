@@ -71,7 +71,7 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return filepath.Base(path) == types.GoMod
 	}
 
-	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, _ io.Reader) error {
+	werr := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(path string, d fs.DirEntry, _ io.Reader) error {
 		// Parse go.mod
 		gomod, err := parse(input.FS, path, a.modParser)
 		if err != nil {
@@ -93,20 +93,23 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		apps = append(apps, *gomod)
 		return nil
 	})
-	if err != nil {
-		return nil, xerrors.Errorf("walk error: %w", err)
-	}
 
-	if err = a.fillAdditionalData(apps); err != nil {
+	if err := a.fillAdditionalData(apps); err != nil {
 		a.logger.Warn("Unable to collect additional info", log.Err(err))
 	}
 
 	// Add orphan indirect dependencies under the main module
 	a.addOrphanIndirectDepsUnderRoot(apps)
 
-	return &analyzer.AnalysisResult{
+	result := &analyzer.AnalysisResult{
 		Applications: apps,
-	}, nil
+	}
+
+	if werr != nil {
+		return result, xerrors.Errorf("gomod walk error: %w", werr)
+	}
+
+	return result, nil
 }
 
 func (a *gomodAnalyzer) Required(filePath string, _ os.FileInfo) bool {
@@ -337,6 +340,8 @@ func findLicense(dir string, classifierConfidenceLevel float64) ([]string, error
 		return nil, nil
 	case err != nil && !errors.Is(err, io.EOF):
 		return nil, fmt.Errorf("finding a known open source license: %w", err)
+	case err != nil && license != nil && len(license.Findings) > 0:
+		return license.Findings.Names(), err
 	case license == nil || len(license.Findings) == 0:
 		return nil, nil
 	}

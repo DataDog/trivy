@@ -101,13 +101,14 @@ func (a *nugetLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.P
 		apps = append(apps, *app)
 		return nil
 	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
 	if err != nil {
-		return nil, xerrors.Errorf("NuGet walk error: %w", err)
+		return result, xerrors.Errorf("NuGet walk error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a *nugetLibraryAnalyzer) Required(filePath string, _ os.FileInfo) bool {

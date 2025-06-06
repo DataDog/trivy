@@ -66,7 +66,7 @@ func (a pipLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 
 	useMinVersion := a.detectionPriority == types.PriorityComprehensive
 
-	if err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(pathPath string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(pathPath string, d fs.DirEntry, r io.Reader) error {
 		app, err := language.Parse(types.Pip, pathPath, r, pip.NewParser(useMinVersion))
 		if err != nil {
 			return xerrors.Errorf("unable to parse requirements.txt: %w", err)
@@ -85,13 +85,15 @@ func (a pipLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 
 		apps = append(apps, *app)
 		return nil
-	}); err != nil {
-		return nil, xerrors.Errorf("pip walt error: %w", err)
+	})
+	result := &analyzer.AnalysisResult{
+		Applications: apps,
+	}
+	if err != nil {
+		return result, xerrors.Errorf("pip walt error: %w", err)
 	}
 
-	return &analyzer.AnalysisResult{
-		Applications: apps,
-	}, nil
+	return result, nil
 }
 
 func (a pipLibraryAnalyzer) Required(filePath string, _ os.FileInfo) bool {
