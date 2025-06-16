@@ -529,8 +529,10 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			} else {
 				return xerrors.Errorf("post analysis error: %w", err)
 			}
+		} else {
+			// Merge result only if the PostAnalyzer completed successfully.
+			result.Merge(res)
 		}
-		result.Merge(res)
 	}
 	return errs
 }
