@@ -34,6 +34,7 @@ type Option struct {
 	AWSEndpoint         string
 	FileChecksum        bool // For SPDX
 	DetectionPriority   types.DetectionPriority
+	AnalyzerTimeout     time.Duration
 	PostAnalyzerTimeout time.Duration
 
 	// MavenMirrors maps a Maven repository URL to an ordered list of fallback mirror URLs.

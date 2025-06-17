@@ -115,6 +115,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		FileChecksum:        a.artifactOption.FileChecksum,
 		MavenMirrors:        a.artifactOption.MavenMirrors,
 		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
+		AnalyzerTimeout:     a.artifactOption.AnalyzerTimeout,
 		PostAnalyzerTimeout: a.artifactOption.PostAnalyzerTimeout,
 	}
 
@@ -136,10 +137,11 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		}
 	} else {
 		// Analyze files by traversing the root directory
-		if err = a.analyzeWithRootDir(egCtx, eg, limit, result, composite, opts); err != nil {
+		if err = a.analyzeWithRootDirWithTimeout(egCtx, eg, limit, result, composite, opts); err != nil {
 			walkErr = xerrors.Errorf("analyze with traversal: %w", err)
 		}
 	}
+	err1 := err
 
 	// errgroup cancels egCtx when an analysis goroutine fails, so the walk above can
 	// fail with context.Canceled and mask the real cause (e.g. a remote 429).
@@ -157,7 +159,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 			return artifact.Reference{}, xerrors.Errorf("post analysis error: %w", err)
 		}
 	}
-	err1 := err
+	err2 := err
 
 	// Sort the analysis result for consistent results
 	result.Sort()
@@ -201,7 +203,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		ID:           cacheKey, // use a cache key as pseudo artifact ID
 		BlobIDs:      []string{cacheKey},
 		RepoMetadata: a.repoMetadata,
-	}, err1
+	}, errors.Join(err1, err2)
 }
 
 func (a Artifact) analyzeWithRootDir(ctx context.Context, eg *errgroup.Group, limit *semaphore.Weighted,
@@ -215,6 +217,16 @@ func (a Artifact) analyzeWithRootDir(ctx context.Context, eg *errgroup.Group, li
 		root, relativePath = path.Split(a.rootPath)
 	}
 	return a.analyzeWithTraversal(ctx, root, relativePath, eg, limit, result, composite, opts)
+}
+
+func (a Artifact) analyzeWithRootDirWithTimeout(ctx context.Context, eg *errgroup.Group, limit *semaphore.Weighted,
+	result *analyzer.AnalysisResult, composite *analyzer.CompositeFS, opts analyzer.AnalysisOptions) error {
+	if opts.AnalyzerTimeout > 0 {
+		ctx1, cancel := context.WithTimeout(ctx, opts.AnalyzerTimeout)
+		defer cancel()
+		ctx = ctx1
+	}
+	return a.analyzeWithRootDir(ctx, eg, limit, result, composite, opts)
 }
 
 // analyzeWithStaticPaths analyzes files using static paths from analyzers
