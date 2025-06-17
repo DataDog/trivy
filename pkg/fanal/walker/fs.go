@@ -100,6 +100,8 @@ func (w *FS) onError(wrapped fs.WalkDirFunc, opt Option) fs.WalkDirFunc {
 		// Ignore permission errors
 		case os.IsPermission(err):
 			return nil
+		case errors.Is(err, context.DeadlineExceeded):
+			return xerrors.Errorf("timeout on %s: %w", filePath, err)
 		case err != nil:
 			if opt.ErrorCallback != nil {
 				err = opt.ErrorCallback(filePath, err)
