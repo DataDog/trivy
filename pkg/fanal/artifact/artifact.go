@@ -32,6 +32,7 @@ type Option struct {
 	AWSEndpoint         string
 	FileChecksum        bool // For SPDX
 	DetectionPriority   types.DetectionPriority
+	AnalyzerTimeout     time.Duration
 	PostAnalyzerTimeout time.Duration
 
 	// Original is the original target location, e.g. "github.com/aquasecurity/trivy"

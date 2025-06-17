@@ -164,6 +164,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		Offline:             a.artifactOption.Offline,
 		FileChecksum:        a.artifactOption.FileChecksum,
 		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
+		AnalyzerTimeout:     a.artifactOption.AnalyzerTimeout,
 		PostAnalyzerTimeout: a.artifactOption.PostAnalyzerTimeout,
 	}
 
@@ -184,10 +185,13 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		}
 	} else {
 		// Analyze files by traversing the root directory
-		if err = a.analyzeWithRootDir(ctx, &wg, limit, result, composite, opts); err != nil {
-			return artifact.Reference{}, xerrors.Errorf("analyze with traversal: %w", err)
+		if err = a.analyzeWithRootDirWithTimeout(ctx, &wg, limit, result, composite, opts); err != nil {
+			if !errors.Is(err, context.DeadlineExceeded) {
+				return artifact.Reference{}, xerrors.Errorf("analyze with traversal: %w", err)
+			}
 		}
 	}
+	err1 := err
 
 	// Wait for all the goroutine to finish.
 	wg.Wait()
@@ -198,7 +202,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 			return artifact.Reference{}, xerrors.Errorf("post analysis error: %w", err)
 		}
 	}
-	err1 := err
+	err2 := err
 
 	// Sort the analysis result for consistent results
 	result.Sort()
@@ -238,7 +242,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		Type:    a.artifactOption.Type,
 		ID:      cacheKey, // use a cache key as pseudo artifact ID
 		BlobIDs: []string{cacheKey},
-	}, err1
+	}, errors.Join(err1, err2)
 }
 
 func (a Artifact) analyzeWithRootDir(ctx context.Context, wg *sync.WaitGroup, limit *semaphore.Weighted,
@@ -252,6 +256,16 @@ func (a Artifact) analyzeWithRootDir(ctx context.Context, wg *sync.WaitGroup, li
 		root, relativePath = path.Split(a.rootPath)
 	}
 	return a.analyzeWithTraversal(ctx, root, relativePath, wg, limit, result, composite, opts)
+}
+
+func (a Artifact) analyzeWithRootDirWithTimeout(ctx context.Context, wg *sync.WaitGroup, limit *semaphore.Weighted,
+	result *analyzer.AnalysisResult, composite *analyzer.CompositeFS, opts analyzer.AnalysisOptions) error {
+	if opts.AnalyzerTimeout > 0 {
+		ctx1, cancel := context.WithTimeout(ctx, opts.AnalyzerTimeout)
+		defer cancel()
+		ctx = ctx1
+	}
+	return a.analyzeWithRootDir(ctx, wg, limit, result, composite, opts)
 }
 
 // analyzeWithStaticPaths analyzes files using static paths from analyzers
