@@ -158,6 +158,7 @@ type AnalysisOptions struct {
 	Offline             bool
 	FileChecksum        bool
 	WalkErrCallback     func(string, error) error
+	AnalyzerTimeout     time.Duration
 	PostAnalyzerTimeout time.Duration
 }
 
