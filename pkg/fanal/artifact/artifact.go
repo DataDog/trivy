@@ -25,6 +25,7 @@ type Option struct {
 	NoProgress          bool
 	Insecure            bool
 	Offline             bool
+	OfflineJar          bool
 	AppDirs             []string
 	SBOMSources         []string
 	RekorURL            string

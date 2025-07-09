@@ -162,6 +162,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 	limit := semaphore.New(a.artifactOption.Parallel)
 	opts := analyzer.AnalysisOptions{
 		Offline:             a.artifactOption.Offline,
+		OfflineJar:          a.artifactOption.OfflineJar,
 		FileChecksum:        a.artifactOption.FileChecksum,
 		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
 		AnalyzerTimeout:     a.artifactOption.AnalyzerTimeout,

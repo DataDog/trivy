@@ -43,7 +43,7 @@ func newJavaLibraryAnalyzer(options analyzer.AnalyzerOptions) (analyzer.PostAnal
 }
 
 func (a *javaLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
-	offline := input.Options.Offline
+	offline := input.Options.OfflineJar
 
 	var javadbClient jar.Client
 

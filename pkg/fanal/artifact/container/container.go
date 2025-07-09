@@ -267,6 +267,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 	var wg sync.WaitGroup
 	opts := analyzer.AnalysisOptions{
 		Offline:             a.artifactOption.Offline,
+		OfflineJar:          a.artifactOption.OfflineJar,
 		FileChecksum:        a.artifactOption.FileChecksum,
 		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
 		PostAnalyzerTimeout: a.artifactOption.PostAnalyzerTimeout,
