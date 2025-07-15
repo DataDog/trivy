@@ -40,6 +40,7 @@ var (
 
 		// SQLite3
 		"usr/lib/sysimage/rpm/rpmdb.sqlite",
+		"usr/share/rpm/rpmdb.sqlite",
 		"var/lib/rpm/rpmdb.sqlite",
 
 		// CoreOS
