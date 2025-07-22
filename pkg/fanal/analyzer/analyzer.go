@@ -526,7 +526,11 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 		}, opts.PostAnalyzerTimeout)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
-				err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), len(res.Applications), err)
+				appCount := 0
+				if res != nil {
+					appCount = len(res.Applications)
+				}
+				err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), appCount, err)
 				errs = errors.Join(errs, err)
 			} else {
 				return xerrors.Errorf("post analysis error: %w", err)
