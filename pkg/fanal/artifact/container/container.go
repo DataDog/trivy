@@ -338,7 +338,9 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 		}
 
 		// Build filesystem for post analysis
-		if err := composite.CreateLink(analyzerTypes, dir, filePath, filepath.Join(dir, filePath)); err != nil {
+		realPath := filepath.Join(dir, filePath)
+		a.logger.Debug("Adding a file for post analysis", log.String("dir", dir), log.String("virtualpath", filePath), log.String("realpath", realPath))
+		if err := composite.CreateLink(analyzerTypes, dir, filePath, realPath); err != nil {
 			return xerrors.Errorf("failed to create link: %w", err)
 		}
 
