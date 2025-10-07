@@ -11,16 +11,16 @@ import (
 
 type container struct {
 	refCanonical reference.Canonical
-	refTagged    reference.NamedTagged
+	tags         []string
 	imageID      string
 	configFile   *v1.ConfigFile
 	layers       []types.LayerPath
 }
 
-func NewContainer(refCanonical reference.Canonical, refTagged reference.NamedTagged, imageID string, configFile *v1.ConfigFile, layers []types.LayerPath) *container {
+func NewContainer(refCanonical reference.Canonical, tags []string, imageID string, configFile *v1.ConfigFile, layers []types.LayerPath) *container {
 	return &container{
 		refCanonical: refCanonical,
-		refTagged:    refTagged,
+		tags:         tags,
 		imageID:      imageID,
 		configFile:   configFile,
 		layers:       layers,
@@ -28,7 +28,7 @@ func NewContainer(refCanonical reference.Canonical, refTagged reference.NamedTag
 }
 
 func (ctr *container) Name() string {
-	return reference.FamiliarName(ctr.refTagged) + ":" + ctr.refTagged.Tag()
+	return reference.FamiliarName(ctr.refCanonical) + "@" + ctr.refCanonical.Digest().String()
 }
 
 func (ctr *container) ID() (string, error) {
@@ -36,11 +36,16 @@ func (ctr *container) ID() (string, error) {
 }
 
 func (ctr *container) RepoTags() []string {
-	return []string{reference.FamiliarName(ctr.refTagged) + ":" + ctr.refTagged.Tag()}
+	familiarName := reference.FamiliarName(ctr.refCanonical)
+	repoTags := make([]string, 0, len(ctr.tags))
+	for _, tag := range ctr.tags {
+		repoTags = append(repoTags, familiarName+":"+tag)
+	}
+	return repoTags
 }
 
 func (ctr *container) RepoDigests() []string {
-	return []string{reference.FamiliarName(ctr.refTagged) + "@" + ctr.refCanonical.Digest().String()}
+	return []string{reference.FamiliarName(ctr.refCanonical) + "@" + ctr.refCanonical.Digest().String()}
 }
 
 func (ctr *container) ConfigFile() (*v1.ConfigFile, error) {
