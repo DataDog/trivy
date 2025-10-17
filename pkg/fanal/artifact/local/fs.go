@@ -164,6 +164,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		Offline:             a.artifactOption.Offline,
 		OfflineJar:          a.artifactOption.OfflineJar,
 		FileChecksum:        a.artifactOption.FileChecksum,
+		FileChecksumJar:     a.artifactOption.FileChecksumJar,
 		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
 		AnalyzerTimeout:     a.artifactOption.AnalyzerTimeout,
 		PostAnalyzerTimeout: a.artifactOption.PostAnalyzerTimeout,

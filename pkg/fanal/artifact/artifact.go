@@ -32,6 +32,7 @@ type Option struct {
 	AWSRegion           string
 	AWSEndpoint         string
 	FileChecksum        bool // For SPDX
+	FileChecksumJar     bool
 	DetectionPriority   types.DetectionPriority
 	AnalyzerTimeout     time.Duration
 	PostAnalyzerTimeout time.Duration
