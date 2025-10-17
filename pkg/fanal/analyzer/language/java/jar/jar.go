@@ -68,7 +68,7 @@ func (a *javaLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Po
 	// It will be called on each JAR file
 	onFile := func(path string, info fs.FileInfo, r xio.ReadSeekerAt) (*types.Application, error) {
 		p := jar.NewParser(javadbClient, jar.WithSize(info.Size()), jar.WithOffline(offline), jar.WithFilePath(path),
-			jar.WithChecksum(input.Options.FileChecksum),
+			jar.WithChecksum(input.Options.FileChecksum || input.Options.FileChecksumJar),
 			jar.WithLicenseClassifierConfidenceLevel(a.licenseClassifierConfidenceLevel))
 		// The jar parser calculates a per-file digest for every (possibly nested)
 		// artifact itself, so language.ParsePackage must not overwrite them with
