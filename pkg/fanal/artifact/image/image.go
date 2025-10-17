@@ -428,6 +428,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.Layer, disabled 
 		Offline:             a.artifactOption.Offline,
 		OfflineJar:          a.artifactOption.OfflineJar,
 		FileChecksum:        a.artifactOption.FileChecksum,
+		FileChecksumJar:     a.artifactOption.FileChecksumJar,
 		WalkErrCallback:     a.artifactOption.GetWalkerErrorCallback(),
 		PostAnalyzerTimeout: a.artifactOption.PostAnalyzerTimeout,
 	}
