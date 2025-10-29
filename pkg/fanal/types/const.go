@@ -198,6 +198,7 @@ const (
 
 // Detectable executable types
 const (
+	StandaloneBinary LangType = "standalone-binary"
 	PythonExecutable LangType = "python"
 	NodeJsExecutable LangType = "nodejs"
 	PhpExecutable    LangType = "php"
