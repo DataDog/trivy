@@ -375,6 +375,9 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 		Secrets:           result.Secrets,
 		Licenses:          result.Licenses,
 		CustomResources:   result.CustomResources,
+
+		// For Red Hat
+		BuildInfo: result.BuildInfo,
 	}
 
 	// Call post handlers to modify blob info
