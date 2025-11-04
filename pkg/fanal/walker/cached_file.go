@@ -51,7 +51,7 @@ func (o *cachedFile) Open() (xio.ReadSeekCloserAt, error) {
 
 			o.filePath = f.Name()
 		} else {
-			b := make([]byte, o.size)
+			b := make([]byte, 0, o.size)
 			_, err := readAll(o.reader, b)
 			if err != nil {
 				o.err = xerrors.Errorf("unable to read the file: %w", err)
