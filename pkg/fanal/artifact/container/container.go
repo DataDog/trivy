@@ -217,7 +217,10 @@ func (a Artifact) consolidateCreatedBy(diffIDs, layerKeys []string, configFile *
 func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, baseDiffIDs []string,
 	layerKeyMap map[string]LayerInfo, configFile *v1.ConfigFile) error {
 
-	var osFound types.OS
+	var (
+		osFound   types.OS
+		osFoundMu sync.Mutex
+	)
 	p := parallel.NewPipeline(a.artifactOption.Parallel, false, layerKeys, func(ctx context.Context,
 		layerKey string) (any, error) {
 		layer := layerKeyMap[layerKey]
@@ -236,7 +239,9 @@ func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, b
 			return nil, xerrors.Errorf("failed to store layer: %s in cache: %w", layerKey, err)
 		}
 		if lo.IsNotEmpty(layerInfo.OS) {
+			osFoundMu.Lock()
 			osFound = layerInfo.OS
+			osFoundMu.Unlock()
 		}
 		return nil, nil
 
