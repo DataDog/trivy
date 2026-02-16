@@ -2,8 +2,7 @@ package conan
 
 import (
 	"context"
-	"encoding/json/jsontext"
-	"encoding/json/v2"
+	"encoding/json"
 	"slices"
 	"strings"
 
@@ -38,8 +37,8 @@ type Require struct {
 	xjson.Location
 }
 
-func (r *Require) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return json.UnmarshalDecode(dec, &r.Dependency)
+func (r *Require) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &r.Dependency)
 }
 
 type Parser struct {

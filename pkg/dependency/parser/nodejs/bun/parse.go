@@ -2,8 +2,7 @@ package bun
 
 import (
 	"context"
-	"encoding/json/jsontext"
-	"encoding/json/v2"
+	"encoding/json"
 	"fmt"
 	"io"
 	"sort"
@@ -47,7 +46,7 @@ func NewParser() *Parser {
 }
 
 func (p *ParsedPackage) UnmarshalJSON(data []byte) error {
-	var raw []jsontext.Value
+	var raw []json.RawMessage
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return fmt.Errorf("expected package format: %w", err)
 	}

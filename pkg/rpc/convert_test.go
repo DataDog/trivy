@@ -1,7 +1,7 @@
 package rpc
 
 import (
-	jsonv2 "encoding/json/v2"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -415,7 +415,7 @@ func TestConvertToRpcVulns(t *testing.T) {
 		Number int
 	}
 	customData := customStruct{Field: "value", Number: 1}
-	customJSONBytes, err := jsonv2.Marshal(customData)
+	customJSONBytes, err := json.Marshal(customData)
 	require.NoError(t, err)
 	customJSON := string(customJSONBytes)
 

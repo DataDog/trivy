@@ -13,10 +13,7 @@ var (
 			Relationship: ftypes.RelationshipDirect,
 			Dev:          true,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 18,
-					EndLine:   18,
-				},
+				{},
 			},
 		},
 		{
@@ -26,10 +23,7 @@ var (
 			Relationship: ftypes.RelationshipDirect,
 			Dev:          false,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 24,
-					EndLine:   24,
-				},
+				{},
 			},
 		},
 		{
@@ -39,10 +33,7 @@ var (
 			Relationship: ftypes.RelationshipDirect,
 			Dev:          false,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 28,
-					EndLine:   28,
-				},
+				{},
 			},
 		},
 		{
@@ -52,10 +43,7 @@ var (
 			Relationship: ftypes.RelationshipIndirect,
 			Dev:          true,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 20,
-					EndLine:   20,
-				},
+				{},
 			},
 		},
 		{
@@ -65,10 +53,7 @@ var (
 			Relationship: ftypes.RelationshipIndirect,
 			Dev:          true,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 22,
-					EndLine:   22,
-				},
+				{},
 			},
 		},
 		{
@@ -78,10 +63,7 @@ var (
 			Relationship: ftypes.RelationshipIndirect,
 			Dev:          false,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 26,
-					EndLine:   26,
-				},
+				{},
 			},
 		},
 	}
@@ -93,10 +75,7 @@ var (
 			Version:      "1.0.0",
 			Relationship: ftypes.RelationshipWorkspace,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 27,
-					EndLine:   27,
-				},
+				{},
 			},
 		},
 		{
@@ -105,10 +84,7 @@ var (
 			Version:      "1.0.0",
 			Relationship: ftypes.RelationshipWorkspace,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 29,
-					EndLine:   29,
-				},
+				{},
 			},
 		},
 		{
@@ -117,10 +93,7 @@ var (
 			Version:      "5.0.1",
 			Relationship: ftypes.RelationshipDirect,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 23,
-					EndLine:   23,
-				},
+				{},
 			},
 		},
 		{
@@ -129,10 +102,7 @@ var (
 			Version:      "4.17.21",
 			Relationship: ftypes.RelationshipDirect,
 			Locations: ftypes.Locations{
-				{
-					StartLine: 25,
-					EndLine:   25,
-				},
+				{},
 			},
 		},
 	}

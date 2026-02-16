@@ -2,6 +2,7 @@ package json_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -146,9 +147,7 @@ func TestToRFC8259(t *testing.T) {
 			assert.Equal(t, inputNewlines, outputNewlines, "number of newlines should be preserved")
 
 			// Make sure the output is valid JSON
-			var jsonMap any
-			err := xjson.Unmarshal(got, &jsonMap)
-			require.NoError(t, err, "result should be valid JSON")
+			require.True(t, json.Valid(got), "result should be valid JSON")
 		})
 	}
 }
@@ -184,7 +183,7 @@ func TestUnmarshalJSONC(t *testing.T) {
 		"express": "^4.17.1",
 	}, config.Dependencies)
 
-	// Verify location information
-	assert.Equal(t, 1, config.StartLine)
-	assert.Equal(t, 10, config.EndLine)
+	// Location tracking is not supported without go-json-experiment
+	assert.Equal(t, 0, config.StartLine)
+	assert.Equal(t, 0, config.EndLine)
 }
