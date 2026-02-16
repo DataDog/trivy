@@ -1,3 +1,0 @@
-- name: Role task
-  s3_bucket:
-    name: test1-bucket
