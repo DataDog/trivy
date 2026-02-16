@@ -1,8 +1,7 @@
 package rpc
 
 import (
-	jsonv2 "encoding/json/v2"
-	"strings"
+	"encoding/json"
 	"time"
 
 	"github.com/package-url/packageurl-go"
@@ -304,16 +303,13 @@ func ConvertToRPCVulns(vulns []types.DetectedVulnerability) []*common.Vulnerabil
 		}
 
 		var customAdvisoryData, customVulnData *structpb.Value
-		var builder strings.Builder
 		if vuln.Custom != nil {
-			builder.Reset()
-			_ = jsonv2.MarshalWrite(&builder, vuln.Custom) // nolint: errcheck
-			customAdvisoryData = structpb.NewStringValue(builder.String())
+			jsonBytes, _ := json.Marshal(vuln.Custom) // nolint: errcheck
+			customAdvisoryData = structpb.NewStringValue(string(jsonBytes))
 		}
 		if vuln.Vulnerability.Custom != nil {
-			builder.Reset()
-			_ = jsonv2.MarshalWrite(&builder, vuln.Vulnerability.Custom) // nolint: errcheck
-			customVulnData = structpb.NewStringValue(builder.String())
+			jsonBytes, _ := json.Marshal(vuln.Vulnerability.Custom) // nolint: errcheck
+			customVulnData = structpb.NewStringValue(string(jsonBytes))
 		}
 
 		rpcVulns = append(rpcVulns, &common.Vulnerability{
