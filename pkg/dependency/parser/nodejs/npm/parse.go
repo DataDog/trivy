@@ -2,8 +2,7 @@ package npm
 
 import (
 	"context"
-	"encoding/json/jsontext"
-	"encoding/json/v2"
+	"encoding/json"
 	"fmt"
 	"maps"
 	"path"
@@ -62,21 +61,21 @@ type Package struct {
 // because their metadata contains no registry address.
 type resolved string
 
-func (r *resolved) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	switch kind := dec.PeekKind(); kind {
+func (r *resolved) UnmarshalJSON(data []byte) error {
+	switch {
 	// "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz"
-	case jsontext.KindString:
+	case len(data) > 0 && data[0] == '"':
 		var s string
-		if err := json.UnmarshalDecode(dec, &s); err != nil {
+		if err := json.Unmarshal(data, &s); err != nil {
 			return err
 		}
 		*r = resolved(s)
 		return nil
 	// `false` means the same as a missing field, so the package is left without a reference.
-	case jsontext.KindTrue, jsontext.KindFalse:
-		return dec.SkipValue()
+	case string(data) == "true" || string(data) == "false":
+		return nil
 	default:
-		return xerrors.Errorf("unexpected `resolved` field type: %s", kind)
+		return xerrors.Errorf("unexpected `resolved` field value: %s", data)
 	}
 }
 

@@ -28,36 +28,21 @@ func TestParse(t *testing.T) {
 					Name:         "pkga",
 					Version:      "0.0.1",
 					Relationship: ftypes.RelationshipDirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 13,
-							EndLine:   22,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "pkgc/0.1.1",
 					Name:         "pkgc",
 					Version:      "0.1.1",
 					Relationship: ftypes.RelationshipDirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 30,
-							EndLine:   35,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "pkgb/system",
 					Name:         "pkgb",
 					Version:      "system",
 					Relationship: ftypes.RelationshipIndirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 23,
-							EndLine:   29,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 			},
 			wantDeps: []ftypes.Dependency{
@@ -78,24 +63,14 @@ func TestParse(t *testing.T) {
 					Name:         "openssl",
 					Version:      "3.0.3",
 					Relationship: ftypes.RelationshipDirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 12,
-							EndLine:   22,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "zlib/1.2.12",
 					Name:         "zlib",
 					Version:      "1.2.12",
 					Relationship: ftypes.RelationshipIndirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 23,
-							EndLine:   30,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 			},
 			wantDeps: []ftypes.Dependency{
@@ -112,26 +87,16 @@ func TestParse(t *testing.T) {
 			inputFile: "testdata/happy_v2.lock",
 			wantPkgs: []ftypes.Package{
 				{
-					ID:      "matrix/1.3",
-					Name:    "matrix",
-					Version: "1.3",
-					Locations: []ftypes.Location{
-						{
-							StartLine: 5,
-							EndLine:   5,
-						},
-					},
+					ID:        "matrix/1.3",
+					Name:      "matrix",
+					Version:   "1.3",
+					Locations: []ftypes.Location{{}},
 				},
 				{
-					ID:      "sound32/1.0",
-					Name:    "sound32",
-					Version: "1.0",
-					Locations: []ftypes.Location{
-						{
-							StartLine: 4,
-							EndLine:   4,
-						},
-					},
+					ID:        "sound32/1.0",
+					Name:      "sound32",
+					Version:   "1.0",
+					Locations: []ftypes.Location{{}},
 				},
 			},
 			wantDeps: []ftypes.Dependency{},
