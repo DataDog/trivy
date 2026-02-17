@@ -10,6 +10,13 @@ import (
 	"github.com/aquasecurity/trivy/pkg/types"
 )
 
+func toFlagOptions(opts any) flag.Options {
+	if o, ok := opts.(flag.Options); ok {
+		return o
+	}
+	return flag.Options{}
+}
+
 type testHook struct{}
 
 func (*testHook) Name() string {
@@ -21,15 +28,15 @@ func (*testHook) Version() int {
 }
 
 // RunHook implementation
-func (*testHook) PreRun(_ context.Context, opts flag.Options) error {
-	if opts.GlobalOptions.ConfigFile == "bad-config" {
+func (*testHook) PreRun(_ context.Context, opts any) error {
+	if toFlagOptions(opts).GlobalOptions.ConfigFile == "bad-config" {
 		return errors.New("bad pre-run")
 	}
 	return nil
 }
 
-func (*testHook) PostRun(_ context.Context, opts flag.Options) error {
-	if opts.GlobalOptions.ConfigFile == "bad-config" {
+func (*testHook) PostRun(_ context.Context, opts any) error {
+	if toFlagOptions(opts).GlobalOptions.ConfigFile == "bad-config" {
 		return errors.New("bad post-run")
 	}
 	return nil
@@ -59,7 +66,7 @@ func (*testHook) PostScan(_ context.Context, results types.Results) (types.Resul
 }
 
 // ReportHook implementation
-func (*testHook) PreReport(_ context.Context, report *types.Report, _ flag.Options) error {
+func (*testHook) PreReport(_ context.Context, report *types.Report, _ any) error {
 	if report.ArtifactName == "bad-report" {
 		return errors.New("bad pre-report")
 	}
@@ -73,7 +80,7 @@ func (*testHook) PreReport(_ context.Context, report *types.Report, _ flag.Optio
 	return nil
 }
 
-func (*testHook) PostReport(_ context.Context, report *types.Report, _ flag.Options) error {
+func (*testHook) PostReport(_ context.Context, report *types.Report, _ any) error {
 	if report.ArtifactName == "bad-report" {
 		return errors.New("bad post-report")
 	}
