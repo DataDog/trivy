@@ -10,6 +10,11 @@ import (
 	"github.com/aquasecurity/trivy/pkg/sbom/core"
 )
 
+const (
+	// SchemaVersion is the version of the report schema.
+	SchemaVersion = 2
+)
+
 // TrivyInfo contains Trivy-specific information
 type TrivyInfo struct {
 	Version string `json:",omitempty"` // Trivy version

@@ -13,7 +13,6 @@ import (
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/fingerprint"
 	"github.com/aquasecurity/trivy/pkg/log"
-	"github.com/aquasecurity/trivy/pkg/report"
 	"github.com/aquasecurity/trivy/pkg/types"
 	"github.com/aquasecurity/trivy/pkg/uuid"
 	"github.com/aquasecurity/trivy/pkg/version/app"
@@ -85,7 +84,7 @@ func (s Service) ScanArtifact(ctx context.Context, options types.ScanOptions) (t
 	}
 
 	r := types.Report{
-		SchemaVersion: report.SchemaVersion,
+		SchemaVersion: types.SchemaVersion,
 		Trivy:         types.TrivyInfo{Version: app.Version()},
 		ReportID:      reportID.String(),
 		CreatedAt:     clock.Now(ctx),

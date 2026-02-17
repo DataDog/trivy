@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	SchemaVersion = 2
+	// Deprecated: Use types.SchemaVersion instead.
+	SchemaVersion = types.SchemaVersion
 )
 
 // Write writes the result to output, format as passed in argument
