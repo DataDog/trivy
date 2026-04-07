@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	dockercontainer "github.com/docker/docker/api/types/container"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/localstack"
 )
@@ -19,10 +18,8 @@ func SetupLocalStack(ctx context.Context, version string) (*localstack.LocalStac
 	container, err := localstack.RunContainer(ctx, testcontainers.CustomizeRequest(
 		testcontainers.GenericContainerRequest{
 			ContainerRequest: testcontainers.ContainerRequest{
-				Image: "localstack/localstack:" + version,
-				HostConfigModifier: func(hostConfig *dockercontainer.HostConfig) {
-					hostConfig.AutoRemove = true
-				},
+				Image:      "localstack/localstack:" + version,
+				AutoRemove: true,
 			},
 		},
 	))

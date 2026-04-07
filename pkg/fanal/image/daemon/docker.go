@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
-	"github.com/docker/docker/client"
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/moby/moby/client"
 	"golang.org/x/xerrors"
 )
 
@@ -16,13 +16,12 @@ func DockerImage(ref name.Reference, host string) (Image, func(), error) {
 
 	opts := []client.Opt{
 		client.FromEnv,
-		client.WithAPIVersionNegotiation(),
 	}
 	if host != "" {
 		// adding host parameter to the last assuming it will pick up more preference
 		opts = append(opts, client.WithHost(host))
 	}
-	c, err := client.NewClientWithOpts(opts...)
+	c, err := client.New(opts...)
 
 	if err != nil {
 		return nil, cleanup, xerrors.Errorf("failed to initialize a docker client: %w", err)
@@ -37,10 +36,10 @@ func DockerImage(ref name.Reference, host string) (Image, func(), error) {
 	// or
 	// <image_name>@<digest> pattern like "alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300"
 	imageID := ref.Name()
-	inspect, _, err := c.ImageInspectWithRaw(context.Background(), imageID)
+	inspect, err := c.ImageInspect(context.Background(), imageID)
 	if err != nil {
 		imageID = ref.String() // <image_id> pattern like `5ac716b05a9c`
-		inspect, _, err = c.ImageInspectWithRaw(context.Background(), imageID)
+		inspect, err = c.ImageInspect(context.Background(), imageID)
 		if err != nil {
 			return nil, cleanup, xerrors.Errorf("unable to inspect the image (%s): %w", imageID, err)
 		}
@@ -64,7 +63,7 @@ func DockerImage(ref name.Reference, host string) (Image, func(), error) {
 
 	return &image{
 		opener:  imageOpener(context.Background(), imageID, f, c.ImageSave),
-		inspect: inspect,
-		history: configHistory(history),
+		inspect: inspect.InspectResponse,
+		history: configHistory(history.Items),
 	}, cleanup, nil
 }

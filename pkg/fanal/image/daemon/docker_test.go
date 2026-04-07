@@ -3,7 +3,7 @@ package daemon
 import (
 	"testing"
 
-	"github.com/docker/docker/api/types"
+	dimage "github.com/moby/moby/api/types/image"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +14,7 @@ func TestDockerImage(t *testing.T) {
 	type fields struct {
 		Image   v1.Image
 		opener  opener
-		inspect types.ImageInspect
+		inspect dimage.InspectResponse
 	}
 	tests := []struct {
 		name      string

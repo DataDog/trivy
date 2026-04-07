@@ -12,7 +12,7 @@ import (
 	"sync"
 
 	"github.com/containerd/continuity/devices"
-	"github.com/docker/docker/pkg/system"
+	"github.com/containerd/continuity/sysx"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/wire"
 	"github.com/samber/lo"
@@ -317,7 +317,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 				"trusted.overlay.opaque",
 			}
 			for _, xattr := range xattrs {
-				opaque, err := system.Lgetxattr(filePath, xattr)
+				opaque, err := sysx.LGetxattr(filePath, xattr)
 				if err != nil {
 					return xerrors.Errorf("Lgetattr: %w", err)
 				}

@@ -7,8 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +16,7 @@ type DockerClient struct {
 }
 
 func NewDockerClient(t *testing.T) *DockerClient {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	cli, err := client.New(client.FromEnv)
 	require.NoError(t, err)
 	return &DockerClient{Client: cli}
 }
@@ -29,15 +28,15 @@ func (c *DockerClient) ImageLoad(t *testing.T, ctx context.Context, imageFile st
 	defer testfile.Close()
 
 	// Load image into docker engine
-	res, err := c.Client.ImageLoad(ctx, testfile, true)
+	res, err := c.Client.ImageLoad(ctx, testfile, client.ImageLoadWithQuiet(true))
 	require.NoError(t, err)
-	defer res.Body.Close()
+	defer res.Close()
 
 	// Parse the response and extract the loaded image name
 	var data struct {
 		Stream string `json:"stream"`
 	}
-	err = json.NewDecoder(res.Body).Decode(&data)
+	err = json.NewDecoder(res).Decode(&data)
 	require.NoError(t, err)
 	loadedImage := strings.TrimPrefix(data.Stream, "Loaded image: ")
 	loadedImage = strings.TrimSpace(loadedImage)
@@ -50,7 +49,7 @@ func (c *DockerClient) ImageLoad(t *testing.T, ctx context.Context, imageFile st
 
 func (c *DockerClient) ImageRemove(t *testing.T, ctx context.Context, imageID string) {
 	t.Helper()
-	_, _ = c.Client.ImageRemove(ctx, imageID, image.RemoveOptions{
+	_, _ = c.Client.ImageRemove(ctx, imageID, client.ImageRemoveOptions{
 		Force:         true,
 		PruneChildren: true,
 	})

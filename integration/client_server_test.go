@@ -13,7 +13,6 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/types"
 
-	dockercontainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -733,9 +732,7 @@ func setupRedis(t *testing.T, ctx context.Context) (testcontainers.Container, st
 		Name:         "redis",
 		Image:        imageName,
 		ExposedPorts: []string{port},
-		HostConfigModifier: func(hostConfig *dockercontainer.HostConfig) {
-			hostConfig.AutoRemove = true
-		},
+		AutoRemove:   true,
 	}
 
 	redis, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
