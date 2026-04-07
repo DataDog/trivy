@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	dimage "github.com/docker/docker/api/types/image"
+	dimage "github.com/moby/moby/api/types/image"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/stretchr/testify/assert"
@@ -166,10 +166,9 @@ func Test_image_ConfigFile(t *testing.T) {
 			name:      "one diff_id",
 			imageName: "alpine:3.11",
 			want: &v1.ConfigFile{
-				Architecture:  "amd64",
-				OS:            "linux",
-				Created:       v1.Time{Time: time.Date(2020, 3, 23, 21, 19, 34, 196162891, time.UTC)},
-				DockerVersion: "18.09.7",
+				Architecture: "amd64",
+				OS:           "linux",
+				Created:      v1.Time{Time: time.Date(2020, 3, 23, 21, 19, 34, 196162891, time.UTC)},
 				History: []v1.History{
 					{
 						Created:    v1.Time{Time: time.Date(2020, 3, 23, 21, 19, 34, 0, time.UTC)},
@@ -194,7 +193,6 @@ func Test_image_ConfigFile(t *testing.T) {
 				},
 				Config: v1.Config{
 					Cmd:         []string{"/bin/sh"},
-					Image:       "sha256:74df73bb19fbfc7fb5ab9a8234b3d98ee2fb92df5b824496679802685205ab8c",
 					Env:         []string{"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"},
 					ArgsEscaped: true,
 				},

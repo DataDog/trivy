@@ -12,8 +12,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	dockercontainer "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -62,9 +60,7 @@ func TestTLSRegistry(t *testing.T) {
 			testcontainers.BindMount(filepath.Join(baseDir, "data", "registry", "certs"), "/certs"),
 			testcontainers.BindMount(filepath.Join(baseDir, "data", "registry", "auth"), "/auth"),
 		),
-		HostConfigModifier: func(hostConfig *dockercontainer.HostConfig) {
-			hostConfig.AutoRemove = true
-		},
+		AutoRemove: true,
 		WaitingFor: wait.ForLog("listening on [::]:5443"),
 	}
 
@@ -227,12 +223,6 @@ func analyze(ctx context.Context, imageRef string, opt types.ImageOptions) (*typ
 	if err != nil {
 		return nil, err
 	}
-
-	cli, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		return nil, err
-	}
-	cli.NegotiateAPIVersion(ctx)
 
 	img, cleanup, err := image.NewContainerImage(ctx, imageRef, opt)
 	if err != nil {

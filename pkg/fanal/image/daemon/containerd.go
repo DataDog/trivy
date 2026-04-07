@@ -16,10 +16,10 @@ import (
 	"github.com/containerd/containerd/v2/pkg/namespaces"
 	"github.com/containerd/platforms"
 	"github.com/distribution/reference"
-	api "github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	dockerspec "github.com/moby/docker-image-spec/specs-go/v1"
+	dockerimage "github.com/moby/moby/api/types/image"
+	dockerClient "github.com/moby/moby/client"
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/samber/lo"
@@ -53,7 +53,7 @@ func (n familiarNamed) String() string {
 }
 
 func imageWriter(c *client.Client, img client.Image, platform types.Platform) imageSave {
-	return func(ctx context.Context, ref []string) (io.ReadCloser, error) {
+	return func(ctx context.Context, ref []string, _ ...dockerClient.ImageSaveOption) (dockerClient.ImageSaveResult, error) {
 		if len(ref) < 1 {
 			return nil, xerrors.New("no image reference")
 		}
@@ -211,7 +211,7 @@ func readImageConfig(ctx context.Context, img client.Image) (ocispec.Image, ocis
 }
 
 // ported from https://github.com/containerd/nerdctl/blob/d110fea18018f13c3f798fa6565e482f3ff03591/pkg/inspecttypes/dockercompat/dockercompat.go#L279-L321
-func inspect(ctx context.Context, img client.Image, ref reference.Reference) (api.ImageInspect, []v1.History, reference.Reference, error) {
+func inspect(ctx context.Context, img client.Image, ref reference.Reference) (dockerimage.InspectResponse, []v1.History, reference.Reference, error) {
 	if _, ok := ref.(reference.Digested); ok {
 		ref = familiarNamed(img.Name())
 	}
@@ -228,7 +228,7 @@ func inspect(ctx context.Context, img client.Image, ref reference.Reference) (ap
 
 	imgConfig, imgConfigDesc, err := readImageConfig(ctx, img)
 	if err != nil {
-		return api.ImageInspect{}, nil, nil, err
+		return dockerimage.InspectResponse{}, nil, nil, err
 	}
 
 	var lastHistory ocispec.History
@@ -247,37 +247,25 @@ func inspect(ctx context.Context, img client.Image, ref reference.Reference) (ap
 		})
 	}
 
-	portSet := make(nat.PortSet)
-	for k := range imgConfig.Config.ExposedPorts {
-		portSet[nat.Port(k)] = struct{}{}
-	}
-
 	created := ""
 	if lastHistory.Created != nil {
 		created = lastHistory.Created.Format(time.RFC3339Nano)
 	}
 
-	return api.ImageInspect{
+	return dockerimage.InspectResponse{
 		ID:          imgConfigDesc.Digest.String(),
 		RepoTags:    []string{fmt.Sprintf("%s:%s", repository, tag)},
 		RepoDigests: []string{fmt.Sprintf("%s@%s", repository, img.Target().Digest)},
 		Comment:     lastHistory.Comment,
 		Created:     created,
 		Author:      lastHistory.Author,
-		Config: &container.Config{
-			User:         imgConfig.Config.User,
-			ExposedPorts: portSet,
-			Env:          imgConfig.Config.Env,
-			Cmd:          imgConfig.Config.Cmd,
-			Volumes:      imgConfig.Config.Volumes,
-			WorkingDir:   imgConfig.Config.WorkingDir,
-			Entrypoint:   imgConfig.Config.Entrypoint,
-			Labels:       imgConfig.Config.Labels,
+		Config: &dockerspec.DockerOCIImageConfig{
+			ImageConfig: imgConfig.Config,
 		},
 		Architecture: imgConfig.Architecture,
 		Os:           imgConfig.OS,
-		RootFS: api.RootFS{
-			Type: imgConfig.RootFS.Type,
+		RootFS: dockerimage.RootFS{
+			Type:   imgConfig.RootFS.Type,
 			Layers: lo.Map(imgConfig.RootFS.DiffIDs, func(d digest.Digest, _ int) string {
 				return d.String()
 			}),
