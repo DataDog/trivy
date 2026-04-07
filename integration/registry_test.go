@@ -19,7 +19,6 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/types"
 
-	dockercontainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -59,9 +58,7 @@ func setupRegistry(ctx context.Context, baseDir string, authURL *url.URL) (testc
 		Mounts: testcontainers.Mounts(
 			testcontainers.BindMount(filepath.Join(baseDir, "data", "certs"), "/certs"),
 		),
-		HostConfigModifier: func(hostConfig *dockercontainer.HostConfig) {
-			hostConfig.AutoRemove = true
-		},
+		AutoRemove: true,
 		WaitingFor: wait.ForHTTP("v2").WithTLS(true).WithAllowInsecure(true).
 			WithStatusCodeMatcher(func(status int) bool {
 				return status == http.StatusUnauthorized
@@ -84,10 +81,8 @@ func setupAuthServer(ctx context.Context, baseDir string) (testcontainers.Contai
 			testcontainers.BindMount(filepath.Join(baseDir, "data", "auth_config"), "/config"),
 			testcontainers.BindMount(filepath.Join(baseDir, "data", "certs"), "/certs"),
 		),
-		HostConfigModifier: func(hostConfig *dockercontainer.HostConfig) {
-			hostConfig.AutoRemove = true
-		},
-		Cmd: []string{"/config/config.yml"},
+		AutoRemove: true,
+		Cmd:        []string{"/config/config.yml"},
 	}
 
 	authC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
