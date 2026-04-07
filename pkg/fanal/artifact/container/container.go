@@ -4,6 +4,7 @@ package local
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/containerd/continuity/devices"
 	"github.com/containerd/continuity/sysx"
+	"golang.org/x/sys/unix"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/wire"
 	"github.com/samber/lo"
@@ -319,6 +321,10 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 			for _, xattr := range xattrs {
 				opaque, err := sysx.LGetxattr(filePath, xattr)
 				if err != nil {
+					// ENODATA means the xattr is not set — not an error.
+					if errors.Is(err, unix.ENODATA) {
+						continue
+					}
 					return xerrors.Errorf("Lgetattr: %w", err)
 				}
 				if len(opaque) == 1 && opaque[0] == 'y' {
