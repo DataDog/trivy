@@ -43,15 +43,15 @@ func findPackage(e ftypes.Package, s []ftypes.Package) *ftypes.Package {
 	return nil
 }
 
-func lookupOriginLayerForPkg(pkg ftypes.Package, layers []ftypes.BlobInfo) (string, string, []string, *ftypes.BuildInfo) {
+func lookupOriginLayerForPkg(pkg ftypes.Package, layers []ftypes.BlobInfo) (string, string, map[string]string, []string, *ftypes.BuildInfo) {
 	for i, layer := range layers {
 		for _, info := range layer.PackageInfos {
 			if p := findPackage(pkg, info.Packages); p != nil {
-				return layer.Digest, layer.DiffID, p.InstalledFiles, lookupBuildInfo(i, layers)
+				return layer.Digest, layer.DiffID, layer.Annotations, p.InstalledFiles, lookupBuildInfo(i, layers)
 			}
 		}
 	}
-	return "", "", nil, nil
+	return "", "", nil, nil, nil
 }
 
 // lookupBuildInfo looks up Red Hat content sets from all layers
@@ -79,18 +79,18 @@ func lookupBuildInfo(index int, layers []ftypes.BlobInfo) *ftypes.BuildInfo {
 	return nil
 }
 
-func lookupOriginLayerForLib(filePath string, lib ftypes.Package, layers []ftypes.BlobInfo) (string, string) {
+func lookupOriginLayerForLib(filePath string, lib ftypes.Package, layers []ftypes.BlobInfo) (string, string, map[string]string) {
 	for _, layer := range layers {
 		for _, layerApp := range layer.Applications {
 			if filePath != layerApp.FilePath {
 				continue
 			}
 			if findPackage(lib, layerApp.Packages) != nil {
-				return layer.Digest, layer.DiffID
+				return layer.Digest, layer.DiffID, layer.Annotations
 			}
 		}
 	}
-	return "", ""
+	return "", "", nil
 }
 
 // ApplyLayers returns the merged layer
@@ -131,8 +131,9 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 		// Apply misconfigurations
 		for _, config := range layer.Misconfigurations {
 			config.Layer = ftypes.Layer{
-				Digest: layer.Digest,
-				DiffID: layer.DiffID,
+				Digest:      layer.Digest,
+				DiffID:      layer.DiffID,
+				Annotations: layer.Annotations,
 			}
 			key := fmt.Sprintf("%s/type:config", config.FilePath)
 			nestedMap.SetByString(key, sep, config)
@@ -141,9 +142,10 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 		// Apply secrets
 		for _, secret := range layer.Secrets {
 			l := ftypes.Layer{
-				Digest:    layer.Digest,
-				DiffID:    layer.DiffID,
-				CreatedBy: layer.CreatedBy,
+				Digest:      layer.Digest,
+				DiffID:      layer.DiffID,
+				CreatedBy:   layer.CreatedBy,
+				Annotations: layer.Annotations,
 			}
 			secretsMap = mergeSecrets(secretsMap, secret, l)
 		}
@@ -151,8 +153,9 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 		// Apply license files
 		for _, license := range layer.Licenses {
 			license.Layer = ftypes.Layer{
-				Digest: layer.Digest,
-				DiffID: layer.DiffID,
+				Digest:      layer.Digest,
+				DiffID:      layer.DiffID,
+				Annotations: layer.Annotations,
 			}
 			key := fmt.Sprintf("%s/type:license,%s", license.FilePath, license.Type)
 			nestedMap.SetByString(key, sep, license)
@@ -162,8 +165,9 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 		for _, customResource := range layer.CustomResources {
 			key := fmt.Sprintf("%s/custom:%s", customResource.FilePath, customResource.Type)
 			customResource.Layer = ftypes.Layer{
-				Digest: layer.Digest,
-				DiffID: layer.DiffID,
+				Digest:      layer.Digest,
+				DiffID:      layer.DiffID,
+				Annotations: layer.Annotations,
 			}
 			nestedMap.SetByString(key, sep, customResource)
 		}
@@ -213,11 +217,12 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 
 	for i, pkg := range mergedLayer.Packages {
 		// Skip lookup for SBOM
-		if lo.IsEmpty(pkg.Layer) {
-			originLayerDigest, originLayerDiffID, installedFiles, buildInfo := lookupOriginLayerForPkg(pkg, layers)
+		if pkg.Layer.IsEmpty() {
+			originLayerDigest, originLayerDiffID, originLayerAnnotations, installedFiles, buildInfo := lookupOriginLayerForPkg(pkg, layers)
 			mergedLayer.Packages[i].Layer = ftypes.Layer{
-				Digest: originLayerDigest,
-				DiffID: originLayerDiffID,
+				Digest:      originLayerDigest,
+				DiffID:      originLayerDiffID,
+				Annotations: originLayerAnnotations,
 			}
 			mergedLayer.Packages[i].BuildInfo = buildInfo
 			// Debian/Ubuntu has the installed files only in the first layer where the package is installed.
@@ -249,11 +254,12 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 	for _, app := range mergedLayer.Applications {
 		for i, pkg := range app.Packages {
 			// Skip lookup for SBOM
-			if lo.IsEmpty(pkg.Layer) {
-				originLayerDigest, originLayerDiffID := lookupOriginLayerForLib(app.FilePath, pkg, layers)
+			if pkg.Layer.IsEmpty() {
+				originLayerDigest, originLayerDiffID, originLayerAnnotations := lookupOriginLayerForLib(app.FilePath, pkg, layers)
 				app.Packages[i].Layer = ftypes.Layer{
-					Digest: originLayerDigest,
-					DiffID: originLayerDiffID,
+					Digest:      originLayerDigest,
+					DiffID:      originLayerDiffID,
+					Annotations: originLayerAnnotations,
 				}
 			}
 			if pkg.Identifier.PURL == nil {

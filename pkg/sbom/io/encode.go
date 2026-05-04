@@ -2,6 +2,7 @@ package io
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 	"strconv"
 
@@ -46,6 +47,7 @@ type Encoder struct {
 	bom             *core.BOM
 	bomOpts         core.Options
 	forceRegenerate bool
+	artifactType    ftypes.ArtifactType
 }
 
 func NewEncoder(opts ...EncoderOption) *Encoder {
@@ -75,6 +77,7 @@ func (e *Encoder) Encode(report types.Report) (*core.BOM, error) {
 		e.bom.SerialNumber = report.BOM.SerialNumber
 		e.bom.Version = report.BOM.Version
 	}
+	e.artifactType = report.ArtifactType
 	e.bom.AddComponent(root)
 
 	for _, result := range report.Results {
@@ -128,7 +131,9 @@ func (e *Encoder) rootComponent(r types.Report) (*core.Component, error) {
 
 	case ftypes.TypeVM:
 		root.Type = core.TypeVM
-	case ftypes.TypeFilesystem:
+	case ftypes.TypeFilesystem, ftypes.TypeMultiLayer:
+		// MultiLayer artifacts are filesystem-shaped (no OS / no container
+		// image config); reuse the filesystem CycloneDX type.
 		root.Type = core.TypeFilesystem
 	case ftypes.TypeRepository:
 		root.Type = core.TypeRepository
@@ -363,7 +368,7 @@ func (e *Encoder) resultComponent(root *core.Component, r types.Result, osFound 
 	return component
 }
 
-func (*Encoder) component(result types.Result, pkg ftypes.Package) *core.Component {
+func (e *Encoder) component(result types.Result, pkg ftypes.Package) *core.Component {
 	name := pkg.Name
 	version := utils.FormatVersion(pkg)
 	var group string
@@ -420,14 +425,34 @@ func (*Encoder) component(result types.Result, pkg ftypes.Package) *core.Compone
 			Name:  core.PropertyModularitylabel,
 			Value: pkg.Modularitylabel,
 		},
-		{
+	}
+
+	// LayerDigest is OCI's compressed-blob hash; LayerDiffID is the
+	// uncompressed-content hash. For artifacts that have no compressed
+	// form (serverless layers - pre-extracted directories) the launcher
+	// sets Digest = DiffID, making LayerDigest a verbatim duplicate. Skip
+	// it in that case; LayerDiffID stays as the per-component link to
+	// the root component's DiffID list.
+	if pkg.Layer.Digest != "" && pkg.Layer.Digest != pkg.Layer.DiffID {
+		properties = append(properties, core.Property{
 			Name:  core.PropertyLayerDigest,
 			Value: pkg.Layer.Digest,
-		},
-		{
-			Name:  core.PropertyLayerDiffID,
-			Value: pkg.Layer.DiffID,
-		},
+		})
+	}
+	properties = append(properties, core.Property{
+		Name:  core.PropertyLayerDiffID,
+		Value: pkg.Layer.DiffID,
+	})
+
+	// Layer annotations are free-form per-layer metadata (e.g. cloud-specific
+	// identifiers like aws:lambda:LayerARN). They emit verbatim, without the
+	// aquasecurity:trivy: namespace.
+	for _, k := range slices.Sorted(maps.Keys(pkg.Layer.Annotations)) {
+		properties = append(properties, core.Property{
+			Name:     k,
+			Value:    pkg.Layer.Annotations[k],
+			External: true,
+		})
 	}
 
 	// Fill Red Hat specific properties

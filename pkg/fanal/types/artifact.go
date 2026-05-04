@@ -18,6 +18,7 @@ const (
 	TypeSPDX           ArtifactType = "spdx"
 	TypeAWSAccount     ArtifactType = "aws_account"
 	TypeVM             ArtifactType = "vm"
+	TypeMultiLayer     ArtifactType = "multilayer"
 )
 
 type OS struct {
@@ -91,6 +92,18 @@ type Layer struct {
 	Digest    string `json:",omitempty"`
 	DiffID    string `json:",omitempty"`
 	CreatedBy string `json:",omitempty"`
+
+	// Annotations carry free-form per-layer metadata that propagates to every
+	// component sourced from this layer. Used by serverless artifacts to attach
+	// cloud-specific identifiers (e.g. aws:lambda:LayerARN).
+	Annotations map[string]string `json:",omitempty"`
+}
+
+// IsEmpty reports whether the layer carries no identifying information.
+// The Annotations map makes Layer non-comparable, so this stands in for
+// equality checks against the zero value.
+func (l Layer) IsEmpty() bool {
+	return l.Size == 0 && l.Digest == "" && l.DiffID == "" && l.CreatedBy == "" && len(l.Annotations) == 0
 }
 
 type Layers []Layer
@@ -169,12 +182,13 @@ type BlobInfo struct {
 	SchemaVersion int
 
 	// Layer info
-	Size          int64    `json:",omitempty"`
-	Digest        string   `json:",omitempty"`
-	DiffID        string   `json:",omitempty"`
-	CreatedBy     string   `json:",omitempty"`
-	OpaqueDirs    []string `json:",omitempty"`
-	WhiteoutFiles []string `json:",omitempty"`
+	Size          int64             `json:",omitempty"`
+	Digest        string            `json:",omitempty"`
+	DiffID        string            `json:",omitempty"`
+	CreatedBy     string            `json:",omitempty"`
+	Annotations   map[string]string `json:",omitempty"`
+	OpaqueDirs    []string          `json:",omitempty"`
+	WhiteoutFiles []string          `json:",omitempty"`
 
 	// Analysis result
 	OS                OS                 `json:",omitzero"`
@@ -197,10 +211,11 @@ type BlobInfo struct {
 
 func (b BlobInfo) Layer() Layer {
 	return Layer{
-		Size:      b.Size,
-		Digest:    b.Digest,
-		DiffID:    b.DiffID,
-		CreatedBy: b.CreatedBy,
+		Size:        b.Size,
+		Digest:      b.Digest,
+		DiffID:      b.DiffID,
+		CreatedBy:   b.CreatedBy,
+		Annotations: b.Annotations,
 	}
 }
 
