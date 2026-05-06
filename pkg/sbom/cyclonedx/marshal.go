@@ -371,11 +371,8 @@ func (*Marshaler) Properties(properties []core.Property) *[]cdx.Property {
 			Value: property.Value,
 		})
 	}
-	sort.Slice(cdxProps, func(i, j int) bool {
-		if cdxProps[i].Name != cdxProps[j].Name {
-			return cdxProps[i].Name < cdxProps[j].Name
-		}
-		return cdxProps[i].Value < cdxProps[j].Value
+	sort.SliceStable(cdxProps, func(i, j int) bool {
+		return cdxProps[i].Name < cdxProps[j].Name
 	})
 	return &cdxProps
 }
