@@ -191,14 +191,9 @@ type Property struct {
 
 type Properties []Property
 
-func (p Properties) Len() int { return len(p) }
-func (p Properties) Less(i, j int) bool {
-	if p[i].Name != p[j].Name {
-		return p[i].Name < p[j].Name
-	}
-	return p[i].Value < p[j].Value
-}
-func (p Properties) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p Properties) Len() int           { return len(p) }
+func (p Properties) Less(i, j int) bool { return p[i].Name < p[j].Name }
+func (p Properties) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 type Relationship struct {
 	Dependency uuid.UUID
@@ -245,7 +240,7 @@ func (b *BOM) setupComponent(c *Component) {
 		p := c.PkgIdentifier.PURL.String()
 		b.purls[p] = append(b.purls[p], c.id)
 	}
-	sort.Sort(c.Properties)
+	sort.Stable(c.Properties)
 }
 
 func (b *BOM) AddComponent(c *Component) {

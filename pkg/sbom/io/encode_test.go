@@ -258,11 +258,11 @@ func TestEncoder_Encode(t *testing.T) {
 						},
 						{
 							Name:  core.PropertyRepoTag,
-							Value: "debian:12",
+							Value: "debian:latest",
 						},
 						{
 							Name:  core.PropertyRepoTag,
-							Value: "debian:latest",
+							Value: "debian:12",
 						},
 						{
 							Name:  core.PropertySchemaVersion,

@@ -23,11 +23,11 @@
       "properties": [
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:02874b2b269dea8dde0f7edb4c9906904dfe38a09de1a214f20c650cfb15c60e"
+          "value": "sha256:831c5620387fb9efec59fc82a42b948546c6be601e3ab34a87108ecf852aa15f"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:25165eb51d15842f870f97873e0a58409d5e860e6108e3dd829bd10e484c0065"
+          "value": "sha256:02874b2b269dea8dde0f7edb4c9906904dfe38a09de1a214f20c650cfb15c60e"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
@@ -43,7 +43,7 @@
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:831c5620387fb9efec59fc82a42b948546c6be601e3ab34a87108ecf852aa15f"
+          "value": "sha256:25165eb51d15842f870f97873e0a58409d5e860e6108e3dd829bd10e484c0065"
         },
         {
           "name": "aquasecurity:trivy:ImageID",
