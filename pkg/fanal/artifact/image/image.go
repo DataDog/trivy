@@ -198,6 +198,12 @@ func (a Artifact) findMatchingRepoReference(artifactName string, references []na
 		return fallback
 	}
 
+	// Empty artifact name parses to a zero Reference without error. Fall back to
+	// the first available repo tag/digest in that case instead of dereferencing
+	// the nil underlying reference.
+	if artifactRef.IsZero() {
+		return fallback
+	}
 	artifactRefName := artifactRef.Name()
 	// Try to find a matching digest from RepoTags/RepoDigests
 	if ref, ok := lo.Find(references, func(d name.Reference) bool {
