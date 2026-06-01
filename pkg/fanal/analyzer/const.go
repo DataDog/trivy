@@ -272,3 +272,11 @@ var (
 		TypeAnsible,
 	}
 )
+
+// TypeDeferred are the per-file application/language analyzers that must run
+// AFTER OS package detection, so files owned by an OS package
+// (SystemInstalledFiles) are never opened or parsed. The OS analyzers are the
+// complement of this set and keep running inline during the walk. Post-analyzer
+// types listed here (jar, pip, ...) are harmless: only per-file analyzers are
+// ever routed by it.
+var TypeDeferred = append(append([]Type{}, TypeLanguages...), TypeExecutable)

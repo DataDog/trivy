@@ -454,8 +454,10 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.Layer, disabled 
 			return xerrors.Errorf("failed to analyze %s: %w", filePath, err)
 		}
 
-		// Skip post analysis if the file is not required
+		// Collect candidate files for post-analyzers and deferred per-file
+		// analyzers; both run after the walk on a SystemInstalledFiles-filtered FS.
 		analyzerTypes := a.analyzer.RequiredPostAnalyzers(filePath, info)
+		analyzerTypes = append(analyzerTypes, a.analyzer.RequiredDeferredAnalyzers(filePath, info)...)
 		if len(analyzerTypes) == 0 {
 			return nil
 		}
@@ -483,6 +485,13 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.Layer, disabled 
 	// Post-analysis
 	if err = a.analyzer.PostAnalyze(ctx, composite, result, opts); err != nil {
 		return types.BlobInfo{}, xerrors.Errorf("post analysis error: %w", err)
+	}
+
+	// Deferred analysis: application/language analyzers run now that OS package
+	// detection is complete, skipping files owned by OS packages. Runs inside
+	// the per-layer inspect so results keep this layer's DiffID attribution.
+	if err = a.analyzer.DeferredAnalyze(ctx, composite, result, opts); err != nil {
+		return types.BlobInfo{}, xerrors.Errorf("deferred analysis error: %w", err)
 	}
 
 	// Read the remaining bytes for blocking factor to calculate the correct layer size

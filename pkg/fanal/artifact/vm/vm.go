@@ -111,13 +111,14 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 			return xerrors.Errorf("analyze file (%s): %w", path, err)
 		}
 
-		// Skip post analysis if the file is not required
+		// Skip if the file is required by neither a post- nor a deferred analyzer
 		analyzerTypes := a.analyzer.RequiredPostAnalyzers(path, info)
+		analyzerTypes = append(analyzerTypes, a.analyzer.RequiredDeferredAnalyzers(path, info)...)
 		if len(analyzerTypes) == 0 {
 			return nil
 		}
 
-		// Build filesystem for post analysis
+		// Build filesystem for post/deferred analysis
 		tmpFilePath, err := composite.CopyFileToTemp(opener, info)
 		if err != nil {
 			return xerrors.Errorf("failed to copy file to temp: %w", err)
@@ -141,6 +142,12 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 	// Post-analysis
 	if err = a.analyzer.PostAnalyze(ctx, composite, result, opts); err != nil {
 		return types.BlobInfo{}, xerrors.Errorf("post analysis error: %w", err)
+	}
+
+	// Deferred analysis: application/language analyzers run now that OS package
+	// detection is complete, skipping files owned by OS packages.
+	if err = a.analyzer.DeferredAnalyze(ctx, composite, result, opts); err != nil {
+		return types.BlobInfo{}, xerrors.Errorf("deferred analysis error: %w", err)
 	}
 
 	result.Sort()
