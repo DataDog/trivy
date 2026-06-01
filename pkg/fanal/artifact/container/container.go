@@ -343,13 +343,14 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 			return xerrors.Errorf("analyze file (%s): %w", filePath, err)
 		}
 
-		// Skip post analysis if the file is not required
+		// Skip if the file is required by neither a post- nor a deferred analyzer
 		analyzerTypes := a.analyzer.RequiredPostAnalyzers(filePath, info)
+		analyzerTypes = append(analyzerTypes, a.analyzer.RequiredDeferredAnalyzers(filePath, info)...)
 		if len(analyzerTypes) == 0 {
 			return nil
 		}
 
-		// Build filesystem for post analysis
+		// Build filesystem for post/deferred analysis
 		if err := composite.CreateLink(analyzerTypes, dir, filePath, filepath.Join(dir, filePath)); err != nil {
 			return xerrors.Errorf("failed to create link: %w", err)
 		}
@@ -368,6 +369,13 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 	// Post-analysis
 	if err = a.analyzer.PostAnalyze(ctx, composite, result, opts); err != nil {
 		return types.BlobInfo{}, xerrors.Errorf("post analysis error: %w", err)
+	}
+
+	// Deferred analysis: application/language analyzers run now that OS package
+	// detection is complete, skipping files owned by OS packages. Runs inside
+	// the per-layer inspect so results keep this layer's DiffID attribution.
+	if err = a.analyzer.DeferredAnalyze(ctx, composite, result, opts); err != nil {
+		return types.BlobInfo{}, xerrors.Errorf("deferred analysis error: %w", err)
 	}
 
 	// Sort the analysis result for consistent results

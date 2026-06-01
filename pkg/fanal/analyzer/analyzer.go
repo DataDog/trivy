@@ -22,6 +22,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/licensing"
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/misconf"
+	"github.com/aquasecurity/trivy/pkg/parallel"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 	xslices "github.com/aquasecurity/trivy/pkg/x/slices"
 )
@@ -132,11 +133,16 @@ type StaticPathAnalyzer interface {
 type Opener func() (xio.ReadSeekCloserAt, error)
 
 type AnalyzerGroup struct {
-	logger            *log.Logger
-	analyzers         []analyzer
-	postAnalyzers     []PostAnalyzer
+	logger        *log.Logger
+	analyzers     []analyzer
+	postAnalyzers []PostAnalyzer
+	// deferredAnalyzers are per-file analyzers (executable + the language
+	// analyzers) that run after OS package detection so that files owned by an
+	// OS package are never opened or parsed. See DeferredAnalyze.
+	deferredAnalyzers []analyzer
 	filePatterns      map[Type]FilePatterns
 	detectionPriority types.DetectionPriority
+	parallel          int
 }
 
 ///////////////////////////
@@ -400,6 +406,7 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 		logger:            log.WithPrefix("analyzer"),
 		filePatterns:      make(map[Type]FilePatterns),
 		detectionPriority: opts.DetectionPriority,
+		parallel:          opts.Parallel,
 	}
 	for _, p := range opts.FilePatterns {
 		// e.g. "dockerfile:my_dockerfile_*"
@@ -427,7 +434,14 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 				return AnalyzerGroup{}, xerrors.Errorf("analyzer initialization error: %w", err)
 			}
 		}
-		group.analyzers = append(group.analyzers, a)
+		// Application/language analyzers are deferred until after OS detection
+		// (see DeferredAnalyze) so package-owned files are skipped; OS analyzers
+		// stay inline because they populate SystemInstalledFiles.
+		if slices.Contains(TypeDeferred, analyzerType) {
+			group.deferredAnalyzers = append(group.deferredAnalyzers, a)
+		} else {
+			group.analyzers = append(group.analyzers, a)
+		}
 	}
 
 	for analyzerType, init := range postAnalyzers {
@@ -453,6 +467,9 @@ type Versions struct {
 func (ag AnalyzerGroup) AnalyzerVersions() Versions {
 	analyzerVersions := make(map[string]int)
 	for _, a := range ag.analyzers {
+		analyzerVersions[string(a.Type())] = a.Version()
+	}
+	for _, a := range ag.deferredAnalyzers {
 		analyzerVersions[string(a.Type())] = a.Version()
 	}
 	postAnalyzerVersions := make(map[string]int)
@@ -547,6 +564,23 @@ func (ag AnalyzerGroup) RequiredPostAnalyzers(filePath string, info os.FileInfo)
 	return postAnalyzerTypes
 }
 
+// RequiredDeferredAnalyzers returns the deferred (application/language) analyzer
+// types that require the given file, so the walker links it into the composite
+// FS for post-walk analysis. Deferred analyzers cannot run inline because the
+// set of OS-package-owned files is unknown until the walk completes.
+func (ag AnalyzerGroup) RequiredDeferredAnalyzers(filePath string, info os.FileInfo) []Type {
+	if info.IsDir() {
+		return nil
+	}
+	var deferredTypes []Type
+	for _, a := range ag.deferredAnalyzers {
+		if ag.filePatterns[a.Type()].Match(filePath) || a.Required(filePath, info) {
+			deferredTypes = append(deferredTypes, a.Type())
+		}
+	}
+	return deferredTypes
+}
+
 // PostAnalyze passes a virtual filesystem containing only required files
 // and passes it to the respective post-analyzer.
 // The obtained results are merged into the "result".
@@ -616,6 +650,72 @@ func (ag AnalyzerGroup) postAnalyzeWithTimeout(ctx context.Context, a PostAnalyz
 	return ag.postAnalyze(ctx, a, input)
 }
 
+// DeferredAnalyze runs the deferred (application/language) analyzers on the
+// composite filesystem after OS detection, filtering out files owned by an OS
+// package (SystemInstalledFiles) so they are never opened or parsed. It mirrors
+// PostAnalyze; the difference is each deferred analyzer is a per-file analyzer,
+// invoked once per surviving file. Must run after the walk and PostAnalyze, so
+// SystemInstalledFiles is complete (e.g. dpkg is a post-analyzer).
+func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *CompositeFS, result *AnalysisResult, opts AnalysisOptions) error {
+	var errs error
+	for _, a := range ag.deferredAnalyzers {
+		fsys, ok := compositeFS.Get(a.Type())
+		if !ok {
+			continue
+		}
+
+		skippedFiles := result.SystemInstalledFiles
+		if ag.detectionPriority == types.PriorityComprehensive {
+			skippedFiles = nil
+		}
+		for _, app := range result.Applications {
+			skippedFiles = append(skippedFiles, app.FilePath)
+			for _, pkg := range app.Packages {
+				if pkg.FilePath != "" {
+					skippedFiles = append(skippedFiles, pkg.FilePath)
+				}
+			}
+		}
+
+		filteredFS, err := fsys.Filter(skippedFiles)
+		if err != nil {
+			return xerrors.Errorf("unable to filter filesystem: %w", err)
+		}
+
+		if err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, result, opts, opts.PostAnalyzerTimeout); err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				errs = errors.Join(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
+			} else {
+				return xerrors.Errorf("deferred analysis error: %w", err)
+			}
+		}
+	}
+	return errs
+}
+
+func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, result *AnalysisResult, opts AnalysisOptions, t time.Duration) error {
+	if t > 0 {
+		ctx1, cancel := context.WithTimeout(ctx, t)
+		defer cancel()
+		ctx = ctx1
+	}
+	onFile := func(path string, info fs.FileInfo, r xio.ReadSeekerAt) (*AnalysisResult, error) {
+		return ag.analyze(ctx, a, AnalysisInput{
+			FilePath: path,
+			Info:     info,
+			Content:  r,
+			Options:  opts,
+		})
+	}
+	onResult := func(res *AnalysisResult) error {
+		if res != nil {
+			result.Merge(res)
+		}
+		return nil
+	}
+	return parallel.WalkDir(ctx, fsys, ".", ag.parallel, onFile, onResult)
+}
+
 // PostAnalyzerFS returns a composite filesystem that contains multiple filesystems for each post-analyzer
 func (ag AnalyzerGroup) PostAnalyzerFS() (*CompositeFS, error) {
 	return NewCompositeFS()
@@ -631,6 +731,7 @@ func (ag AnalyzerGroup) StaticPaths(disabled []Type) ([]string, bool) {
 		xslices.Map(ag.analyzers, func(a analyzer) analyzerType { return a }),
 		xslices.Map(ag.postAnalyzers, func(a PostAnalyzer) analyzerType { return a })...,
 	)
+	allAnalyzers = append(allAnalyzers, xslices.Map(ag.deferredAnalyzers, func(a analyzer) analyzerType { return a })...)
 
 	for _, a := range allAnalyzers {
 		// Skip disabled analyzers

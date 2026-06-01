@@ -156,6 +156,15 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 	}
 	err2 := err
 
+	// Deferred analysis: application/language analyzers run now that OS package
+	// detection is complete, skipping files owned by OS packages.
+	if err = a.analyzer.DeferredAnalyze(ctx, composite, result, opts); err != nil {
+		if !errors.Is(err, context.DeadlineExceeded) {
+			return artifact.Reference{}, xerrors.Errorf("deferred analysis error: %w", err)
+		}
+	}
+	err3 := err
+
 	// Sort the analysis result for consistent results
 	result.Sort()
 
@@ -198,7 +207,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		ID:           cacheKey, // use a cache key as pseudo artifact ID
 		BlobIDs:      []string{cacheKey},
 		RepoMetadata: a.repoMetadata,
-	}, errors.Join(err1, err2)
+	}, errors.Join(err1, err2, err3)
 }
 
 func (a Artifact) analyzeWithRootDir(ctx context.Context, eg *errgroup.Group, limit *semaphore.Weighted,
@@ -251,8 +260,10 @@ func (a Artifact) analyzeWithTraversal(ctx context.Context, root, relativePath s
 			return xerrors.Errorf("analyze file (%s): %w", filePath, err)
 		}
 
-		// Skip post analysis if the file is not required
+		// Collect candidate files for post-analyzers and deferred per-file
+		// analyzers; both run after the walk on a SystemInstalledFiles-filtered FS.
 		analyzerTypes := a.analyzer.RequiredPostAnalyzers(filePath, info)
+		analyzerTypes = append(analyzerTypes, a.analyzer.RequiredDeferredAnalyzers(filePath, info)...)
 		if len(analyzerTypes) == 0 {
 			return nil
 		}
