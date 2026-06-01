@@ -260,4 +260,10 @@ var (
 		TypeYAML,
 		TypeJSON,
 	}
+
+	// TypeDeferred has the per-file application analyzers that must run after OS
+	// package detection, so files owned by an OS package can be skipped (see
+	// AnalyzerGroup.DeferredAnalyze). Only per-file analyzers registered in this
+	// set are deferred; post-analyzers of the same Type are unaffected.
+	TypeDeferred = append(append([]Type{}, TypeLanguages...), TypeExecutable)
 )

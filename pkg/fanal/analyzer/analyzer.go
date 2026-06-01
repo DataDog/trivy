@@ -20,6 +20,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/misconf"
+	"github.com/aquasecurity/trivy/pkg/parallel"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 )
 
@@ -132,8 +133,10 @@ type AnalyzerGroup struct {
 	logger            *log.Logger
 	analyzers         []analyzer
 	postAnalyzers     []PostAnalyzer
+	deferredAnalyzers []analyzer
 	filePatterns      map[Type][]*regexp.Regexp
 	detectionPriority types.DetectionPriority
+	parallel          int
 }
 
 ///////////////////////////
@@ -341,6 +344,7 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 		logger:            log.WithPrefix("analyzer"),
 		filePatterns:      make(map[Type][]*regexp.Regexp),
 		detectionPriority: opts.DetectionPriority,
+		parallel:          opts.Parallel,
 	}
 	for _, p := range opts.FilePatterns {
 		// e.g. "dockerfile:my_dockerfile_*"
@@ -372,7 +376,13 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 				return AnalyzerGroup{}, xerrors.Errorf("analyzer initialization error: %w", err)
 			}
 		}
-		group.analyzers = append(group.analyzers, a)
+		// Per-file application analyzers are deferred past the walk so files
+		// owned by an OS package can be skipped (see DeferredAnalyze).
+		if slices.Contains(TypeDeferred, analyzerType) {
+			group.deferredAnalyzers = append(group.deferredAnalyzers, a)
+		} else {
+			group.analyzers = append(group.analyzers, a)
+		}
 	}
 
 	for analyzerType, init := range postAnalyzers {
@@ -398,6 +408,9 @@ type Versions struct {
 func (ag AnalyzerGroup) AnalyzerVersions() Versions {
 	analyzerVersions := make(map[string]int)
 	for _, a := range ag.analyzers {
+		analyzerVersions[string(a.Type())] = a.Version()
+	}
+	for _, a := range ag.deferredAnalyzers {
 		analyzerVersions[string(a.Type())] = a.Version()
 	}
 	postAnalyzerVersions := make(map[string]int)
@@ -486,6 +499,22 @@ func (ag AnalyzerGroup) RequiredPostAnalyzers(filePath string, info os.FileInfo)
 	return postAnalyzerTypes
 }
 
+// RequiredDeferredAnalyzers returns the deferred analyzer types that require the
+// given file, so the driver links it into the composite filesystem for the
+// deferred phase (mirrors RequiredPostAnalyzers).
+func (ag AnalyzerGroup) RequiredDeferredAnalyzers(filePath string, info os.FileInfo) []Type {
+	if info.IsDir() {
+		return nil
+	}
+	var deferredTypes []Type
+	for _, a := range ag.deferredAnalyzers {
+		if ag.filePatternMatch(a.Type(), filePath) || a.Required(filePath, info) {
+			deferredTypes = append(deferredTypes, a.Type())
+		}
+	}
+	return deferredTypes
+}
+
 // PostAnalyze passes a virtual filesystem containing only required files
 // and passes it to the respective post-analyzer.
 // The obtained results are merged into the "result".
@@ -553,6 +582,81 @@ func postAnalyzeWithTimeout(ctx context.Context, a PostAnalyzer, input PostAnaly
 	return a.PostAnalyze(ctx, input)
 }
 
+// DeferredAnalyze runs the per-file application analyzers that were deferred
+// past the walk, on a filesystem filtered to exclude files owned by an OS
+// package (result.SystemInstalledFiles) and files already covered by detected
+// packages. It is the per-file analog of PostAnalyze and must run after the OS
+// package analyzers have populated result.SystemInstalledFiles.
+// This function may be called concurrently and must be thread-safe.
+func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *CompositeFS, result *AnalysisResult, opts AnalysisOptions) error {
+	var errs error
+	for _, a := range ag.deferredAnalyzers {
+		fsys, ok := compositeFS.Get(a.Type())
+		if !ok {
+			continue
+		}
+
+		skippedFiles := result.SystemInstalledFiles
+		if ag.detectionPriority == types.PriorityComprehensive {
+			// Comprehensive detection keeps OS-owned files to catch every possible
+			// vulnerability, at the cost of false positives and duplicates.
+			skippedFiles = nil
+		}
+		for _, app := range result.Applications {
+			skippedFiles = append(skippedFiles, app.FilePath)
+			for _, pkg := range app.Packages {
+				if pkg.FilePath != "" {
+					skippedFiles = append(skippedFiles, pkg.FilePath)
+				}
+			}
+		}
+
+		filteredFS, err := fsys.Filter(skippedFiles)
+		if err != nil {
+			return xerrors.Errorf("unable to filter filesystem: %w", err)
+		}
+
+		if err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, result, opts); err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				errs = errors.Join(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
+			} else {
+				return xerrors.Errorf("deferred analysis error: %w", err)
+			}
+		}
+	}
+	return errs
+}
+
+func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, result *AnalysisResult, opts AnalysisOptions) error {
+	if opts.PostAnalyzerTimeout > 0 {
+		ctx1, cancel := context.WithTimeout(ctx, opts.PostAnalyzerTimeout)
+		defer cancel()
+		ctx = ctx1
+	}
+
+	onFile := func(path string, info fs.FileInfo, r xio.ReadSeekerAt) (*AnalysisResult, error) {
+		ret, err := a.Analyze(ctx, AnalysisInput{
+			FilePath: path,
+			Info:     info,
+			Content:  r,
+			Options:  opts,
+		})
+		if err != nil && !errors.Is(err, fos.AnalyzeOSError) {
+			ag.logger.Debug("Deferred analysis error", log.Err(err))
+			return nil, nil
+		}
+		return ret, nil
+	}
+	onResult := func(ret *AnalysisResult) error {
+		if ret == nil {
+			return nil
+		}
+		result.Merge(ret)
+		return nil
+	}
+	return parallel.WalkDir(ctx, fsys, ".", ag.parallel, onFile, onResult)
+}
+
 // PostAnalyzerFS returns a composite filesystem that contains multiple filesystems for each post-analyzer
 func (ag AnalyzerGroup) PostAnalyzerFS() (*CompositeFS, error) {
 	return NewCompositeFS()
@@ -593,6 +697,13 @@ func (ag AnalyzerGroup) StaticPaths(disabled []Type) ([]string, bool) {
 	if allPostAnalyzersDisabled := lo.EveryBy(ag.postAnalyzers, func(a PostAnalyzer) bool {
 		return slices.Contains(disabled, a.Type())
 	}); !allPostAnalyzersDisabled {
+		return nil, false
+	}
+
+	// Deferred analyzers run a full walk too, so any enabled one rules out StaticPath.
+	if allDeferredDisabled := lo.EveryBy(ag.deferredAnalyzers, func(a analyzer) bool {
+		return slices.Contains(disabled, a.Type())
+	}); !allDeferredDisabled {
 		return nil, false
 	}
 
