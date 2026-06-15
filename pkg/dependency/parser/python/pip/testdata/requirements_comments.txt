@@ -2,7 +2,7 @@
 #bar==8.0.0
 #comment
 click==8.0.0
-Flask==2.0.0 #comment
-Jinja2==3.0.0#comment
+Flask==2.3.3 #comment
+Jinja2==3.1.6#comment
 MarkupSafe==2.0.0 # comment
 
