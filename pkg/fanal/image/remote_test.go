@@ -145,6 +145,29 @@ func Test_tryRemote(t *testing.T) {
 			wantErr: "unsupported artifact type",
 		},
 		{
+			// Regression test: a single-arch image manifest (as opposed to a
+			// multi-arch manifest list/index) has a Config field, and when the
+			// manifest itself doesn't set an explicit `artifactType`,
+			// go-containerregistry falls back to using the config's media type
+			// as the descriptor's ArtifactType. A regular container image config
+			// media type must NOT be treated as an unsupported artifact type.
+			name:      "regular image with explicit docker config media type",
+			imageName: "test/dockerconfig:latest",
+			setupImage: func(t *testing.T, ref name.Reference) {
+				configFile, err := img.ConfigFile()
+				require.NoError(t, err)
+
+				imageToWrite, err := mutate.Config(img, configFile.Config)
+				require.NoError(t, err)
+
+				imageToWrite = mutate.ConfigMediaType(imageToWrite, "application/vnd.docker.container.image.v1+json")
+
+				err = remote.Write(ref, imageToWrite)
+				require.NoError(t, err)
+			},
+			wantName: "/test/dockerconfig:latest",
+		},
+		{
 			name:       "image not found",
 			imageName:  "test/notfound:latest",
 			wantErr:    "NAME_UNKNOWN",
