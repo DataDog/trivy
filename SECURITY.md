@@ -7,7 +7,7 @@ As such, there is no supportability commitment. The maintainers will do the best
 
 ## Reporting a Vulnerability
 
-Please use the "Private vulnerability reporting" feature in the GitHub repository (under the "Security" tab).  
+Please use the "Private vulnerability reporting" feature in the GitHub repository (under the "Security" tab) once we enable it.  
 
 ⚠️ **Important:**  
 This policy is intended for vulnerabilities in **Trivy itself** (e.g., core functionality, scanning logic, or security features).  
