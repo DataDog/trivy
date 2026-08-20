@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     // Use JUnit test framework.
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
 
     implementation 'commons-dbcp:commons-dbcp:1.4'
     implementation 'commons-pool:commons-pool:1.6'
