@@ -229,11 +229,17 @@ func (a Artifact) analyzeWithStaticPaths(ctx context.Context, eg *errgroup.Group
 	result *analyzer.AnalysisResult, composite *analyzer.CompositeFS, opts analyzer.AnalysisOptions,
 	staticPaths []string) error {
 
-	// Process each static path
+	// Process each static path. A path the process cannot read yields the same
+	// analysis as one that is absent, so skip it and analyze the rest.
 	for _, relativePath := range staticPaths {
-		if err := a.analyzeWithTraversal(ctx, a.rootPath, relativePath, eg, limit, result, composite, opts); errors.Is(err, fs.ErrNotExist) {
+		err := a.analyzeWithTraversal(ctx, a.rootPath, relativePath, eg, limit, result, composite, opts)
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
 			continue
-		} else if err != nil {
+		case errors.Is(err, fs.ErrPermission):
+			a.logger.Debug("Skipped unreadable static path", log.String("path", relativePath))
+			continue
+		case err != nil:
 			return xerrors.Errorf("analyze with traversal: %w", err)
 		}
 	}
