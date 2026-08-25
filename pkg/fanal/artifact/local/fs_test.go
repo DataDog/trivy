@@ -2,6 +2,9 @@ package local
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -2604,6 +2607,72 @@ func TestArtifact_AnalysisStrategy(t *testing.T) {
 
 			// Check if the walked roots match the expected roots
 			assert.ElementsMatch(t, tt.wantRoots, rw.walkedRoots)
+		})
+	}
+}
+
+// failingWalker fails on one root and delegates the others, standing in for a
+// static path the process cannot read.
+type failingWalker struct {
+	base Walker
+	root string
+	err  error
+}
+
+func (w failingWalker) Walk(ctx context.Context, root string, option walker.Option, walkFn walker.WalkFunc) error {
+	if filepath.ToSlash(root) == w.root {
+		return fmt.Errorf("failed to stat root %s: %w", root, w.err)
+	}
+	return w.base.Walk(ctx, root, option, walkFn)
+}
+
+// TestArtifact_UnreadableStaticPath checks that a static path the process cannot
+// read is skipped like an absent one, leaving the rest of the scan alone. An
+// unprivileged scan of a host root hits this on root/buildinfo/content_manifests.
+func TestArtifact_UnreadableStaticPath(t *testing.T) {
+	tests := []struct {
+		name    string
+		err     error
+		wantErr string
+	}{
+		{
+			name: "unreadable path",
+			err:  fs.ErrPermission,
+		},
+		{
+			name: "missing path",
+			err:  fs.ErrNotExist,
+		},
+		{
+			name:    "sad path",
+			err:     errors.New("broken"),
+			wantErr: "broken",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := failingWalker{
+				base: walker.NewFS(),
+				root: "testdata/alpine/etc/alpine-release",
+				err:  tt.err,
+			}
+			c := cache.NewMemoryCache()
+			a, err := NewArtifact("testdata/alpine", c, w, artifact.Option{
+				DisabledAnalyzers: append(analyzer.TypeConfigFiles, analyzer.TypePip, analyzer.TypeSecret),
+			})
+			require.NoError(t, err)
+
+			ref, err := a.Inspect(t.Context())
+			if tt.wantErr != "" {
+				assert.ErrorContains(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+
+			blob, err := c.GetBlob(t.Context(), ref.BlobIDs[0])
+			require.NoError(t, err)
+			assert.NotEmpty(t, blob.PackageInfos, "the readable static paths should still be analyzed")
 		})
 	}
 }
