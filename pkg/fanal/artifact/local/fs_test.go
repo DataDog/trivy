@@ -1,6 +1,7 @@
 package local
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -2552,10 +2553,10 @@ func newRecordingWalker(base Walker) *recordingWalker {
 	}
 }
 
-func (w *recordingWalker) Walk(root string, option walker.Option, walkFn walker.WalkFunc) error {
+func (w *recordingWalker) Walk(ctx context.Context, root string, option walker.Option, walkFn walker.WalkFunc) error {
 	w.walkedRoots = append(w.walkedRoots, filepath.ToSlash(root))
 	// Call the original walker
-	return w.base.Walk(root, option, walkFn)
+	return w.base.Walk(ctx, root, option, walkFn)
 }
 
 // TestArtifact_AnalysisStrategy tests the different analysis strategies
