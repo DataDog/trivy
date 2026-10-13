@@ -37,7 +37,7 @@ func Test_ParseLicenses(t *testing.T) {
 			require.NoError(t, fsys.CopyFilesUnder(tt.dir))
 
 			l := license.NewLicense(0.9)
-			licenses, err := l.Traverse(fsys, ".")
+			licenses, err := l.Traverse(t.Context(), fsys, ".")
 			if tt.wantErr != "" {
 				assert.ErrorContainsf(t, err, tt.wantErr, tt.name)
 				return
