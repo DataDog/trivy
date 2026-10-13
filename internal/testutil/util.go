@@ -10,50 +10,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/aquasecurity/trivy/pkg/iac/scan"
 )
-
-func AssertRuleFound(t *testing.T, ruleID string, results scan.Results, message string, args ...any) {
-	found := ruleIDInResults(ruleID, results.GetFailed())
-	assert.True(t, found, append([]any{message}, args...)...)
-	for _, result := range results.GetFailed() {
-		if result.Rule().CanonicalID() == ruleID {
-			m := result.Metadata()
-			meta := &m
-			for meta != nil {
-				assert.NotNil(t, meta.Range(), 0)
-				assert.Positive(t, meta.Range().GetStartLine())
-				assert.Positive(t, meta.Range().GetEndLine())
-				meta = meta.Parent()
-			}
-		}
-	}
-}
-
-func AssertRuleNotFound(t *testing.T, ruleID string, results scan.Results, message string, args ...any) {
-	found := ruleIDInResults(ruleID, results.GetFailed())
-	assert.False(t, found, append([]any{message}, args...)...)
-}
-
-func AssertRuleNotFailed(t *testing.T, ruleID string, results scan.Results, message string, args ...any) {
-	failedExists := ruleIDInResults(ruleID, results.GetFailed())
-	assert.False(t, failedExists, append([]any{message}, args...)...)
-	passedResults := lo.Filter(results, func(res scan.Result, _ int) bool {
-		return res.Status() == scan.StatusPassed || res.Status() == scan.StatusIgnored
-	})
-	passedExists := ruleIDInResults(ruleID, passedResults)
-	assert.True(t, passedExists, append([]any{message}, args...)...)
-}
-
-func ruleIDInResults(ruleID string, results scan.Results) bool {
-	for _, res := range results {
-		if res.Rule().CanonicalID() == ruleID {
-			return true
-		}
-	}
-	return false
-}
 
 func CreateFS(files map[string]string) fs.FS {
 	return fstest.MapFS(lo.MapEntries(files, func(k, v string) (string, *fstest.MapFile) {
