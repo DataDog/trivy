@@ -23,9 +23,6 @@ func Test_ParseLicenses(t *testing.T) {
 			dir:  filepath.Join("testdata", "happy"),
 			want: map[string][]string{
 				"package-a@0.0.1": {"CC-BY-SA-4.0"},
-				"package-b@0.0.1": {"MIT"},
-				"package-c@0.0.1": {"BSD-3-Clause"},
-				"package-d@0.0.1": {"BSD-3-Clause"},
 				"package-e@0.0.1": {"(GPL-3.0 OR LGPL-3.0 OR MPL-1.1 OR SEE LICENSE IN LICENSE)"},
 			},
 		},

@@ -51,7 +51,6 @@ func Test_gomodAnalyzer_Analyze(t *testing.T) {
 								Name:         "github.com/aquasecurity/go-dep-parser",
 								Version:      "v0.0.0-20220406074731-71021a481237",
 								Relationship: types.RelationshipDirect,
-								Licenses:     []string{"MIT"},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefVCS,
@@ -222,9 +221,6 @@ func Test_gomodAnalyzer_Analyze(t *testing.T) {
 								Version:      "v0.3.1",
 								Relationship: types.RelationshipIndirect,
 								Indirect:     true,
-								Licenses: []string{
-									"MIT",
-								},
 							},
 						},
 					},
@@ -308,7 +304,6 @@ func Test_gomodAnalyzer_Analyze(t *testing.T) {
 								Name:         "github.com/aquasecurity/go-dep-parser",
 								Version:      "v0.0.1",
 								Relationship: types.RelationshipDirect,
-								Licenses:     []string{"Apache-2.0"},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefVCS,

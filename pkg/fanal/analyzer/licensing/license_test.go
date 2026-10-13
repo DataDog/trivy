@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
-	"github.com/aquasecurity/trivy/pkg/fanal/types"
 )
 
 func Test_licenseAnalyzer_Analyze(t *testing.T) {
@@ -20,21 +19,7 @@ func Test_licenseAnalyzer_Analyze(t *testing.T) {
 		{
 			name:     "Licensed C file",
 			filePath: "testdata/licensed.c",
-			want: &analyzer.AnalysisResult{
-				Licenses: []types.LicenseFile{
-					{
-						Type:     types.LicenseTypeHeader,
-						FilePath: "testdata/licensed.c",
-						Findings: []types.LicenseFinding{
-							{
-								Name:       "AGPL-3.0",
-								Confidence: 1,
-								Link:       "https://spdx.org/licenses/AGPL-3.0.html",
-							},
-						},
-					},
-				},
-			},
+			want:     nil,
 		},
 		{
 			name:     "Non human readable binary file",

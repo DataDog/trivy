@@ -837,7 +837,6 @@ func Test_yarnLibraryAnalyzer_Analyze(t *testing.T) {
 										EndLine:   17,
 									},
 								},
-								Licenses: []string{"MIT"},
 								DependsOn: []string{
 									"@babel/parser@7.22.7",
 									"postcss@8.4.27",

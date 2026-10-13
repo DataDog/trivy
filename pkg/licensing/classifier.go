@@ -3,12 +3,11 @@ package licensing
 import (
 	"io"
 
-	"golang.org/x/xerrors"
-
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 )
 
-// Classify detects and classifies the license found in a file
+// Classify returns a license file with empty findings. The license classifier
+// has been stripped from this build to keep its corpus out of agent binaries.
 func Classify(filePath string, r io.Reader, confidenceLevel float64) (*types.LicenseFile, error) {
-	return nil, xerrors.Errorf("not implemented")
+	return &types.LicenseFile{FilePath: filePath}, nil
 }
