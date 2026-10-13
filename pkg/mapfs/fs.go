@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"time"
 
@@ -71,8 +70,13 @@ func (m *FS) Filter(skippedFiles []string) (*FS, error) {
 	if len(skippedFiles) == 0 {
 		return m, nil
 	}
+	skipped := make(map[string]struct{}, len(skippedFiles))
+	for _, path := range skippedFiles {
+		skipped[path] = struct{}{}
+	}
 	filter := func(path string, _ fs.DirEntry) (bool, error) {
-		return slices.Contains(skippedFiles, path), nil
+		_, ok := skipped[path]
+		return ok, nil
 	}
 	return m.FilterFunc(filter)
 }
