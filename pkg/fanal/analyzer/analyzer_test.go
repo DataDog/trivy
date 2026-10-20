@@ -1,6 +1,7 @@
 package analyzer_test
 
 import (
+	"context"
 	"os"
 	"slices"
 	"sync"
@@ -855,4 +856,45 @@ func TestAnalyzerGroup_StaticPaths(t *testing.T) {
 			assert.ElementsMatch(t, tt.want, gotPaths)
 		})
 	}
+}
+
+// closeRecorder records whether its file was closed.
+type closeRecorder struct {
+	*os.File
+	closed bool
+}
+
+func (f *closeRecorder) Close() error {
+	f.closed = true
+	return f.File.Close()
+}
+
+// TestAnalyzerGroup_AnalyzeFileContextDone checks that AnalyzeFile closes the
+// file it opened when its context is done before it gets an analyzer slot.
+func TestAnalyzerGroup_AnalyzeFileContextDone(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	a, err := analyzer.NewAnalyzerGroup(analyzer.AnalyzerOptions{})
+	require.NoError(t, err)
+	info, err := os.Stat("testdata/etc/alpine-release")
+	require.NoError(t, err)
+
+	var file *closeRecorder
+	var eg errgroup.Group
+	err = a.AnalyzeFile(ctx, &eg, semaphore.NewWeighted(1), new(analyzer.AnalysisResult), "", "/etc/alpine-release", info,
+		func() (xio.ReadSeekCloserAt, error) {
+			f, err := os.Open("testdata/etc/alpine-release")
+			if err != nil {
+				return nil, err
+			}
+			file = &closeRecorder{File: f}
+			return file, nil
+		},
+		nil, analyzer.AnalysisOptions{},
+	)
+	require.ErrorIs(t, err, context.Canceled)
+	require.NoError(t, eg.Wait())
+	require.NotNil(t, file)
+	assert.True(t, file.closed)
 }

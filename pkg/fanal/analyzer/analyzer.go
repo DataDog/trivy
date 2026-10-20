@@ -517,6 +517,7 @@ func (ag AnalyzerGroup) AnalyzeFile(ctx context.Context, eg *errgroup.Group, lim
 		}
 
 		if err = limit.Acquire(ctx, 1); err != nil {
+			rc.Close()
 			return xerrors.Errorf("semaphore acquire: %w", err)
 		}
 
