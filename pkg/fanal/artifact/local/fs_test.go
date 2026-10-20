@@ -7,7 +7,9 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,6 +22,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/walker"
 	"github.com/aquasecurity/trivy/pkg/misconf"
 	"github.com/aquasecurity/trivy/pkg/uuid"
+	xio "github.com/aquasecurity/trivy/pkg/x/io"
 
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/config/all"
 	_ "github.com/aquasecurity/trivy/pkg/fanal/analyzer/language/python/pip"
@@ -2732,4 +2735,87 @@ func Test_sanitizeRemoteURL(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+// blockingAnalyzer analyzes every file, each analysis waiting for release.
+type blockingAnalyzer struct {
+	release chan struct{}
+	done    atomic.Bool
+}
+
+func (a *blockingAnalyzer) Type() analyzer.Type { return "blocking" }
+
+func (a *blockingAnalyzer) Version() int { return 1 }
+
+func (a *blockingAnalyzer) Required(string, os.FileInfo) bool { return true }
+
+func (a *blockingAnalyzer) Analyze(context.Context, analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
+	<-a.release
+	a.done.Store(true)
+	return nil, nil
+}
+
+// oneFileWalker hands the file name in root to the walk function, then fails
+// with err.
+type oneFileWalker struct {
+	name string
+	err  error
+}
+
+func (w oneFileWalker) Walk(ctx context.Context, root string, _ walker.Option, walkFn walker.WalkFunc) error {
+	path := filepath.Join(root, w.name)
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	opener := func() (xio.ReadSeekCloserAt, error) {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		return f, nil
+	}
+	if err := walkFn(ctx, w.name, info, opener); err != nil {
+		return err
+	}
+	return w.err
+}
+
+// TestArtifact_InspectWaitsForAnalyzers checks that Inspect returns a walk
+// error only once the analyzers already running have finished.
+func TestArtifact_InspectWaitsForAnalyzers(t *testing.T) {
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "file"), []byte("data"), 0o644))
+
+	synctest.Test(t, func(t *testing.T) {
+		blocking := &blockingAnalyzer{release: make(chan struct{})}
+		analyzer.RegisterAnalyzer(blocking)
+		defer analyzer.DeregisterAnalyzer(blocking.Type())
+
+		errWalk := errors.New("walk failed")
+		a, err := NewArtifact(dir, cache.NewMemoryCache(), oneFileWalker{name: "file", err: errWalk}, artifact.Option{
+			DisabledAnalyzers: append(analyzer.TypeConfigFiles, analyzer.TypePip, analyzer.TypeSecret),
+		})
+		require.NoError(t, err)
+
+		var inspectErr error
+		returned := make(chan struct{})
+		go func() {
+			_, inspectErr = a.Inspect(t.Context())
+			close(returned)
+		}()
+
+		synctest.Wait()
+		select {
+		case <-returned:
+			close(blocking.release)
+			t.Fatal("Inspect returned before its analyzer finished")
+		default:
+		}
+
+		close(blocking.release)
+		<-returned
+		require.ErrorIs(t, inspectErr, errWalk)
+		assert.True(t, blocking.done.Load())
+	})
 }

@@ -133,11 +133,15 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		// Analyze files in static paths
 		a.logger.Debug("Analyzing files in static paths")
 		if err = a.analyzeWithStaticPaths(egCtx, eg, limit, result, composite, opts, paths); err != nil {
+			// Let the analyzers already running finish before returning.
+			_ = eg.Wait()
 			return artifact.Reference{}, xerrors.Errorf("analyze with static paths: %w", err)
 		}
 	} else {
 		// Analyze files by traversing the root directory
 		if err = a.analyzeWithRootDirWithTimeout(egCtx, eg, limit, result, composite, opts); err != nil {
+			// Let the analyzers already running finish before returning.
+			_ = eg.Wait()
 			return artifact.Reference{}, xerrors.Errorf("analyze with traversal: %w", err)
 		}
 	}

@@ -214,6 +214,8 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.LayerSource) (ty
 		return nil
 	})
 	if err != nil {
+		// Let the analyzers already running finish before returning.
+		_ = eg.Wait()
 		return types.BlobInfo{}, xerrors.Errorf("walk error: %w", err)
 	}
 
