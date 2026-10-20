@@ -1,6 +1,7 @@
 package walker_test
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -27,7 +28,7 @@ func TestLayerTar_Walk(t *testing.T) {
 		{
 			name:      "happy path",
 			inputFile: filepath.Join("testdata", "test.tar"),
-			analyzeFn: func(_ string, _ os.FileInfo, _ analyzer.Opener) error {
+			analyzeFn: func(_ context.Context, _ string, _ os.FileInfo, _ analyzer.Opener) error {
 				return nil
 			},
 			wantOpqDirs: []string{"etc/"},
@@ -39,7 +40,7 @@ func TestLayerTar_Walk(t *testing.T) {
 			option: walker.Option{
 				SkipFiles: []string{"/app/myweb/index.html"},
 			},
-			analyzeFn: func(filePath string, _ os.FileInfo, _ analyzer.Opener) error {
+			analyzeFn: func(_ context.Context, filePath string, _ os.FileInfo, _ analyzer.Opener) error {
 				if filePath == "app/myweb/index.html" {
 					assert.Fail(t, "skip files error", "%s should be skipped", filePath)
 				}
@@ -54,7 +55,7 @@ func TestLayerTar_Walk(t *testing.T) {
 			option: walker.Option{
 				SkipDirs: []string{"/app"},
 			},
-			analyzeFn: func(filePath string, _ os.FileInfo, _ analyzer.Opener) error {
+			analyzeFn: func(_ context.Context, filePath string, _ os.FileInfo, _ analyzer.Opener) error {
 				if strings.HasPrefix(filePath, "app") {
 					assert.Fail(t, "skip dirs error", "%s should be skipped", filePath)
 				}
@@ -66,7 +67,7 @@ func TestLayerTar_Walk(t *testing.T) {
 		{
 			name:      "sad path",
 			inputFile: "testdata/test.tar",
-			analyzeFn: func(_ string, _ os.FileInfo, _ analyzer.Opener) error {
+			analyzeFn: func(_ context.Context, _ string, _ os.FileInfo, _ analyzer.Opener) error {
 				return errors.New("error")
 			},
 			wantErr: "failed to analyze file",
@@ -78,7 +79,7 @@ func TestLayerTar_Walk(t *testing.T) {
 			require.NoError(t, err)
 
 			w := walker.NewLayerTar(tt.option)
-			gotOpqDirs, gotWhFiles, err := w.Walk(f, tt.analyzeFn)
+			gotOpqDirs, gotWhFiles, err := w.Walk(t.Context(), f, tt.analyzeFn)
 			if tt.wantErr != "" {
 				require.ErrorContains(t, err, tt.wantErr)
 				return
