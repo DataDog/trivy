@@ -90,3 +90,22 @@ func TestLayerTar_Walk(t *testing.T) {
 		})
 	}
 }
+
+func TestLayerTar_WalkContextDone(t *testing.T) {
+	f, err := os.Open("testdata/test.tar")
+	require.NoError(t, err)
+	defer f.Close()
+
+	// The walk stops at the first entry of the layer, which cancels the
+	// context.
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	var files []string
+	_, _, err = walker.NewLayerTar(walker.Option{}).Walk(ctx, f, func(_ context.Context, filePath string, _ os.FileInfo, _ analyzer.Opener) error {
+		files = append(files, filePath)
+		cancel()
+		return nil
+	})
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Equal(t, []string{"app"}, files)
+}
