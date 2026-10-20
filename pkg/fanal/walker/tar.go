@@ -39,6 +39,11 @@ func (w LayerTar) Walk(ctx context.Context, layer io.Reader, analyzeFn WalkFunc)
 	var opqDirs, whFiles, skippedDirs []string
 	tr := tar.NewReader(layer)
 	for {
+		// The analyzers check the context only for the files they read,
+		// so check it here to stop reading the rest of the layer.
+		if err := ctx.Err(); err != nil {
+			return nil, nil, xerrors.Errorf("stopped reading the layer: %w", err)
+		}
 		hdr, err := tr.Next()
 		if err == io.EOF {
 			break
