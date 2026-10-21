@@ -37,9 +37,10 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 						FilePath: "testdata/python2.7",
 						Packages: types.Packages{
 							{
-								ID:      "python@2.7.18",
-								Name:    "python",
-								Version: "2.7.18",
+								ID:       "python@2.7.18",
+								Name:     "python",
+								Version:  "2.7.18",
+								FilePath: "testdata/python2.7",
 							},
 						},
 					},
@@ -56,9 +57,10 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 						FilePath: "testdata/php",
 						Packages: types.Packages{
 							{
-								ID:      "php@8.0.7",
-								Name:    "php",
-								Version: "8.0.7",
+								ID:       "php@8.0.7",
+								Name:     "php",
+								Version:  "8.0.7",
+								FilePath: "testdata/php",
 							},
 						},
 					},
@@ -75,9 +77,10 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 						FilePath: "testdata/node",
 						Packages: types.Packages{
 							{
-								ID:      "node@12.16.3",
-								Name:    "node",
-								Version: "12.16.3",
+								ID:       "node@12.16.3",
+								Name:     "node",
+								Version:  "12.16.3",
+								FilePath: "testdata/node",
 							},
 						},
 					},
@@ -94,9 +97,10 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 						FilePath: "testdata/java",
 						Packages: types.Packages{
 							{
-								ID:      "java@1.8.0_421-b09",
-								Name:    "java",
-								Version: "1.8.0_421-b09",
+								ID:       "java@1.8.0_421-b09",
+								Name:     "java",
+								Version:  "1.8.0_421-b09",
+								FilePath: "testdata/java",
 							},
 						},
 					},
