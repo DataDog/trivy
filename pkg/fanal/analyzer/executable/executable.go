@@ -92,13 +92,13 @@ func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.Analysis
 		var res *analyzer.AnalysisResult = nil
 		switch binaryType {
 		case types.PythonExecutable:
-			res, err = language.Analyze(ctx, types.PythonExecutable, input.FilePath, input.Content, pythonparser.NewParser())
+			res, err = language.AnalyzePackage(ctx, types.PythonExecutable, input.FilePath, input.Content, pythonparser.NewParser(), false)
 		case types.NodeJsExecutable:
-			res, err = language.Analyze(ctx, types.NodeJsExecutable, input.FilePath, input.Content, nodejsparser.NewParser())
+			res, err = language.AnalyzePackage(ctx, types.NodeJsExecutable, input.FilePath, input.Content, nodejsparser.NewParser(), false)
 		case types.PhpExecutable:
-			res, err = language.Analyze(ctx, types.PhpExecutable, input.FilePath, input.Content, phpparser.NewParser())
+			res, err = language.AnalyzePackage(ctx, types.PhpExecutable, input.FilePath, input.Content, phpparser.NewParser(), false)
 		case types.JavaExecutable:
-			res, err = language.Analyze(ctx, types.JavaExecutable, input.FilePath, input.Content, javaparser.NewParser())
+			res, err = language.AnalyzePackage(ctx, types.JavaExecutable, input.FilePath, input.Content, javaparser.NewParser(), false)
 		}
 		if err != nil {
 			return nil, err
