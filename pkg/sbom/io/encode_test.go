@@ -1773,6 +1773,78 @@ func newTestBOM2(t *testing.T) *core.BOM {
 	return bom
 }
 
+func TestEncoder_Encode_ThirdPartyRepository(t *testing.T) {
+	report := types.Report{
+		SchemaVersion: 2,
+		ArtifactName:  "debian:trixie",
+		ArtifactType:  ftypes.TypeContainerImage,
+		Metadata: types.Metadata{
+			OS: &ftypes.OS{
+				Family: ftypes.Debian,
+				Name:   "13",
+			},
+		},
+		Results: []types.Result{
+			{
+				Target: "debian:trixie",
+				Type:   ftypes.Debian,
+				Class:  types.ClassOSPkg,
+				Packages: []ftypes.Package{
+					{
+						ID:         "postgresql-18@18.6-1.pgdg13+2",
+						Name:       "postgresql-18",
+						Version:    "18.6",
+						Release:    "1.pgdg13+2",
+						SrcName:    "postgresql-18",
+						SrcVersion: "18.6",
+						SrcRelease: "1.pgdg13+2",
+						Repository: ftypes.PackageRepository{
+							Class:   ftypes.RepositoryClassThirdParty,
+							Name:    "pgdg",
+							Product: "postgresql",
+						},
+					},
+					{
+						ID:         "libc6@2.41-12",
+						Name:       "libc6",
+						Version:    "2.41-12",
+						SrcName:    "glibc",
+						SrcVersion: "2.41-12",
+						Repository: ftypes.PackageRepository{
+							Class: ftypes.RepositoryClassOfficial,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	uuid.SetFakeUUID(t, "3ff14136-e09f-4df9-80ea-%012d")
+	bom, err := sbomio.NewEncoder(sbomio.WithBOMRef()).Encode(report)
+	require.NoError(t, err)
+
+	props := make(map[string]map[string]string)
+	for _, c := range bom.Components() {
+		if c.Type != core.TypeLibrary {
+			continue
+		}
+		props[c.Name] = make(map[string]string)
+		for _, p := range c.Properties {
+			props[c.Name][p.Name] = p.Value
+		}
+	}
+
+	assert.Equal(t, "third-party", props["postgresql-18"][core.PropertyRepositoryClass])
+	assert.Equal(t, "pgdg", props["postgresql-18"][core.PropertyRepositoryName])
+	assert.Equal(t, "postgresql", props["postgresql-18"][core.PropertyRepositoryProduct])
+
+	// Official packages stay unannotated to keep every OS component from
+	// gaining a property that tells a consumer nothing actionable.
+	assert.NotContains(t, props["libc6"], core.PropertyRepositoryClass)
+	assert.NotContains(t, props["libc6"], core.PropertyRepositoryName)
+	assert.NotContains(t, props["libc6"], core.PropertyRepositoryProduct)
+}
+
 func TestEncoder_Encode_RepositoryClass(t *testing.T) {
 	report := types.Report{
 		SchemaVersion: 2,
@@ -1827,6 +1899,10 @@ func TestEncoder_Encode_RepositoryClass(t *testing.T) {
 	}
 
 	assert.Equal(t, "third-party", props["docker-ce"][core.PropertyRepositoryClass])
+
+	// A maintainer-heuristic detection has no provider to name, so only the class is emitted.
+	assert.NotContains(t, props["docker-ce"], core.PropertyRepositoryName)
+	assert.NotContains(t, props["docker-ce"], core.PropertyRepositoryProduct)
 
 	// Official packages stay unannotated, so the property does not land on every component of
 	// every SBOM.

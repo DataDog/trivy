@@ -427,14 +427,24 @@ func (e *Encoder) component(result types.Result, pkg ftypes.Package) *core.Compo
 		},
 	}
 
-	// Only third-party packages carry a repository class. "official" is the default for every OS
-	// package, so emitting it would add a property to every component without telling a consumer
-	// anything it can act on.
+	// Only third-party packages carry repository properties. "official" is the
+	// default for every OS package, so emitting it would add a property to every
+	// component without telling a consumer anything it can act on.
 	if pkg.Repository.Class == ftypes.RepositoryClassThirdParty {
-		properties = append(properties, core.Property{
-			Name:  core.PropertyRepositoryClass,
-			Value: string(pkg.Repository.Class),
-		})
+		properties = append(properties,
+			core.Property{
+				Name:  core.PropertyRepositoryClass,
+				Value: string(pkg.Repository.Class),
+			},
+			core.Property{
+				Name:  core.PropertyRepositoryName,
+				Value: pkg.Repository.Name,
+			},
+			core.Property{
+				Name:  core.PropertyRepositoryProduct,
+				Value: pkg.Repository.Product,
+			},
+		)
 	}
 
 	// LayerDigest is OCI's compressed-blob hash; LayerDiffID is the

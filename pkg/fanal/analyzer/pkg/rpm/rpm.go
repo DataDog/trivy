@@ -16,6 +16,7 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/digest"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
+	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/pkg/thirdparty"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 	xos "github.com/aquasecurity/trivy/pkg/x/os"
@@ -48,22 +49,6 @@ var (
 
 	errUnexpectedNameFormat = xerrors.New("unexpected name format")
 )
-
-var osVendors = []string{
-	"Amazon Linux",          // Amazon Linux 1
-	"Amazon.com",            // Amazon Linux 2
-	"CentOS",                // CentOS
-	"Fedora Project",        // Fedora
-	"Oracle America",        // Oracle Linux
-	"Red Hat",               // Red Hat
-	"AlmaLinux",             // AlmaLinux
-	"CloudLinux",            // AlmaLinux
-	"VMware",                // Photon OS
-	"SUSE",                  // SUSE Linux Enterprise
-	"openSUSE",              // openSUSE
-	"Microsoft Corporation", // CBL-Mariner
-	"Rocky",                 // Rocky Linux
-}
 
 type rpmPkgAnalyzer struct{}
 
@@ -139,24 +124,6 @@ func (a rpmPkgAnalyzer) listPkgs(ctx context.Context, db RPMDB) (types.Packages,
 			}
 		}
 
-		// Check if the package is vendor-provided.
-		// If the package is not provided by vendor, the installed files should not be skipped.
-		repo := types.PackageRepository{
-			Class: types.RepositoryClassThirdParty,
-		}
-		var files []string
-		if packageProvidedByVendor(pkg) {
-			repo.Class = types.RepositoryClassOfficial
-			files, err = pkg.InstalledFileNames()
-			if err != nil {
-				return nil, nil, xerrors.Errorf("unable to get installed files: %w", err)
-			}
-
-			for i, file := range files {
-				files[i] = filepath.ToSlash(file)
-			}
-		}
-
 		// RPM DB uses MD5 digest
 		// https://rpm-software-management.github.io/rpm/manual/tags.html#signatures-and-digests
 		var d digest.Digest
@@ -184,12 +151,25 @@ func (a rpmPkgAnalyzer) listPkgs(ctx context.Context, db RPMDB) (types.Packages,
 			Licenses:        licenses,
 			DependsOn:       pkg.Requires, // Will be replaced with package IDs
 			Maintainer:      pkg.Vendor,
-			Repository:      repo,
 			Digest:          d,
-			InstalledFiles:  files,
 		}
+		p.Repository = thirdparty.RepositoryFromRPMPackage(p)
+
+		// If the package is not provided by vendor, the installed files should not be skipped.
+		if p.Repository.Class == types.RepositoryClassOfficial {
+			files, err := pkg.InstalledFileNames()
+			if err != nil {
+				return nil, nil, xerrors.Errorf("unable to get installed files: %w", err)
+			}
+
+			for i, file := range files {
+				files[i] = filepath.ToSlash(file)
+			}
+			p.InstalledFiles = files
+			installedFiles = append(installedFiles, files...)
+		}
+
 		pkgs = append(pkgs, p)
-		installedFiles = append(installedFiles, files...)
 
 		// It contains mappings between package-providing files and package IDs
 		// e.g.
@@ -252,22 +232,6 @@ func splitFileName(filename string) (name, ver, rel string, err error) {
 
 	name = filename[:verIndex]
 	return name, ver, rel, nil
-}
-
-func packageProvidedByVendor(pkg *rpmdb.PackageInfo) bool {
-	if pkg.Vendor == "" {
-		// Official Amazon packages may not contain `Vendor` field:
-		// https://github.com/aquasecurity/trivy/issues/5887
-		return strings.Contains(pkg.Release, "amzn")
-	}
-
-	for _, vendor := range osVendors {
-		if strings.HasPrefix(pkg.Vendor, vendor) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func writeToTempFile(rc io.Reader) (string, error) {

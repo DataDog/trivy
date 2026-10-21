@@ -49,7 +49,9 @@ const (
 	PropertyLayerDiffID     = "LayerDiffID"
 
 	// Repository the package was distributed from
-	PropertyRepositoryClass = "RepositoryClass"
+	PropertyRepositoryClass   = "RepositoryClass"
+	PropertyRepositoryName    = "RepositoryName"
+	PropertyRepositoryProduct = "RepositoryProduct"
 
 	// Red Hat packages only.
 	// A package can use multiple NVR + Arch content sets or fields.

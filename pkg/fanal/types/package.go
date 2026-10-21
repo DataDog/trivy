@@ -188,8 +188,15 @@ const (
 // PackageRepository indicates where the package was distributed from.
 type PackageRepository struct {
 	Class RepositoryClass `json:",omitempty"`
-	// Future: Add Name field for specific repository identification (e.g., "epel", "docker")
-	// Name string `json:",omitempty"`
+	// Name identifies the specific third-party repository/provider (e.g. "pgdg"),
+	// when detection is confident enough to name it. Empty for maintainer-heuristic-only
+	// detections (Docker, NVIDIA, etc.) that can't be pinned to a provider name.
+	Name string `json:",omitempty"`
+	// Product is the upstream product this package provides, normalized away from
+	// the repository's packaging name ("postgresql-18" -> "postgresql"). Set only
+	// alongside Name. CPE-derived advisory data is keyed on upstream product
+	// identity rather than packaging name, so this is the name to match on.
+	Product string `json:",omitempty"`
 }
 
 type Package struct {
