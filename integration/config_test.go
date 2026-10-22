@@ -160,6 +160,9 @@ severity:
 		command := "repo"
 
 		t.Run(tt.name+" with CLI flags", func(t *testing.T) {
+			if tt.name == "dockerfile with custom file pattern" {
+				t.Skip("Misconfiguration scanning is stubbed out in this fork: pkg/misconf is stub-only and pkg/policy cannot provide a check bundle.")
+			}
 			osArgs := []string{
 				"--format",
 				"json",
@@ -182,6 +185,9 @@ severity:
 		})
 
 		t.Run(tt.name+" with environmental variables", func(t *testing.T) {
+			if tt.name == "dockerfile with custom file pattern" {
+				t.Skip("Misconfiguration scanning is stubbed out in this fork: pkg/misconf is stub-only and pkg/policy cannot provide a check bundle.")
+			}
 			t.Setenv("TRIVY_FORMAT", "json")
 			t.Setenv("TRIVY_LIST_ALL_PKGS", "false")
 			t.Setenv("TRIVY_CACHE_DIR", cacheDir)
@@ -203,6 +209,9 @@ severity:
 		})
 
 		t.Run(tt.name+" with config file", func(t *testing.T) {
+			if tt.name == "dockerfile with custom file pattern" {
+				t.Skip("Misconfiguration scanning is stubbed out in this fork: pkg/misconf is stub-only and pkg/policy cannot provide a check bundle.")
+			}
 			configFile := tt.args.configFile
 			configFile += fmt.Sprintf(`
 format: json

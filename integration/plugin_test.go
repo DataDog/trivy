@@ -19,6 +19,7 @@ import (
 // used here are not shared with other tests. These plugin-specific golden files are unique
 // to this test and should be updated here.
 func TestPlugin(t *testing.T) {
+	t.Skip("go-getter was removed in this fork (88042e02): plugins cannot be installed from an index or a GitHub archive.")
 	tests := []struct {
 		name       string
 		plugin     string

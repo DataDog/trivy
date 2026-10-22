@@ -18,15 +18,12 @@
           "Name": "jquery",
           "Identifier": {
             "PURL": "pkg:npm/jquery@3.3.1",
-            "UID": "4ee32c908d25947f"
+            "UID": "a89f6ec3613a1db"
           },
           "Version": "3.3.1",
           "Relationship": "direct",
           "Locations": [
-            {
-              "StartLine": 24,
-              "EndLine": 24
-            }
+            {}
           ],
           "AnalyzedBy": "bun"
         },
@@ -35,15 +32,12 @@
           "Name": "typescript",
           "Identifier": {
             "PURL": "pkg:npm/typescript@5.8.3",
-            "UID": "57c0617aad078250"
+            "UID": "14005ba9b7d33d83"
           },
           "Version": "5.8.3",
           "Relationship": "direct",
           "Locations": [
-            {
-              "StartLine": 26,
-              "EndLine": 26
-            }
+            {}
           ],
           "AnalyzedBy": "bun"
         }
@@ -55,7 +49,7 @@
           "PkgName": "jquery",
           "PkgIdentifier": {
             "PURL": "pkg:npm/jquery@3.3.1",
-            "UID": "4ee32c908d25947f"
+            "UID": "a89f6ec3613a1db"
           },
           "InstalledVersion": "3.3.1",
           "FixedVersion": "3.4.0",

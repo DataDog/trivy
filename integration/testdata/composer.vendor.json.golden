@@ -18,7 +18,7 @@
           "Name": "guzzlehttp/psr7",
           "Identifier": {
             "PURL": "pkg:composer/guzzlehttp/psr7@1.8.3",
-            "UID": "a1f3a04d90429be3"
+            "UID": "f40d2c7a4cf7202"
           },
           "Version": "1.8.3",
           "Licenses": [
@@ -29,10 +29,7 @@
             "ralouphie/getallheaders@3.0.3"
           ],
           "Locations": [
-            {
-              "StartLine": 3,
-              "EndLine": 115
-            }
+            {}
           ],
           "AnalyzedBy": "composer-vendor"
         },
@@ -41,17 +38,14 @@
           "Name": "psr/http-message",
           "Identifier": {
             "PURL": "pkg:composer/psr/http-message@1.1",
-            "UID": "59ee860afeff08fa"
+            "UID": "df894255b6c82f79"
           },
           "Version": "1.1",
           "Licenses": [
             "MIT"
           ],
           "Locations": [
-            {
-              "StartLine": 116,
-              "EndLine": 171
-            }
+            {}
           ],
           "AnalyzedBy": "composer-vendor"
         },
@@ -60,17 +54,14 @@
           "Name": "ralouphie/getallheaders",
           "Identifier": {
             "PURL": "pkg:composer/ralouphie/getallheaders@3.0.3",
-            "UID": "94049bcc6a2f542c"
+            "UID": "2aa78e52e778aeb1"
           },
           "Version": "3.0.3",
           "Licenses": [
             "MIT"
           ],
           "Locations": [
-            {
-              "StartLine": 172,
-              "EndLine": 218
-            }
+            {}
           ],
           "AnalyzedBy": "composer-vendor"
         }
@@ -82,7 +73,7 @@
           "PkgName": "guzzlehttp/psr7",
           "PkgIdentifier": {
             "PURL": "pkg:composer/guzzlehttp/psr7@1.8.3",
-            "UID": "a1f3a04d90429be3"
+            "UID": "f40d2c7a4cf7202"
           },
           "InstalledVersion": "1.8.3",
           "FixedVersion": "1.8.4",

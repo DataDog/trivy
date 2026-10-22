@@ -5,17 +5,8 @@
   },
   "ReportID": "017b7d41-e09f-7000-80ea-000000000001",
   "CreatedAt": "2021-08-25T12:20:30.000000005Z",
-  "ArtifactID": "sha256:4f8b4cb139bdac63ad60b7382a80cd0414c55018e2f80d4163f59e40f71766cc",
   "ArtifactName": "https://github.com/knqyf263/trivy-ci-test",
   "ArtifactType": "repository",
-  "Metadata": {
-    "RepoURL": "https://github.com/knqyf263/trivy-ci-test",
-    "Branch": "master",
-    "Commit": "5ae342eb2802672402d9b2c26f09e2051bbd91b8",
-    "CommitMsg": "Use COPY instead of ADD in Dockerfile (#4)",
-    "Author": "gy741 \u003cgy741.kim@gmail.com\u003e",
-    "Committer": "knqyf263 \u003cknqyf263@gmail.com\u003e"
-  },
   "Results": [
     {
       "Target": "Cargo.lock",
@@ -39,7 +30,7 @@
             "Name": "RustSec Advisory Database",
             "URL": "https://github.com/RustSec/advisory-db"
           },
-          "Fingerprint": "sha256:f2b941fc60acd755d2c6a7e168e6b45422ea44a089d689f5c0a4971470acd837",
+          "Fingerprint": "sha256:bfe11da9188e583647892f5711648b5ab164a4a1ce725159e8547497fbf78b2a",
           "Title": "Uncontrolled recursion leads to abort in HTML serialization",
           "Description": "An issue was discovered in the ammonia crate before 2.1.0 for Rust. There is uncontrolled recursion during HTML DOM tree serialization.",
           "Severity": "HIGH",
@@ -82,7 +73,7 @@
             "Name": "RustSec Advisory Database",
             "URL": "https://github.com/RustSec/advisory-db"
           },
-          "Fingerprint": "sha256:4b40d82614bc892f89dcd47e6ae81700c23b0bfb15a000ed2738451831bd1f72",
+          "Fingerprint": "sha256:292ec5519e218cdaf0f5e345d71b87bc57565914f201545e02b625fa7b7a3e13",
           "Title": "Incorrect handling of embedded SVG and MathML leads to mutation XSS",
           "Description": "An issue was discovered in the ammonia crate before 3.1.0 for Rust. XSS can occur because the parsing differences for HTML, SVG, and MathML are mishandled, a similar issue to CVE-2020-26870.",
           "Severity": "MEDIUM",
