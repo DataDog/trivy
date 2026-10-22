@@ -14,6 +14,12 @@ type ComplianceSpec struct {
 
 // GetComplianceSpec accepct compliance flag name/path and return builtin or file system loaded spec
 func GetComplianceSpec(specNameOrPath, cacheDir string) (ComplianceSpec, error) {
+	// No compliance report was asked for. Upstream returns an empty spec here, and
+	// pkg/flag calls this unconditionally while building options, so erroring would
+	// fail every command.
+	if specNameOrPath == "" {
+		return ComplianceSpec{}, nil
+	}
 	return ComplianceSpec{}, xerrors.New("pkg/compliance not implemented")
 }
 
