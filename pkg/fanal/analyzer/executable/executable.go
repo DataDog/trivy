@@ -20,7 +20,7 @@ func init() {
 	analyzer.RegisterAnalyzer(&executableAnalyzer{})
 }
 
-const version = 2
+const version = 1
 
 // executableAnalyzer calculates SHA-256 for each binary not managed by package managers (called unpackaged binaries)
 // so that it can search for SBOM attestation in post-handler.
@@ -90,7 +90,6 @@ func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.Analysis
 	isDetectableLib, binaryType, err := isDetectableLibraryExecutable(input.Info)
 	if isDetectableLib && binaryType != "" && err == nil {
 		var res *analyzer.AnalysisResult = nil
-		// AnalyzePackage (rather than Analyze) sets each package's FilePath to the binary path.
 		switch binaryType {
 		case types.PythonExecutable:
 			res, err = language.AnalyzePackage(ctx, types.PythonExecutable, input.FilePath, input.Content, pythonparser.NewParser(), false)
