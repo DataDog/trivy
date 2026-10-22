@@ -285,3 +285,27 @@ func Test_rpmPkgAnalyzer_listPkgs(t *testing.T) {
 		})
 	}
 }
+
+func Test_rpmPkgAnalyzer_Required(t *testing.T) {
+	tests := []struct {
+		filePath string
+		want     bool
+	}{
+		{filePath: "var/lib/rpm/Packages", want: true},
+		{filePath: "usr/lib/sysimage/rpm/Packages.db", want: true},
+		{filePath: "var/lib/rpm/rpmdb.sqlite", want: true},
+		// rpm-ostree systems keep the database under usr/share/rpm, in any
+		// of the three formats.
+		{filePath: "usr/share/rpm/Packages", want: true},
+		{filePath: "usr/share/rpm/Packages.db", want: true},
+		{filePath: "usr/share/rpm/rpmdb.sqlite", want: true},
+		{filePath: "usr/share/rpm/macros", want: false},
+	}
+	a := rpmPkgAnalyzer{}
+	for _, tt := range tests {
+		t.Run(tt.filePath, func(t *testing.T) {
+			assert.Equal(t, tt.want, a.Required(tt.filePath, nil))
+		})
+	}
+	assert.Equal(t, lo.Uniq(a.StaticPaths()), a.StaticPaths(), "static paths listed twice")
+}

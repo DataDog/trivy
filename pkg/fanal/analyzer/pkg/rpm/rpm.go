@@ -39,10 +39,12 @@ var (
 
 		// SQLite3
 		"usr/lib/sysimage/rpm/rpmdb.sqlite",
-		"usr/share/rpm/rpmdb.sqlite",
 		"var/lib/rpm/rpmdb.sqlite",
 
-		// CoreOS
+		// rpm-ostree systems, such as CoreOS and RHEL for Edge, keep the
+		// database under usr/share/rpm, which var/lib/rpm may link to.
+		"usr/share/rpm/Packages",
+		"usr/share/rpm/Packages.db",
 		"usr/share/rpm/rpmdb.sqlite",
 	}
 
