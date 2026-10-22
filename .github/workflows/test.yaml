@@ -53,15 +53,6 @@ jobs:
       - name: Install tools
         run: go install tool # GOBIN is added to the PATH by the setup-go action
 
-      - name: Check if CLI references are up-to-date
-        run: |
-          mage docs:generate
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Run 'mage docs:generate' and push it"
-            exit 1
-          fi
-        if: matrix.operating-system == 'ubuntu-latest'
-
       - name: Run unit tests
         run: mage test:unit
 

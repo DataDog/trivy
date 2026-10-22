@@ -3,12 +3,8 @@ module github.com/aquasecurity/trivy
 go 1.25.6
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.20.0
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
-	github.com/Azure/azure-sdk-for-go/sdk/containers/azcontainerregistry v0.2.3
 	github.com/BurntSushi/toml v1.5.0
 	github.com/CycloneDX/cyclonedx-go v0.9.3
-	github.com/GoogleCloudPlatform/docker-credential-gcr/v2 v2.1.30
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/alicebob/miniredis/v2 v2.35.0
@@ -56,7 +52,7 @@ require (
 	github.com/knqyf263/go-rpmdb v0.1.1
 	github.com/knqyf263/nested v0.0.1
 	github.com/kylelemons/godebug v1.1.0
-	github.com/magefile/mage v1.15.0 // indirect
+	github.com/magefile/mage v1.15.0
 	github.com/masahiro331/go-disk v0.0.0-20240625071113-56c933208fee
 	github.com/masahiro331/go-ebs-file v0.0.0-20240917043618-e6d2bea5c32e
 	github.com/masahiro331/go-ext4-filesystem v0.0.0-20240620024024-ca14e6327bbd
@@ -132,15 +128,11 @@ require (
 	buf.build/go/spdx v0.2.0 // indirect
 	buf.build/go/standard v0.1.0 // indirect
 	cel.dev/expr v0.24.0 // indirect
-	cloud.google.com/go/auth v0.18.0 // indirect
-	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	connectrpc.com/connect v1.18.1 // indirect
 	connectrpc.com/otelconnect v0.7.2 // indirect
 	cyphar.com/go-pathrs v0.2.1 // indirect
 	dario.cat/mergo v1.0.2 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0 // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/Intevation/gval v1.3.0 // indirect
 	github.com/Intevation/jsonpath v0.2.1 // indirect
@@ -251,8 +243,6 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20250820193118-f64d9cf942d6 // indirect
 	github.com/google/safetext v0.0.0-20220905092116-b49f7bc46da2 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.9 // indirect
-	github.com/googleapis/gax-go/v2 v2.16.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -355,7 +345,6 @@ require (
 	github.com/tklauser/go-sysconf v0.3.13 // indirect
 	github.com/tklauser/numcpus v0.7.0 // indirect
 	github.com/tonglil/versioning v0.0.0-20170205083536-8b2a4334bd1d // indirect
-	github.com/toqueteos/webbrowser v1.2.0 // indirect
 	github.com/transparency-dev/formats v0.0.0-20251017110053-404c0d5b696c // indirect
 	github.com/transparency-dev/merkle v0.0.2 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
