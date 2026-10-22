@@ -194,6 +194,10 @@ func TestManager_Install(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			switch tt.name {
+			case "http", "nested archive", "local path", "git", "with version", "via index", "different version installed", "plugin not found", "no plugin.yaml":
+				t.Skip("go-getter was removed in this fork (88042e02): the replacement downloader only fetches tar archives over HTTP, with no git, local-directory, zip or single-file sources.")
+			}
 			// The test plugin will be installed here
 			dst := t.TempDir()
 			t.Setenv("XDG_DATA_HOME", dst)

@@ -10,6 +10,7 @@ import (
 )
 
 func Test_ansibleConfigAnalyzer_Required(t *testing.T) {
+	t.Skip("pkg/misconf is stubbed out in this fork: config scanners cannot be constructed.")
 	tests := []struct {
 		name     string
 		filePath string

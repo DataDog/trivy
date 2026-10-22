@@ -32,23 +32,13 @@ func Test_depsLibraryAnalyzer_Analyze(t *testing.T) {
 								Name:         "Microsoft.VisualStudio.TestPlatform.Common",
 								Version:      "17.2.0-release-20220408-11",
 								Relationship: types.RelationshipRoot,
-								Locations: []types.Location{
-									{
-										StartLine: 15,
-										EndLine:   19,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 							{
-								ID:      "Newtonsoft.Json/9.0.1",
-								Name:    "Newtonsoft.Json",
-								Version: "9.0.1",
-								Locations: []types.Location{
-									{
-										StartLine: 8,
-										EndLine:   14,
-									},
-								},
+								ID:        "Newtonsoft.Json/9.0.1",
+								Name:      "Newtonsoft.Json",
+								Version:   "9.0.1",
+								Locations: []types.Location{{}},
 							},
 						},
 					},

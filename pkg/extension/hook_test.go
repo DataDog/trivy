@@ -14,6 +14,7 @@ import (
 )
 
 func TestPostScan(t *testing.T) {
+	t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 	tests := []struct {
 		name    string
 		results types.Results
@@ -104,6 +105,10 @@ func TestPreScan(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			switch tt.name {
+			case "sad path":
+				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
+			}
 			// Initialize the test hook
 			hooktest.Init(t)
 
@@ -136,6 +141,10 @@ func TestPreRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			switch tt.name {
+			case "sad path":
+				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
+			}
 			// Initialize the test hook
 			hooktest.Init(t)
 
@@ -168,6 +177,10 @@ func TestPostRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			switch tt.name {
+			case "sad path":
+				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
+			}
 			// Initialize the test extension
 			hooktest.Init(t)
 
@@ -178,6 +191,7 @@ func TestPostRun(t *testing.T) {
 }
 
 func TestPreReport(t *testing.T) {
+	t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 	tests := []struct {
 		name      string
 		report    *types.Report
@@ -228,6 +242,7 @@ func TestPreReport(t *testing.T) {
 }
 
 func TestPostReport(t *testing.T) {
+	t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 	tests := []struct {
 		name            string
 		report          *types.Report

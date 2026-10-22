@@ -342,6 +342,7 @@ func TestManager_LoadAll(t *testing.T) {
 }
 
 func TestManager_Upgrade(t *testing.T) {
+	t.Skip("go-getter was removed in this fork (88042e02): the replacement downloader only fetches tar archives over HTTP, with no git, local-directory, zip or single-file sources.")
 	if runtime.GOOS == "windows" {
 		// the test.sh script can't be run on windows so skipping
 		t.Skip("Test satisfied adequately by Linux tests")

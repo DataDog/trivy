@@ -12,6 +12,7 @@ import (
 )
 
 func Test_dockerfileAnalyzer_Analyze(t *testing.T) {
+	t.Skip("The buildinfo dockerfile analyzer is stubbed out in this fork.")
 	tests := []struct {
 		name      string
 		inputFile string

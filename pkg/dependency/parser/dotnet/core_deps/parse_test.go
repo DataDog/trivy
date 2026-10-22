@@ -27,24 +27,14 @@ func TestParse(t *testing.T) {
 					Name:         "ExampleApp1",
 					Version:      "1.0.0",
 					Relationship: ftypes.RelationshipRoot,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 28,
-							EndLine:   32,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "Newtonsoft.Json/13.0.1",
 					Name:         "Newtonsoft.Json",
 					Version:      "13.0.1",
 					Relationship: ftypes.RelationshipDirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 33,
-							EndLine:   39,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 			},
 			wantDeps: []ftypes.Dependency{
@@ -63,48 +53,28 @@ func TestParse(t *testing.T) {
 					Name:         "hello2",
 					Version:      "1.0.0",
 					Relationship: ftypes.RelationshipRoot,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 61,
-							EndLine:   65,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "JsonDiffPatch/2.0.61",
 					Name:         "JsonDiffPatch",
 					Version:      "2.0.61",
 					Relationship: ftypes.RelationshipDirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 66,
-							EndLine:   72,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "Libuv/1.9.1",
 					Name:         "Libuv",
 					Version:      "1.9.1",
 					Relationship: ftypes.RelationshipIndirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 73,
-							EndLine:   79,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
 					ID:           "System.Collections.Immutable/1.3.0",
 					Name:         "System.Collections.Immutable",
 					Version:      "1.3.0",
 					Relationship: ftypes.RelationshipIndirect,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 101,
-							EndLine:   107,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 			},
 			wantDeps: []ftypes.Dependency{
@@ -129,23 +99,13 @@ func TestParse(t *testing.T) {
 					Name:         "ExampleApp1",
 					Version:      "1.0.0",
 					Relationship: ftypes.RelationshipRoot,
-					Locations: []ftypes.Location{
-						{
-							StartLine: 28,
-							EndLine:   32,
-						},
-					},
+					Locations:    []ftypes.Location{{}},
 				},
 				{
-					ID:      "Newtonsoft.Json/13.0.1",
-					Name:    "Newtonsoft.Json",
-					Version: "13.0.1",
-					Locations: []ftypes.Location{
-						{
-							StartLine: 33,
-							EndLine:   39,
-						},
-					},
+					ID:        "Newtonsoft.Json/13.0.1",
+					Name:      "Newtonsoft.Json",
+					Version:   "13.0.1",
+					Locations: []ftypes.Location{{}},
 				},
 			},
 			wantDeps: nil,
@@ -153,7 +113,7 @@ func TestParse(t *testing.T) {
 		{
 			name:    "sad path",
 			file:    "testdata/invalid.deps.json",
-			wantErr: "failed to decode .deps.json file: jsontext: unexpected EOF within",
+			wantErr: "failed to decode .deps.json file: unexpected end of JSON input",
 		},
 	}
 

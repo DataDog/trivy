@@ -16,6 +16,7 @@ import (
 )
 
 func TestAnalyzer_PostAnalyze(t *testing.T) {
+	t.Skip("pkg/misconf is stubbed out in this fork: config scanners cannot be constructed.")
 	type fields struct {
 		typ      analyzer.Type
 		fileType detection.FileType

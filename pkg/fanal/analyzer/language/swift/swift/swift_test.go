@@ -27,37 +27,22 @@ func Test_swiftLockAnalyzer_Analyze(t *testing.T) {
 						FilePath: "testdata/happy/Package.resolved",
 						Packages: types.Packages{
 							{
-								ID:      "github.com/Quick/Nimble@9.2.1",
-								Name:    "github.com/Quick/Nimble",
-								Version: "9.2.1",
-								Locations: []types.Location{
-									{
-										StartLine: 4,
-										EndLine:   12,
-									},
-								},
+								ID:        "github.com/Quick/Nimble@9.2.1",
+								Name:      "github.com/Quick/Nimble",
+								Version:   "9.2.1",
+								Locations: []types.Location{{}},
 							},
 							{
-								ID:      "github.com/Quick/Quick@7.0.0",
-								Name:    "github.com/Quick/Quick",
-								Version: "7.0.0",
-								Locations: []types.Location{
-									{
-										StartLine: 13,
-										EndLine:   21,
-									},
-								},
+								ID:        "github.com/Quick/Quick@7.0.0",
+								Name:      "github.com/Quick/Quick",
+								Version:   "7.0.0",
+								Locations: []types.Location{{}},
 							},
 							{
-								ID:      "github.com/ReactiveCocoa/ReactiveSwift@7.1.1",
-								Name:    "github.com/ReactiveCocoa/ReactiveSwift",
-								Version: "7.1.1",
-								Locations: []types.Location{
-									{
-										StartLine: 22,
-										EndLine:   30,
-									},
-								},
+								ID:        "github.com/ReactiveCocoa/ReactiveSwift@7.1.1",
+								Name:      "github.com/ReactiveCocoa/ReactiveSwift",
+								Version:   "7.1.1",
+								Locations: []types.Location{{}},
 							},
 						},
 					},

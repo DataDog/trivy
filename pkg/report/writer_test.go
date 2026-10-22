@@ -154,6 +154,10 @@ func TestWrite(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			switch tt.name {
+			case "report modified by hooks":
+				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
+			}
 			if tt.setUpHook {
 				hooktest.Init(t)
 			}
