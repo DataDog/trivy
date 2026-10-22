@@ -93,6 +93,10 @@ func (a Artifact) Inspect(ctx context.Context) (ref artifact.Reference, err erro
 	diffIDs := a.diffIDs(configFile)
 	a.logger.Debug("Detected diff ID", log.Any("diff_ids", diffIDs))
 
+	if err := a.checkImageSize(ctx, diffIDs); err != nil {
+		return artifact.Reference{}, err
+	}
+
 	// Try to detect base layers.
 	baseDiffIDs := a.guessBaseLayers(diffIDs, configFile)
 	a.logger.Debug("Detected base layers", log.Any("diff_ids", baseDiffIDs))

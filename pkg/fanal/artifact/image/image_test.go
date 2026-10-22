@@ -2165,6 +2165,31 @@ func TestArtifact_Inspect(t *testing.T) {
 	}
 }
 
+// fakeImage satisfies types.Image for tests that only need a v1.Image. It lived in
+// remote_sbom_test.go upstream, which this fork removed along with the remote SBOM support.
+type fakeImage struct {
+	name        string
+	repoDigests []string
+	v1.Image
+	types.ImageExtension
+}
+
+func (f fakeImage) ID() (string, error) {
+	return "", nil
+}
+
+func (f fakeImage) Name() string {
+	return f.name
+}
+
+func (f fakeImage) RepoDigests() []string {
+	return f.repoDigests
+}
+
+func (f fakeImage) RepoTags() []string {
+	return nil
+}
+
 func TestArtifact_InspectWithMaxImageSize(t *testing.T) {
 	randomImage, err := random.Image(1000, 2, random.WithSource(rand.NewSource(0)))
 	require.NoError(t, err)

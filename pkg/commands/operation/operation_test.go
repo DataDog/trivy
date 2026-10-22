@@ -15,7 +15,6 @@ import (
 	fakei "github.com/google/go-containerregistry/pkg/v1/fake"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/types"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/utils/clock"
@@ -45,6 +44,9 @@ func newStubLayer(t *testing.T) v1.Layer {
 }
 
 func TestInitBuiltinChecks(t *testing.T) {
+	t.Skip("pkg/policy is stubbed out in this fork: policy.NewClient and every Client method return " +
+		"\"pkg/policy not implemented\", so there is no check-bundle behaviour left to exercise.")
+
 	type digestReturns struct {
 		h   v1.Hash
 		err error
@@ -76,7 +78,6 @@ func TestInitBuiltinChecks(t *testing.T) {
 			metadata: policy.Metadata{
 				Digest:       `sha256:922e50f14ab484f11ae65540c3d2d76009020213f1027d4331d31141575e5414`,
 				DownloadedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-				MajorVersion: lo.ToPtr(policy.BundleVersion),
 			},
 			skipUpdate: false,
 		},
@@ -104,7 +105,6 @@ func TestInitBuiltinChecks(t *testing.T) {
 			metadata: policy.Metadata{
 				Digest:       `sha256:922e50f14ab484f11ae65540c3d2d76009020213f1027d4331d31141575e5414`,
 				DownloadedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
-				MajorVersion: lo.ToPtr(policy.BundleVersion),
 			},
 			checkDir: "policy",
 			clock:    fake.NewFakeClock(time.Date(3000, 1, 1, 1, 0, 0, 0, time.UTC)),
