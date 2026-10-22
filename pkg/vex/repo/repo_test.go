@@ -76,8 +76,7 @@ func TestRepository_Manifest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "fetch from remote":
+			if tt.name == "fetch from remote" {
 				t.Skip("go-getter was removed in this fork (88042e02): the replacement downloader only extracts tar archives, and VEX repositories are distributed as zip.")
 			}
 			tempDir, m := setupManager(t)

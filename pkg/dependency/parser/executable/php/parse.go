@@ -29,7 +29,7 @@ func NewParser() *Parser {
 var versReg = regexp.MustCompile(`(?m)X-Powered-By: PHP\/(?P<version>[0-9]+\.[0-9]+\.[0-9]+(beta[0-9]+|alpha[0-9]+|RC[0-9]+)?)`)
 
 // Parse scans file to try to report the Python version.
-func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
 	if err != nil {
 		return nil, nil, ErrUnrecognizedExe

@@ -40,8 +40,7 @@ func TestDownload(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "Insecure (should succeed)":
+			if tt.name == "Insecure (should succeed)" {
 				t.Skip("go-getter was removed in this fork (88042e02): the replacement downloader only fetches tar archives over HTTP, with no git, local-directory, zip or single-file sources.")
 			}
 			// Set up the destination path

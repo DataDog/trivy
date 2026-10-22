@@ -44,12 +44,7 @@ func WithClock(c clock.Clock) Option {
 type Option func(*options)
 
 // Client implements check operations
-type Client struct {
-	*options
-	policyDir       string
-	checkBundleRepo string
-	quiet           bool
-}
+type Client struct{}
 
 // Metadata holds default check metadata
 type Metadata struct {
@@ -65,12 +60,12 @@ func (m Metadata) String() string {
 }
 
 // NewClient is the factory method for check client
-func NewClient(cacheDir string, quiet bool, checkBundleRepo string, opts ...Option) (*Client, error) {
+func NewClient(_ string, _ bool, _ string, _ ...Option) (*Client, error) {
 	return nil, xerrors.New("pkg/policy not implemented")
 }
 
 // DownloadBuiltinChecks download default policies from GitHub Pages
-func (c *Client) DownloadBuiltinChecks(ctx context.Context, registryOpts types.RegistryOptions) error {
+func (c *Client) DownloadBuiltinChecks(_ context.Context, _ types.RegistryOptions) error {
 	return xerrors.New("pkg/policy not implemented")
 }
 
@@ -80,11 +75,11 @@ func (c *Client) BuiltinChecksPath() string {
 }
 
 // NeedsUpdate returns if the default check should be updated
-func (c *Client) NeedsUpdate(ctx context.Context, registryOpts types.RegistryOptions) (bool, error) {
+func (c *Client) NeedsUpdate(_ context.Context, _ types.RegistryOptions) (bool, error) {
 	return false, xerrors.New("pkg/policy not implemented")
 }
 
-func (c *Client) GetMetadata(ctx context.Context) (*Metadata, error) {
+func (c *Client) GetMetadata(_ context.Context) (*Metadata, error) {
 	return nil, xerrors.New("pkg/policy not implemented")
 }
 

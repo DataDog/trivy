@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/xerrors"
 
+	"github.com/aquasecurity/trivy/pkg/set"
 	xsync "github.com/aquasecurity/trivy/pkg/x/sync"
 )
 
@@ -76,13 +77,9 @@ func (m *FS) Filter(skippedFiles []string) (*FS, error) {
 	if len(skippedFiles) == 0 {
 		return m, nil
 	}
-	skipped := make(map[string]struct{}, len(skippedFiles))
-	for _, path := range skippedFiles {
-		skipped[path] = struct{}{}
-	}
+	skipped := set.New(skippedFiles...)
 	filter := func(path string, _ fs.DirEntry) (bool, error) {
-		_, ok := skipped[path]
-		return ok, nil
+		return skipped.Contains(path), nil
 	}
 	return m.FilterFunc(filter)
 }

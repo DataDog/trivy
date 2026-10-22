@@ -4,12 +4,8 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type ConfigFileSchema struct {
-	path   string
-	name   string
-	source []byte
-}
+type ConfigFileSchema struct{}
 
-func LoadConfigSchemas(paths []string) ([]*ConfigFileSchema, error) {
+func LoadConfigSchemas(_ []string) ([]*ConfigFileSchema, error) {
 	return nil, xerrors.New("pkg/misconf not implemented")
 }

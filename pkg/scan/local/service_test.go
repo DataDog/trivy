@@ -1518,8 +1518,7 @@ func TestScanner_Scan(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "happy path with hooks":
+			if tt.name == "happy path with hooks" {
 				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 			}
 			_ = dbtest.InitDB(t, tt.fixtures)

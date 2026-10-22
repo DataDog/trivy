@@ -8,6 +8,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/artifact"
 	"github.com/aquasecurity/trivy/pkg/fanal/handler"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
+	"github.com/aquasecurity/trivy/pkg/set"
 )
 
 func init() {
@@ -32,14 +33,14 @@ func NewSystemFileFilteringPostHandler(artifact.Option) (handler.PostHandler, er
 
 // Handle removes files installed by OS package manager such as yum.
 func (h systemFileFilteringPostHandler) Handle(_ context.Context, result *analyzer.AnalysisResult, blob *types.BlobInfo) error {
-	systemFiles := make(map[string]struct{}, len(result.SystemInstalledFiles)+len(defaultSystemFiles))
+	systemFiles := set.New[string]()
 	for _, file := range append(result.SystemInstalledFiles, defaultSystemFiles...) {
 		// Trim leading slashes to be the same format as the path in container images.
 		systemFile := strings.TrimPrefix(file, "/")
 		// We should check the root filepath ("/") and ignore it.
 		// Otherwise, packages with an empty filePath will be removed.
 		if systemFile != "" {
-			systemFiles[systemFile] = struct{}{}
+			systemFiles.Append(systemFile)
 		}
 	}
 
@@ -47,7 +48,7 @@ func (h systemFileFilteringPostHandler) Handle(_ context.Context, result *analyz
 	for _, app := range blob.Applications {
 		// If the lang-specific package was installed by OS package manager, it should not be taken.
 		// Otherwise, the package version will be wrong, then it will lead to false positive.
-		if _, ok := systemFiles[app.FilePath]; ok {
+		if systemFiles.Contains(app.FilePath) {
 			continue
 		}
 
@@ -55,7 +56,7 @@ func (h systemFileFilteringPostHandler) Handle(_ context.Context, result *analyz
 		for _, lib := range app.Packages {
 			// If the lang-specific package was installed by OS package manager, it should not be taken.
 			// Otherwise, the package version will be wrong, then it will lead to false positive.
-			if _, ok := systemFiles[lib.FilePath]; ok {
+			if systemFiles.Contains(lib.FilePath) {
 				continue
 			}
 			pkgs = append(pkgs, lib)
@@ -69,7 +70,7 @@ func (h systemFileFilteringPostHandler) Handle(_ context.Context, result *analyz
 	// Iterate and delete unnecessary customResource
 	i := 0
 	for _, res := range blob.CustomResources {
-		if _, ok := systemFiles[res.FilePath]; ok {
+		if systemFiles.Contains(res.FilePath) {
 			continue
 		}
 		blob.CustomResources[i] = res

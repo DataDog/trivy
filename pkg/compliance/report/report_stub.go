@@ -29,10 +29,10 @@ type Writer interface {
 }
 
 // Write writes the results in the given format
-func Write(ctx context.Context, report *ComplianceReport, option Option) error {
+func Write(_ context.Context, _ *ComplianceReport, _ Option) error {
 	return xerrors.New("pkg/compliance not implemented")
 }
 
-func BuildComplianceReport(scanResults []types.Results, cs spec.ComplianceSpec) (*ComplianceReport, error) {
+func BuildComplianceReport(_ []types.Results, _ spec.ComplianceSpec) (*ComplianceReport, error) {
 	return nil, xerrors.New("pkg/compliance not implemented")
 }

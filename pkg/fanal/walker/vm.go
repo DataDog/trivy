@@ -1,8 +1,8 @@
 package walker
 
 import (
-	"context"
 	"bytes"
+	"context"
 	"io"
 	"io/fs"
 	"path/filepath"

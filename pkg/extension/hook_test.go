@@ -105,8 +105,7 @@ func TestPreScan(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "sad path":
+			if tt.name == "sad path" {
 				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 			}
 			// Initialize the test hook
@@ -141,8 +140,7 @@ func TestPreRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "sad path":
+			if tt.name == "sad path" {
 				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 			}
 			// Initialize the test hook
@@ -177,8 +175,7 @@ func TestPostRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "sad path":
+			if tt.name == "sad path" {
 				t.Skip("Extension hooks are disabled in this fork (2926d604): every hook entry point is a no-op.")
 			}
 			// Initialize the test extension

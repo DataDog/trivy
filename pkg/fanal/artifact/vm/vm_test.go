@@ -93,8 +93,7 @@ func TestNewArtifact(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "happy path for EBS":
+			if tt.name == "happy path for EBS" {
 				t.Skip("pkg/cloud is stubbed out in this fork, so EBS snapshots cannot be opened.")
 			}
 			w := &mockWalker{root: "testdata"}
@@ -158,8 +157,7 @@ func TestArtifact_Inspect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "happy path for ebs":
+			if tt.name == "happy path for ebs" {
 				t.Skip("pkg/cloud is stubbed out in this fork, so EBS snapshots cannot be opened.")
 			}
 			c := cachetest.NewCache(t, nil)

@@ -80,7 +80,7 @@ func TestLayerAnnotations_Encode(t *testing.T) {
 	}
 	require.NotNil(t, comp, "requests component not found in encoded BOM")
 
-	gotProps := map[string]core.Property{}
+	gotProps := make(map[string]core.Property)
 	for _, p := range comp.Properties {
 		gotProps[p.Name] = p
 	}

@@ -303,8 +303,7 @@ func TestFlags(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "happy path with scanners for compliance report":
+			if tt.name == "happy path with scanners for compliance report" {
 				t.Skip("pkg/compliance is stubbed out in this fork: loading a compliance spec is not implemented.")
 			}
 			globalFlags := flag.NewGlobalFlagGroup()

@@ -14,7 +14,7 @@ type AMI struct {
 	imageID string
 }
 
-func newAMI(imageID string, storage Storage, region, endpoint string) (*AMI, error) {
+func newAMI(_ string, _ Storage, _, _ string) (*AMI, error) {
 	return nil, xerrors.New("pkg/cloud not implemented")
 }
 

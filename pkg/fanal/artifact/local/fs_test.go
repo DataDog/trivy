@@ -263,8 +263,7 @@ func TestArtifact_Inspect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "git repository: artifact type is changed to repository":
+			if tt.name == "git repository: artifact type is changed to repository" {
 				t.Skip("Git repository detection was removed with go-git in this fork (1c1a91b4), so a git checkout is scanned as a plain filesystem.")
 			}
 			// Set fake UUID for consistent test results

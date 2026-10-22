@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
@@ -211,7 +212,7 @@ func (a Artifact) Inspect(ctx context.Context) (artifact.Reference, error) {
 		ID:           cacheKey, // use a cache key as pseudo artifact ID
 		BlobIDs:      []string{cacheKey},
 		RepoMetadata: a.repoMetadata,
-	}, errors.Join(err1, err2, err3)
+	}, multierror.Append(err1, err2, err3).ErrorOrNil()
 }
 
 func (a Artifact) analyzeWithRootDir(ctx context.Context, eg *errgroup.Group, limit *semaphore.Weighted,

@@ -273,8 +273,7 @@ func TestArtifact_Inspect(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.name {
-			case "cache hit":
+			if tt.name == "cache hit" {
 				t.Skip("Git repository metadata and commit-keyed caching were removed with go-git in this fork (1c1a91b4), so a blob stored under the commit key is never looked up.")
 			}
 			// Set fake UUID for consistency

@@ -274,6 +274,7 @@ func (a Artifact) consolidateCreatedBy(diffIDs, layerKeys []string, configFile *
 	return layerKeyMap
 }
 
+//nolint:unused // image size checks are disabled in this fork (cad52818)
 func (a Artifact) imageSizeError(typ string, size int64) error {
 	return &trivyTypes.UserError{
 		Message: fmt.Sprintf(
@@ -284,6 +285,7 @@ func (a Artifact) imageSizeError(typ string, size int64) error {
 	}
 }
 
+//nolint:unused // image size checks are disabled in this fork (cad52818)
 func (a Artifact) checkImageSize(ctx context.Context, diffIDs []string) error {
 	if a.artifactOption.ImageOption.MaxImageSize == 0 {
 		return nil
@@ -299,6 +301,7 @@ func (a Artifact) checkImageSize(ctx context.Context, diffIDs []string) error {
 	return nil
 }
 
+//nolint:unused // image size checks are disabled in this fork (cad52818)
 func (a Artifact) checkCompressedImageSize(diffIDs []string) error {
 	var totalSize int64
 
@@ -326,6 +329,7 @@ func (a Artifact) checkCompressedImageSize(diffIDs []string) error {
 	return nil
 }
 
+//nolint:unused // image size checks are disabled in this fork (cad52818)
 func (a Artifact) checkUncompressedImageSize(ctx context.Context, diffIDs []string) error {
 	var totalSize int64
 
@@ -353,6 +357,7 @@ func (a Artifact) checkUncompressedImageSize(ctx context.Context, diffIDs []stri
 	return nil
 }
 
+//nolint:unused // image size checks are disabled in this fork (cad52818)
 func (a Artifact) saveLayer(diffID string) (int64, error) {
 	a.logger.Debug("Pulling the layer to the local cache", log.String("diff_id", diffID))
 	_, rc, err := a.uncompressedLayer(diffID)
@@ -449,7 +454,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.Layer, disabled 
 	defer composite.Cleanup()
 
 	// Walk a tar layer
-	opqDirs, whFiles, err := a.walker.Walk(ctx, cr, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	opqDirs, whFiles, err := a.walker.Walk(ctx, cr, func(_ context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		if err = a.analyzer.AnalyzeFile(egCtx, eg, limit, result, "", filePath, info, opener, disabled, opts); err != nil {
 			return xerrors.Errorf("failed to analyze %s: %w", filePath, err)
 		}

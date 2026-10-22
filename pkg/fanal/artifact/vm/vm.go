@@ -105,7 +105,7 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 	defer composite.Cleanup()
 
 	// TODO: Always walk from the root directory. Consider whether there is a need to be able to set optional
-	err = a.walker.Walk(ctx, r, "/", a.artifactOption.WalkerOption, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	err = a.walker.Walk(ctx, r, "/", a.artifactOption.WalkerOption, func(_ context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		path := strings.TrimPrefix(filePath, "/")
 		if err = a.analyzer.AnalyzeFile(egCtx, eg, limit, result, "/", path, info, opener, nil, opts); err != nil {
 			return xerrors.Errorf("analyze file (%s): %w", path, err)

@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"debug/elf"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -39,7 +38,6 @@ func OpenExe(r io.ReaderAt) (Exe, error) {
 		return nil, errUnrecognizedFormat
 	}
 
-	return nil, errUnrecognizedFormat
 }
 
 // elfExe is the ELF implementation of the exe interface.
@@ -63,7 +61,7 @@ func (x *elfExe) ReadData(addr, size uint64) ([]byte, error) {
 		}
 		return data, nil
 	}
-	return nil, fmt.Errorf("address not mapped")
+	return nil, errors.New("address not mapped")
 }
 
 func (x *elfExe) DataStart() (uint64, uint64) {

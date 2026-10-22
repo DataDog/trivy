@@ -11,10 +11,6 @@ import (
 const (
 	AllReport     = "all"
 	SummaryReport = "summary"
-
-	workloadComponent = "workload"
-	infraComponent    = "infra"
-	infraNamespace    = "kube-system"
 )
 
 type Option struct {
@@ -33,7 +29,6 @@ type Report struct {
 	ClusterName   string
 	Resources     []Resource `json:",omitempty"`
 	BOM           *core.BOM  `json:"-"`
-	name          string
 }
 
 // ConsolidatedReport represents a kubernetes scan report with consolidated findings
