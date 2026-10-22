@@ -54,11 +54,9 @@ func DownloadToTempDir(ctx context.Context, src string, opts Options) (string, e
 func Download(_ context.Context, src, dst, _ string, opts Options) (string, error) {
 	var in io.Reader
 
-	u, err := url.ParseRequestURI(src)
-	if err != nil {
-		return "", xerrors.Errorf("failed to parse url: %w", err)
-	}
-	if u.Scheme != "" {
+	// Only http(s) sources are fetched remotely; anything else is a local path. Checking for any
+	// scheme would treat a Windows path such as C:\dir\file.tar.gz as a URL with scheme "c".
+	if u, err := url.Parse(src); err == nil && (u.Scheme == "http" || u.Scheme == "https") {
 		insecure := false
 		if opts.Insecure {
 			insecure = true
