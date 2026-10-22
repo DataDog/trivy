@@ -427,6 +427,16 @@ func (e *Encoder) component(result types.Result, pkg ftypes.Package) *core.Compo
 		},
 	}
 
+	// Only third-party packages carry a repository class. "official" is the default for every OS
+	// package, so emitting it would add a property to every component without telling a consumer
+	// anything it can act on.
+	if pkg.Repository.Class == ftypes.RepositoryClassThirdParty {
+		properties = append(properties, core.Property{
+			Name:  core.PropertyRepositoryClass,
+			Value: string(pkg.Repository.Class),
+		})
+	}
+
 	// LayerDigest is OCI's compressed-blob hash; LayerDiffID is the
 	// uncompressed-content hash. For artifacts that have no compressed
 	// form (serverless layers - pre-extracted directories) the launcher
