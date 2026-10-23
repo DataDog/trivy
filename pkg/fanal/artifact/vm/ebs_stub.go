@@ -28,7 +28,7 @@ type EBS struct {
 	ebs        ebsfile.EBSAPI
 }
 
-func newEBS(snapshotID string, vm Storage, region, endpoint string) (*EBS, error) {
+func newEBS(_ string, _ Storage, _, _ string) (*EBS, error) {
 	return nil, xerrors.New("pkg/cloud not implemented")
 }
 

@@ -8,6 +8,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/flag"
 )
 
-func Run(ctx context.Context, args []string, opts flag.Options) error {
+func Run(_ context.Context, _ []string, _ flag.Options) error {
 	return xerrors.New("pkg/compliance not implemented")
 }

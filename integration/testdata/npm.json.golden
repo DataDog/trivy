@@ -18,14 +18,11 @@
           "Name": "asap",
           "Identifier": {
             "PURL": "pkg:npm/asap@2.0.6",
-            "UID": "a9ed9c990b55c97e"
+            "UID": "1cff65d1472fb8e9"
           },
           "Version": "2.0.6",
           "Locations": [
-            {
-              "StartLine": 6,
-              "EndLine": 10
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -34,17 +31,14 @@
           "Name": "jquery",
           "Identifier": {
             "PURL": "pkg:npm/jquery@3.3.9",
-            "UID": "5624abe72853740"
+            "UID": "50fd25f288a3cd34"
           },
           "Version": "3.3.9",
           "Licenses": [
             "MIT"
           ],
           "Locations": [
-            {
-              "StartLine": 11,
-              "EndLine": 15
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -53,14 +47,11 @@
           "Name": "js-tokens",
           "Identifier": {
             "PURL": "pkg:npm/js-tokens@4.0.0",
-            "UID": "64fc20ee370178b3"
+            "UID": "b05e58ad0d9ab1c0"
           },
           "Version": "4.0.0",
           "Locations": [
-            {
-              "StartLine": 16,
-              "EndLine": 20
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -69,17 +60,14 @@
           "Name": "loose-envify",
           "Identifier": {
             "PURL": "pkg:npm/loose-envify@1.4.0",
-            "UID": "880231ec08096120"
+            "UID": "b3dd57512dbbb39e"
           },
           "Version": "1.4.0",
           "DependsOn": [
             "js-tokens@4.0.0"
           ],
           "Locations": [
-            {
-              "StartLine": 21,
-              "EndLine": 28
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -88,14 +76,11 @@
           "Name": "object-assign",
           "Identifier": {
             "PURL": "pkg:npm/object-assign@4.1.1",
-            "UID": "48119107a22d86bc"
+            "UID": "4f700013874eb872"
           },
           "Version": "4.1.1",
           "Locations": [
-            {
-              "StartLine": 29,
-              "EndLine": 33
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -104,7 +89,7 @@
           "Name": "promise",
           "Identifier": {
             "PURL": "pkg:npm/promise@8.0.3",
-            "UID": "755f2bbb480f470d"
+            "UID": "44dd0d5e009d80aa"
           },
           "Version": "8.0.3",
           "Licenses": [
@@ -114,10 +99,7 @@
             "asap@2.0.6"
           ],
           "Locations": [
-            {
-              "StartLine": 34,
-              "EndLine": 41
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -126,7 +108,7 @@
           "Name": "prop-types",
           "Identifier": {
             "PURL": "pkg:npm/prop-types@15.7.2",
-            "UID": "2826a59f397d6438"
+            "UID": "a37f798a34f77ed8"
           },
           "Version": "15.7.2",
           "DependsOn": [
@@ -135,10 +117,7 @@
             "react-is@16.8.6"
           ],
           "Locations": [
-            {
-              "StartLine": 42,
-              "EndLine": 51
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -147,7 +126,7 @@
           "Name": "react",
           "Identifier": {
             "PURL": "pkg:npm/react@16.8.6",
-            "UID": "82d9f16b21d9e2c2"
+            "UID": "dbd6022f899c61d7"
           },
           "Version": "16.8.6",
           "Licenses": [
@@ -160,10 +139,7 @@
             "scheduler@0.13.6"
           ],
           "Locations": [
-            {
-              "StartLine": 52,
-              "EndLine": 62
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -172,17 +148,14 @@
           "Name": "react-is",
           "Identifier": {
             "PURL": "pkg:npm/react-is@16.8.6",
-            "UID": "847264915e79444a"
+            "UID": "88cddaca9780b698"
           },
           "Version": "16.8.6",
           "Licenses": [
             "MIT"
           ],
           "Locations": [
-            {
-              "StartLine": 63,
-              "EndLine": 67
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -191,7 +164,7 @@
           "Name": "redux",
           "Identifier": {
             "PURL": "pkg:npm/redux@4.0.1",
-            "UID": "c38443b568b7d5b9"
+            "UID": "7a4d133c84c3ffd1"
           },
           "Version": "4.0.1",
           "Licenses": [
@@ -202,10 +175,7 @@
             "symbol-observable@1.2.0"
           ],
           "Locations": [
-            {
-              "StartLine": 68,
-              "EndLine": 76
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -214,7 +184,7 @@
           "Name": "scheduler",
           "Identifier": {
             "PURL": "pkg:npm/scheduler@0.13.6",
-            "UID": "92cfb6b69c6b19ce"
+            "UID": "c1c99b4f3d9375da"
           },
           "Version": "0.13.6",
           "DependsOn": [
@@ -222,10 +192,7 @@
             "object-assign@4.1.1"
           ],
           "Locations": [
-            {
-              "StartLine": 77,
-              "EndLine": 85
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         },
@@ -234,14 +201,11 @@
           "Name": "symbol-observable",
           "Identifier": {
             "PURL": "pkg:npm/symbol-observable@1.2.0",
-            "UID": "2d38df676788a02f"
+            "UID": "d8be5644d9319768"
           },
           "Version": "1.2.0",
           "Locations": [
-            {
-              "StartLine": 86,
-              "EndLine": 90
-            }
+            {}
           ],
           "AnalyzedBy": "npm"
         }
@@ -253,7 +217,7 @@
           "PkgName": "jquery",
           "PkgIdentifier": {
             "PURL": "pkg:npm/jquery@3.3.9",
-            "UID": "5624abe72853740"
+            "UID": "50fd25f288a3cd34"
           },
           "InstalledVersion": "3.3.9",
           "FixedVersion": "3.4.0",

@@ -263,6 +263,9 @@ func TestArtifact_Inspect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "git repository: artifact type is changed to repository" {
+				t.Skip("Git repository detection was removed with go-git in this fork (1c1a91b4), so a git checkout is scanned as a plain filesystem.")
+			}
 			// Set fake UUID for consistent test results
 			uuid.SetFakeUUID(t, "3ff14136-e09f-4df9-80ea-%012d")
 
@@ -295,6 +298,7 @@ var terraformPolicyMetadata = types.PolicyMetadata{
 }
 
 func TestTerraformMisconfigurationScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -803,6 +807,7 @@ var terraformPlanPolicyMetadata = types.PolicyMetadata{
 }
 
 func TestTerraformPlanSnapshotMisconfScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -1011,6 +1016,7 @@ func TestTerraformPlanSnapshotMisconfScan(t *testing.T) {
 }
 
 func TestCloudFormationMisconfigurationScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -1323,6 +1329,7 @@ func TestCloudFormationMisconfigurationScan(t *testing.T) {
 }
 
 func TestDockerfileMisconfigurationScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -1551,6 +1558,7 @@ func TestDockerfileMisconfigurationScan(t *testing.T) {
 }
 
 func TestKubernetesMisconfigurationScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -1812,6 +1820,7 @@ func TestKubernetesMisconfigurationScan(t *testing.T) {
 }
 
 func TestAzureARMMisconfigurationScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -2065,6 +2074,7 @@ func TestAzureARMMisconfigurationScan(t *testing.T) {
 }
 
 func TestMixedConfigurationScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir string
 	}
@@ -2185,6 +2195,7 @@ func TestMixedConfigurationScan(t *testing.T) {
 }
 
 func TestJSONConfigScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir     string
 		schemas []string
@@ -2347,6 +2358,7 @@ func TestJSONConfigScan(t *testing.T) {
 }
 
 func TestYAMLConfigScan(t *testing.T) {
+	t.Skip("Misconfiguration scanning is stubbed out in this fork (pkg/misconf is stub-only and no config analyzers are registered), so no misconfigurations are ever produced.")
 	type fields struct {
 		dir     string
 		schemas []string

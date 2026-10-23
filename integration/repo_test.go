@@ -521,6 +521,13 @@ func TestRepository(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "secrets" {
+				t.Skip("The secret analyzer is disabled in this fork (d05235e4).")
+			}
+			switch tt.name {
+			case "dockerfile", "dockerfile with custom file pattern", "dockerfile with custom policies", "exclude misconfigurations for remote module", "helm chart directory scanning with builtin policies", "helm chart directory scanning with builtin policies and non string Chart name", "helm chart directory scanning with value overrides using set", "helm chart directory scanning with value overrides using value file", "tarball helm chart scanning with builtin policies", "module from OpenTofu registry", "module from Terraform registry", "terraform config with remote module", "terraform config with remote module in child local module", "terraform config with remote submodule":
+				t.Skip("Misconfiguration scanning is stubbed out in this fork: pkg/misconf is stub-only and pkg/policy cannot provide a check bundle.")
+			}
 			command := cmp.Or(tt.args.command, "repo")
 			format := cmp.Or(tt.args.format, types.FormatJSON)
 
@@ -588,6 +595,9 @@ func TestRepositoryWithOverride(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "dockerfile with fs subcommand and an alias scanner" {
+				t.Skip("Misconfiguration scanning is stubbed out in this fork: pkg/misconf is stub-only and pkg/policy cannot provide a check bundle.")
+			}
 			command := "repo"
 			if tt.args.command != "" {
 				command = tt.args.command

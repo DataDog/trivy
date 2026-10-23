@@ -39,6 +39,9 @@ func TestModule(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "spring4shell jre 8, severity update" {
+				t.Skip("The severity update comes from the module's post-scan hook, and extension hooks are disabled in this fork (2926d604).")
+			}
 			osArgs := []string{
 				"--cache-dir",
 				cacheDir,

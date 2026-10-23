@@ -33,13 +33,8 @@ func Test_composerVendorAnalyzer_Analyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipUnknown,
 								Licenses:     []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 3,
-										EndLine:   65,
-									},
-								},
-								DependsOn: []string{"pear/pear_exception@v1.0.2"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"pear/pear_exception@v1.0.2"},
 							},
 							{
 								ID:           "pear/pear_exception@v1.0.2",
@@ -48,12 +43,7 @@ func Test_composerVendorAnalyzer_Analyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipUnknown,
 								Licenses:     []string{"BSD-2-Clause"},
-								Locations: []types.Location{
-									{
-										StartLine: 66,
-										EndLine:   127,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},

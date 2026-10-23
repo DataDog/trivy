@@ -263,7 +263,34 @@ func (a Artifact) inspect(ctx context.Context, missingImage string, layerKeys, b
 	return nil
 }
 
-func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disabled []analyzer.Type) (types.BlobInfo, error) {
+// overlayMarker reports whether filePath is an overlayfs whiteout file (a 0:0
+// character device) or an opaque directory (marked by an overlay.opaque xattr).
+func overlayMarker(filePath string, info os.FileInfo) (whiteout, opaque bool, err error) {
+	if info.Mode()&os.ModeCharDevice != 0 {
+		maj, mnr, err := devices.DeviceInfo(info)
+		if err != nil {
+			return false, false, xerrors.Errorf("DeviceInfo: %w", err)
+		}
+		if maj == 0 && mnr == 0 {
+			return true, false, nil
+		}
+	}
+
+	if info.Mode()&os.ModeDir != 0 {
+		for _, xattr := range []string{"user.overlay.opaque", "trusted.overlay.opaque"} {
+			value, err := system.Lgetxattr(filePath, xattr)
+			if err != nil {
+				return false, false, xerrors.Errorf("Lgetattr: %w", err)
+			}
+			if len(value) == 1 && value[0] == 'y' {
+				return false, true, nil
+			}
+		}
+	}
+	return false, false, nil
+}
+
+func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, _ []analyzer.Type) (types.BlobInfo, error) {
 	a.logger.Debug("Missing diff ID in cache", log.String("diff_id", layerInfo.DiffID))
 
 	layerDigest, err := a.uncompressedLayer(layerInfo.DiffID)
@@ -294,10 +321,10 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 	}
 	defer composite.Cleanup()
 
-	whFiles := make([]string, 0)
-	opqDirs := make([]string, 0)
+	var whFiles []string
+	var opqDirs []string
 
-	err = a.walker.Walk(ctx, layerInfo.Path, a.walkerOption, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	err = a.walker.Walk(ctx, layerInfo.Path, a.walkerOption, func(_ context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		dir := layerInfo.Path
 
 		// When the directory is the same as the filePath, a file was given
@@ -311,32 +338,17 @@ func (a Artifact) inspectLayer(ctx context.Context, layerInfo LayerInfo, disable
 			return nil
 		}
 
-		if info.Mode()&os.ModeCharDevice != 0 {
-			maj, min, err := devices.DeviceInfo(info)
-			if err != nil {
-				return xerrors.Errorf("DeviceInfo: %w", err)
-			}
-			if maj == 0 && min == 0 {
-				whFiles = append(whFiles, filePath)
-				return nil
-			}
+		whiteout, opaque, err := overlayMarker(filePath, info)
+		if err != nil {
+			return err
 		}
-
-		if info.Mode()&os.ModeDir != 0 {
-			xattrs := []string{
-				"user.overlay.opaque",
-				"trusted.overlay.opaque",
-			}
-			for _, xattr := range xattrs {
-				opaque, err := system.Lgetxattr(filePath, xattr)
-				if err != nil {
-					return xerrors.Errorf("Lgetattr: %w", err)
-				}
-				if len(opaque) == 1 && opaque[0] == 'y' {
-					opqDirs = append(opqDirs, filePath)
-					return nil
-				}
-			}
+		if whiteout {
+			whFiles = append(whFiles, filePath)
+			return nil
+		}
+		if opaque {
+			opqDirs = append(opqDirs, filePath)
+			return nil
 		}
 
 		if err := a.analyzer.AnalyzeFile(egCtx, eg, limit, result, dir, filePath, info, opener, nil, opts); err != nil {

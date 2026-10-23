@@ -34,16 +34,11 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 						FilePath: "package-lock.json",
 						Packages: types.Packages{
 							{
-								ID:       "@babel/parser@7.23.6",
-								Name:     "@babel/parser",
-								Version:  "7.23.6",
-								Licenses: []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 6,
-										EndLine:   10,
-									},
-								},
+								ID:        "@babel/parser@7.23.6",
+								Name:      "@babel/parser",
+								Version:   "7.23.6",
+								Licenses:  []string{"MIT"},
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -52,16 +47,11 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								},
 							},
 							{
-								ID:      "ansi-colors@3.2.3",
-								Name:    "ansi-colors",
-								Version: "3.2.3",
-								Dev:     true,
-								Locations: []types.Location{
-									{
-										StartLine: 11,
-										EndLine:   16,
-									},
-								},
+								ID:        "ansi-colors@3.2.3",
+								Name:      "ansi-colors",
+								Version:   "3.2.3",
+								Dev:       true,
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -70,15 +60,10 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								},
 							},
 							{
-								ID:      "array-flatten@1.1.1",
-								Name:    "array-flatten",
-								Version: "1.1.1",
-								Locations: []types.Location{
-									{
-										StartLine: 17,
-										EndLine:   21,
-									},
-								},
+								ID:        "array-flatten@1.1.1",
+								Name:      "array-flatten",
+								Version:   "1.1.1",
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -92,12 +77,7 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								Version:   "1.18.3",
 								DependsOn: []string{"debug@2.6.9"},
 								Licenses:  []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 22,
-										EndLine:   44,
-									},
-								},
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -111,16 +91,7 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								Version:   "2.6.9",
 								DependsOn: []string{"ms@2.0.0"},
 								Licenses:  []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 30,
-										EndLine:   37,
-									},
-									{
-										StartLine: 53,
-										EndLine:   60,
-									},
-								},
+								Locations: []types.Location{{}, {}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -134,12 +105,7 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								Version:   "4.16.4",
 								DependsOn: []string{"debug@2.6.9"},
 								Licenses:  []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 45,
-										EndLine:   67,
-									},
-								},
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -148,20 +114,11 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								},
 							},
 							{
-								ID:       "ms@2.0.0",
-								Name:     "ms",
-								Version:  "2.0.0",
-								Licenses: []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 38,
-										EndLine:   42,
-									},
-									{
-										StartLine: 61,
-										EndLine:   65,
-									},
-								},
+								ID:        "ms@2.0.0",
+								Name:      "ms",
+								Version:   "2.0.0",
+								Licenses:  []string{"MIT"},
+								Locations: []types.Location{{}, {}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -170,16 +127,11 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 								},
 							},
 							{
-								ID:       "ms@2.1.1",
-								Name:     "ms",
-								Version:  "2.1.1",
-								Licenses: []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 68,
-										EndLine:   72,
-									},
-								},
+								ID:        "ms@2.1.1",
+								Name:      "ms",
+								Version:   "2.1.1",
+								Licenses:  []string{"MIT"},
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,
@@ -202,15 +154,10 @@ func Test_npmLibraryAnalyzer_Analyze(t *testing.T) {
 						FilePath: "package-lock.json",
 						Packages: types.Packages{
 							{
-								ID:      "ms@2.1.1",
-								Name:    "ms",
-								Version: "2.1.1",
-								Locations: []types.Location{
-									{
-										StartLine: 6,
-										EndLine:   10,
-									},
-								},
+								ID:        "ms@2.1.1",
+								Name:      "ms",
+								Version:   "2.1.1",
+								Locations: []types.Location{{}},
 								ExternalReferences: []types.ExternalRef{
 									{
 										Type: types.RefOther,

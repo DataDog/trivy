@@ -36,7 +36,7 @@ import (
 
 // Common blob IDs used across multiple test cases to reduce duplication
 const (
-	alpineBaseLayerID     = "sha256:6c42077a82b21707f581759b12a99cc9a593ce35a0d7be4c19c01eb48bd5ba33"
+	alpineBaseLayerID     = "sha256:cafde1768697a9246c1bf109466c90fff9d0db4298538a11d60150a6bd66df5a"
 	alpineBaseLayerDiffID = "sha256:beee9f30bc1f711043e78d4a2be0668955d4b761d587d6f60c2c8dc081efb203"
 	alpineArtifactID      = "sha256:3c709d2a158be3a97051e10cd0e30f047225cb9505101feb3fadcd395c2e0408"
 	composerImageID       = "sha256:a187dde48cd289ac374ad8539930628314bc581a481cdb41409c9289419ddb72"
@@ -410,30 +410,6 @@ func TestArtifact_Inspect(t *testing.T) {
 								Packages: alpinePkgs,
 							},
 						},
-						Licenses: []types.LicenseFile{
-							{
-								Type:     "header",
-								FilePath: "etc/ssl/misc/CA.pl",
-								Findings: []types.LicenseFinding{
-									{
-										Name:       "OpenSSL",
-										Confidence: 1,
-										Link:       "https://spdx.org/licenses/OpenSSL.html",
-									},
-								},
-							},
-							{
-								Type:     "header",
-								FilePath: "etc/ssl/misc/tsget.pl",
-								Findings: []types.LicenseFinding{
-									{
-										Name:       "OpenSSL",
-										Confidence: 1,
-										Link:       "https://spdx.org/licenses/OpenSSL.html",
-									},
-								},
-							},
-						},
 					},
 				},
 			},
@@ -524,7 +500,7 @@ func TestArtifact_Inspect(t *testing.T) {
 			},
 			wantBlobs: []cachetest.WantBlob{
 				{
-					ID: "sha256:75a461ca76eecc6cea981889d69aa1c2dd78c436108be8be1bbc29295520c7d4",
+					ID: "sha256:b59ec6c703c5a5ec4236fc8431439fa1986adcc4b5d6ca11a9a74e4e11aa7a1f",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          3061760,
@@ -618,7 +594,7 @@ func TestArtifact_Inspect(t *testing.T) {
 					},
 				},
 				{
-					ID: "sha256:81afc1747d0fdec7a606c27570313634ae331fab6f13566b23d0f6b3e498c050",
+					ID: "sha256:aa96ceb068a654c742b4018558bcab1f0e15a7a1dc7b626600cc937c34850a5f",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          15441920,
@@ -691,35 +667,11 @@ func TestArtifact_Inspect(t *testing.T) {
 								},
 								PkgName: "libc6",
 							},
-							{
-								Type:     types.LicenseTypeDpkg,
-								FilePath: "usr/share/doc/libssl1.1/copyright",
-								Findings: []types.LicenseFinding{
-									{
-										Name:       "OpenSSL",
-										Confidence: 0.9960474308300395,
-										Link:       "https://spdx.org/licenses/OpenSSL.html",
-									},
-								},
-								PkgName: "libssl1.1",
-							},
-							{
-								Type:     types.LicenseTypeDpkg,
-								FilePath: "usr/share/doc/openssl/copyright",
-								Findings: []types.LicenseFinding{
-									{
-										Name:       "OpenSSL",
-										Confidence: 0.9960474308300395,
-										Link:       "https://spdx.org/licenses/OpenSSL.html",
-									},
-								},
-								PkgName: "openssl",
-							},
 						},
 					},
 				},
 				{
-					ID: "sha256:0778c3e388c54f736a3d6e74ed390a91fdb42c6809f8fb743d4f72acb41a5d6d",
+					ID: "sha256:51350390fbddf4a7095caad740e99616811f81b7a1430c66a481564b8a89f9c9",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          29696,
@@ -741,25 +693,15 @@ func TestArtifact_Inspect(t *testing.T) {
 											"guzzlehttp/promises@v1.3.1",
 											"guzzlehttp/psr7@1.5.2",
 										},
-										Locations: []types.Location{
-											{
-												StartLine: 9,
-												EndLine:   73,
-											},
-										},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "guzzlehttp/promises@v1.3.1",
-										Name:     "guzzlehttp/promises",
-										Version:  "v1.3.1",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 74,
-												EndLine:   124,
-											},
-										},
+										ID:         "guzzlehttp/promises@v1.3.1",
+										Name:       "guzzlehttp/promises",
+										Version:    "v1.3.1",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
@@ -771,12 +713,7 @@ func TestArtifact_Inspect(t *testing.T) {
 											"psr/http-message@1.0.1",
 											"ralouphie/getallheaders@2.0.5",
 										},
-										Locations: []types.Location{
-											{
-												StartLine: 125,
-												EndLine:   191,
-											},
-										},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
@@ -790,65 +727,40 @@ func TestArtifact_Inspect(t *testing.T) {
 											"symfony/filesystem@v4.2.7",
 											"symfony/process@v4.2.7",
 										},
-										Locations: []types.Location{
-											{
-												StartLine: 192,
-												EndLine:   237,
-											},
-										},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:        "pear/log@1.13.1",
-										Name:      "pear/log",
-										Version:   "1.13.1",
-										Licenses:  []string{"MIT"},
-										DependsOn: []string{"pear/pear_exception@v1.0.0"},
-										Locations: []types.Location{
-											{
-												StartLine: 238,
-												EndLine:   290,
-											},
-										},
+										ID:         "pear/log@1.13.1",
+										Name:       "pear/log",
+										Version:    "1.13.1",
+										Licenses:   []string{"MIT"},
+										DependsOn:  []string{"pear/pear_exception@v1.0.0"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "pear/pear_exception@v1.0.0",
-										Name:     "pear/pear_exception",
-										Version:  "v1.0.0",
-										Licenses: []string{"BSD-2-Clause"},
-										Locations: []types.Location{
-											{
-												StartLine: 291,
-												EndLine:   345,
-											},
-										},
+										ID:         "pear/pear_exception@v1.0.0",
+										Name:       "pear/pear_exception",
+										Version:    "v1.0.0",
+										Licenses:   []string{"BSD-2-Clause"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "psr/http-message@1.0.1",
-										Name:     "psr/http-message",
-										Version:  "1.0.1",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 346,
-												EndLine:   395,
-											},
-										},
+										ID:         "psr/http-message@1.0.1",
+										Name:       "psr/http-message",
+										Version:    "1.0.1",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "ralouphie/getallheaders@2.0.5",
-										Name:     "ralouphie/getallheaders",
-										Version:  "2.0.5",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 396,
-												EndLine:   435,
-											},
-										},
+										ID:         "ralouphie/getallheaders@2.0.5",
+										Name:       "ralouphie/getallheaders",
+										Version:    "2.0.5",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
@@ -860,78 +772,48 @@ func TestArtifact_Inspect(t *testing.T) {
 											"symfony/contracts@v1.0.2",
 											"symfony/polyfill-mbstring@v1.11.0",
 										},
-										Locations: []types.Location{
-											{
-												StartLine: 436,
-												EndLine:   507,
-											},
-										},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "symfony/contracts@v1.0.2",
-										Name:     "symfony/contracts",
-										Version:  "v1.0.2",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 508,
-												EndLine:   575,
-											},
-										},
+										ID:         "symfony/contracts@v1.0.2",
+										Name:       "symfony/contracts",
+										Version:    "v1.0.2",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:        "symfony/filesystem@v4.2.7",
-										Name:      "symfony/filesystem",
-										Version:   "v4.2.7",
-										Licenses:  []string{"MIT"},
-										DependsOn: []string{"symfony/polyfill-ctype@v1.11.0"},
-										Locations: []types.Location{
-											{
-												StartLine: 576,
-												EndLine:   625,
-											},
-										},
+										ID:         "symfony/filesystem@v4.2.7",
+										Name:       "symfony/filesystem",
+										Version:    "v4.2.7",
+										Licenses:   []string{"MIT"},
+										DependsOn:  []string{"symfony/polyfill-ctype@v1.11.0"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "symfony/polyfill-ctype@v1.11.0",
-										Name:     "symfony/polyfill-ctype",
-										Version:  "v1.11.0",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 626,
-												EndLine:   683,
-											},
-										},
+										ID:         "symfony/polyfill-ctype@v1.11.0",
+										Name:       "symfony/polyfill-ctype",
+										Version:    "v1.11.0",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "symfony/polyfill-mbstring@v1.11.0",
-										Name:     "symfony/polyfill-mbstring",
-										Version:  "v1.11.0",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 684,
-												EndLine:   742,
-											},
-										},
+										ID:         "symfony/polyfill-mbstring@v1.11.0",
+										Name:       "symfony/polyfill-mbstring",
+										Version:    "v1.11.0",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 									{
-										ID:       "symfony/process@v4.2.7",
-										Name:     "symfony/process",
-										Version:  "v4.2.7",
-										Licenses: []string{"MIT"},
-										Locations: []types.Location{
-											{
-												StartLine: 743,
-												EndLine:   791,
-											},
-										},
+										ID:         "symfony/process@v4.2.7",
+										Name:       "symfony/process",
+										Version:    "v4.2.7",
+										Licenses:   []string{"MIT"},
+										Locations:  []types.Location{{}},
 										AnalyzedBy: analyzer.TypeComposer,
 									},
 								},
@@ -940,7 +822,7 @@ func TestArtifact_Inspect(t *testing.T) {
 					},
 				},
 				{
-					ID: "sha256:5a3e3f25fdc97a14d69d99c63dd640cd2d38af5b987b7a95084cce3d835970fb",
+					ID: "sha256:75d05e9511c98b1ace65cbade5816f935c3b2031dd28e04fd9b8bacd6821ed46",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          6656,
@@ -1857,10 +1739,10 @@ func TestArtifact_Inspect(t *testing.T) {
 				Type: types.TypeContainerImage,
 				ID:   "sha256:0bebf0773ffd87baa7c64fbdbdf79a24ae125e3f99a8adebe52d1ccbe6bed16b",
 				BlobIDs: []string{
-					"sha256:75a461ca76eecc6cea981889d69aa1c2dd78c436108be8be1bbc29295520c7d4",
-					"sha256:81afc1747d0fdec7a606c27570313634ae331fab6f13566b23d0f6b3e498c050",
-					"sha256:0778c3e388c54f736a3d6e74ed390a91fdb42c6809f8fb743d4f72acb41a5d6d",
-					"sha256:5a3e3f25fdc97a14d69d99c63dd640cd2d38af5b987b7a95084cce3d835970fb",
+					"sha256:b59ec6c703c5a5ec4236fc8431439fa1986adcc4b5d6ca11a9a74e4e11aa7a1f",
+					"sha256:aa96ceb068a654c742b4018558bcab1f0e15a7a1dc7b626600cc937c34850a5f",
+					"sha256:51350390fbddf4a7095caad740e99616811f81b7a1430c66a481564b8a89f9c9",
+					"sha256:75d05e9511c98b1ace65cbade5816f935c3b2031dd28e04fd9b8bacd6821ed46",
 				},
 				ImageMetadata: artifact.ImageMetadata{
 					ID: "sha256:58701fd185bda36cab0557bb6438661831267aa4a9e0b54211c4d5317a48aff4",
@@ -1968,7 +1850,7 @@ func TestArtifact_Inspect(t *testing.T) {
 			},
 			wantBlobs: []cachetest.WantBlob{
 				{
-					ID: "sha256:a83985cade3970577a9af328db9c88c0bf15cad40f7d2cf6d76e83882bc8146d",
+					ID: "sha256:42db24a99f6f7c9ced59363c8ce921ef055d8b630a9afc6cd81aac3659e24ad2",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          3061760,
@@ -1978,7 +1860,7 @@ func TestArtifact_Inspect(t *testing.T) {
 					},
 				},
 				{
-					ID: "sha256:b109622c2d106193db505762f1f3e78cf0035a69e559caf07c305c92ddb89356",
+					ID: "sha256:c49ac66fb23a1973ad96e937cd5c5ea4c9127a16d72228072a7a2f461f8b394b",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          15441920,
@@ -1988,7 +1870,7 @@ func TestArtifact_Inspect(t *testing.T) {
 					},
 				},
 				{
-					ID: "sha256:115f689385cb66077c338c52f2c9d6f3018a18c89be7fe7d23f1645422d7d59d",
+					ID: "sha256:6a226d91c70775ff279473a7fb34744422838f336e4b3914a0fb418dcd9fc71d",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          29696,
@@ -1999,7 +1881,7 @@ func TestArtifact_Inspect(t *testing.T) {
 					},
 				},
 				{
-					ID: "sha256:60129d309cd4f16d69262106d6074f37c6d37f6c9089a9710ec96ae067716636",
+					ID: "sha256:855168652f55dbc75b8488a7a78e1ed24135daf00659d97e893a878dd577baa4",
 					BlobInfo: types.BlobInfo{
 						SchemaVersion: types.BlobJSONSchemaVersion,
 						Size:          6656,
@@ -2015,10 +1897,10 @@ func TestArtifact_Inspect(t *testing.T) {
 				Type: types.TypeContainerImage,
 				ID:   "sha256:0bebf0773ffd87baa7c64fbdbdf79a24ae125e3f99a8adebe52d1ccbe6bed16b",
 				BlobIDs: []string{
-					"sha256:a83985cade3970577a9af328db9c88c0bf15cad40f7d2cf6d76e83882bc8146d",
-					"sha256:b109622c2d106193db505762f1f3e78cf0035a69e559caf07c305c92ddb89356",
-					"sha256:115f689385cb66077c338c52f2c9d6f3018a18c89be7fe7d23f1645422d7d59d",
-					"sha256:60129d309cd4f16d69262106d6074f37c6d37f6c9089a9710ec96ae067716636",
+					"sha256:42db24a99f6f7c9ced59363c8ce921ef055d8b630a9afc6cd81aac3659e24ad2",
+					"sha256:c49ac66fb23a1973ad96e937cd5c5ea4c9127a16d72228072a7a2f461f8b394b",
+					"sha256:6a226d91c70775ff279473a7fb34744422838f336e4b3914a0fb418dcd9fc71d",
+					"sha256:855168652f55dbc75b8488a7a78e1ed24135daf00659d97e893a878dd577baa4",
 				},
 				ImageMetadata: artifact.ImageMetadata{
 					ID: "sha256:58701fd185bda36cab0557bb6438661831267aa4a9e0b54211c4d5317a48aff4",
@@ -2165,7 +2047,34 @@ func TestArtifact_Inspect(t *testing.T) {
 	}
 }
 
+// fakeImage satisfies types.Image for tests that only need a v1.Image. It lived in
+// remote_sbom_test.go upstream, which this fork removed along with the remote SBOM support.
+type fakeImage struct {
+	name        string
+	repoDigests []string
+	v1.Image
+	types.ImageExtension
+}
+
+func (f fakeImage) ID() (string, error) {
+	return "", nil
+}
+
+func (f fakeImage) Name() string {
+	return f.name
+}
+
+func (f fakeImage) RepoDigests() []string {
+	return f.repoDigests
+}
+
+func (f fakeImage) RepoTags() []string {
+	return nil
+}
+
 func TestArtifact_InspectWithMaxImageSize(t *testing.T) {
+	t.Skip("checkImageSize is deliberately disabled in this fork (cad52818): it writes " +
+		"container image layers to disk, which the agent must not do.")
 	randomImage, err := random.Image(1000, 2, random.WithSource(rand.NewSource(0)))
 	require.NoError(t, err)
 

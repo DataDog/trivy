@@ -338,7 +338,7 @@ func readSpdxJson(t *testing.T, filePath string) *spdx.Document {
 	})
 
 	// We don't compare values which change each time an SBOM is generated
-	bom.CreationInfo.Created = ""
+	bom.CreationInfo.Created = "2021-01-01T00:00:00Z" // fixed, but valid against the SPDX schema's pattern
 	bom.DocumentNamespace = ""
 
 	return bom

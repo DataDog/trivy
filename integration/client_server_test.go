@@ -326,6 +326,12 @@ func TestClientServer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "scan remote repository with repo command in client/server mode" {
+				t.Skip("Git repository metadata was removed with go-git in this fork (1c1a91b4).")
+			}
+			if tt.name == "scan sample.pem with repo command in client/server mode" {
+				t.Skip("The secret analyzer is disabled in this fork (d05235e4).")
+			}
 			osArgs := setupClient(t, tt.args, addr, cacheDir)
 
 			if tt.args.secretConfig != "" {
@@ -461,6 +467,9 @@ func TestClientServerWithFormat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "scan secrets with ASFF template" {
+				t.Skip("The secret analyzer is disabled in this fork (d05235e4).")
+			}
 			t.Setenv("AWS_REGION", "test-region")
 			t.Setenv("AWS_ACCOUNT_ID", "123456789012")
 			osArgs := setupClient(t, tt.args, addr, cacheDir)

@@ -15,6 +15,7 @@ import (
 )
 
 func TestManager_Update(t *testing.T) {
+	t.Skip("go-getter was removed in this fork (88042e02): the replacement downloader only fetches tar archives over HTTP, with no git, local-directory, zip or single-file sources.")
 	tempDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tempDir)
 

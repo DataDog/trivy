@@ -183,18 +183,9 @@ func TestArtifact_Inspect(t *testing.T) {
 			want: artifact.Reference{
 				Name: ts.URL + "/test-repo.git",
 				Type: types.TypeRepository,
-				ID:   "sha256:1587f4be90cf95b3e1b733512d674301f5fe4200055f10efa4dbf0d5e590d32d", // Calculated from commit hash
+				ID:   "sha256:6f4672e139d4066fd00391df614cdf42bda5f7a3f005d39e1d8600be86157098",
 				BlobIDs: []string{
-					"sha256:1587f4be90cf95b3e1b733512d674301f5fe4200055f10efa4dbf0d5e590d32d", // Calculated from commit hash
-				},
-				RepoMetadata: artifact.RepoMetadata{
-					RepoURL:   ts.URL + "/test-repo.git",
-					Branch:    "main",
-					Tags:      []string{"v0.0.1"},
-					Commit:    "8a19b492a589955c3e70c6ad8efd1e4ec6ae0d35",
-					CommitMsg: "Update README.md",
-					Author:    "Teppei Fukuda <knqyf263@gmail.com>",
-					Committer: "GitHub <noreply@github.com>",
+					"sha256:6f4672e139d4066fd00391df614cdf42bda5f7a3f005d39e1d8600be86157098",
 				},
 			},
 			wantBlobInfo: &types.BlobInfo{
@@ -207,18 +198,9 @@ func TestArtifact_Inspect(t *testing.T) {
 			want: artifact.Reference{
 				Name: "../../../../internal/gittest/testdata/test-repo",
 				Type: types.TypeRepository,
-				ID:   "sha256:1587f4be90cf95b3e1b733512d674301f5fe4200055f10efa4dbf0d5e590d32d", // Calculated from commit hash
+				ID:   "sha256:6f4672e139d4066fd00391df614cdf42bda5f7a3f005d39e1d8600be86157098",
 				BlobIDs: []string{
-					"sha256:1587f4be90cf95b3e1b733512d674301f5fe4200055f10efa4dbf0d5e590d32d", // Calculated from commit hash
-				},
-				RepoMetadata: artifact.RepoMetadata{
-					RepoURL:   "https://github.com/aquasecurity/trivy-test-repo/",
-					Branch:    "main",
-					Tags:      []string{"v0.0.1"},
-					Commit:    "8a19b492a589955c3e70c6ad8efd1e4ec6ae0d35",
-					CommitMsg: "Update README.md",
-					Author:    "Teppei Fukuda <knqyf263@gmail.com>",
-					Committer: "GitHub <noreply@github.com>",
+					"sha256:6f4672e139d4066fd00391df614cdf42bda5f7a3f005d39e1d8600be86157098",
 				},
 			},
 			wantBlobInfo: &types.BlobInfo{
@@ -240,15 +222,6 @@ func TestArtifact_Inspect(t *testing.T) {
 				ID:   "sha256:6f4672e139d4066fd00391df614cdf42bda5f7a3f005d39e1d8600be86157098",
 				BlobIDs: []string{
 					"sha256:6f4672e139d4066fd00391df614cdf42bda5f7a3f005d39e1d8600be86157098",
-				},
-				RepoMetadata: artifact.RepoMetadata{
-					RepoURL:   "https://github.com/aquasecurity/trivy-test-repo/",
-					Branch:    "main",
-					Tags:      []string{"v0.0.1"},
-					Commit:    "8a19b492a589955c3e70c6ad8efd1e4ec6ae0d35",
-					CommitMsg: "Update README.md",
-					Author:    "Teppei Fukuda <knqyf263@gmail.com>",
-					Committer: "GitHub <noreply@github.com>",
 				},
 			},
 			wantBlobInfo: &types.BlobInfo{
@@ -300,6 +273,9 @@ func TestArtifact_Inspect(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "cache hit" {
+				t.Skip("Git repository metadata and commit-keyed caching were removed with go-git in this fork (1c1a91b4), so a blob stored under the commit key is never looked up.")
+			}
 			// Set fake UUID for consistency
 			uuid.SetFakeUUID(t, "3ff14136-e09f-4df9-80ea-%012d")
 
@@ -365,7 +341,7 @@ func testInspectArtifact(t *testing.T, target, wantRepoURL, wantErr string) {
 	require.NoError(t, err)
 
 	// Verify the RepoURL
-	assert.Equal(t, wantRepoURL, ref.RepoMetadata.RepoURL)
+	_ = wantRepoURL // git metadata was removed with go-git in this fork (1c1a91b4)
 
 	// Verify we have blob IDs (indicating successful scan)
 	assert.NotEmpty(t, ref.BlobIDs)

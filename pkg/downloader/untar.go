@@ -18,7 +18,7 @@ func Untar(r io.Reader, dir string) error {
 }
 
 func untar(r io.Reader, dir string) (err error) {
-	madeDir := map[string]bool{}
+	madeDir := make(map[string]bool)
 	tr := tar.NewReader(r)
 	for {
 		f, err := tr.Next()
@@ -44,7 +44,7 @@ func untar(r io.Reader, dir string) (err error) {
 			// write will fail with the same error.
 			dir := filepath.Dir(abs)
 			if !madeDir[dir] {
-				if err := os.MkdirAll(filepath.Dir(abs), 0755); err != nil {
+				if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
 					return err
 				}
 				madeDir[dir] = true
@@ -53,7 +53,8 @@ func untar(r io.Reader, dir string) (err error) {
 			if err != nil {
 				return err
 			}
-			n, err := io.Copy(wf, tr)
+			// Bound the copy by the size the header declares (gosec G110).
+			n, err := io.CopyN(wf, tr, f.Size)
 			if closeErr := wf.Close(); closeErr != nil && err == nil {
 				err = closeErr
 			}
@@ -64,7 +65,7 @@ func untar(r io.Reader, dir string) (err error) {
 				return fmt.Errorf("only wrote %d bytes to %s; expected %d", n, abs, f.Size)
 			}
 		case tar.TypeDir:
-			if err := os.MkdirAll(abs, 0755); err != nil {
+			if err := os.MkdirAll(abs, 0o755); err != nil {
 				return err
 			}
 			madeDir[abs] = true

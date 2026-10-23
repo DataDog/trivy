@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
@@ -624,16 +625,15 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			Options:      opts,
 		}, opts.PostAnalyzerTimeout)
 		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				appCount := 0
-				if res != nil {
-					appCount = len(res.Applications)
-				}
-				err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), appCount, err)
-				errs = errors.Join(errs, err)
-			} else {
+			if !errors.Is(err, context.DeadlineExceeded) {
 				return xerrors.Errorf("post analysis error: %w", err)
 			}
+			appCount := 0
+			if res != nil {
+				appCount = len(res.Applications)
+			}
+			err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), appCount, err)
+			errs = multierror.Append(errs, err)
 		} else {
 			// Merge result only if the PostAnalyzer completed successfully.
 			result.Merge(res)
@@ -685,11 +685,10 @@ func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *Compos
 
 		dir := filteredFS.UnderlyingRoot()
 		if err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, dir, result, opts, opts.PostAnalyzerTimeout); err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				errs = errors.Join(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
-			} else {
+			if !errors.Is(err, context.DeadlineExceeded) {
 				return xerrors.Errorf("deferred analysis error: %w", err)
 			}
+			errs = multierror.Append(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
 		}
 	}
 	return errs

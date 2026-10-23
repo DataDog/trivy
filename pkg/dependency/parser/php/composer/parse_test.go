@@ -19,126 +19,76 @@ var (
 	// locations are filled manually
 	composerPkgs = []ftypes.Package{
 		{
-			ID:       "guzzlehttp/guzzle@6.5.8",
-			Name:     "guzzlehttp/guzzle",
-			Version:  "6.5.8",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 9,
-					EndLine:   123,
-				},
-			},
+			ID:        "guzzlehttp/guzzle@6.5.8",
+			Name:      "guzzlehttp/guzzle",
+			Version:   "6.5.8",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "guzzlehttp/promises@1.5.2",
-			Name:     "guzzlehttp/promises",
-			Version:  "1.5.2",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 124,
-					EndLine:   207,
-				},
-			},
+			ID:        "guzzlehttp/promises@1.5.2",
+			Name:      "guzzlehttp/promises",
+			Version:   "1.5.2",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "guzzlehttp/psr7@1.9.0",
-			Name:     "guzzlehttp/psr7",
-			Version:  "1.9.0",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 208,
-					EndLine:   317,
-				},
-			},
+			ID:        "guzzlehttp/psr7@1.9.0",
+			Name:      "guzzlehttp/psr7",
+			Version:   "1.9.0",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "pear/log@1.13.3",
-			Name:     "pear/log",
-			Version:  "1.13.3",
-			Dev:      true,
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 660,
-					EndLine:   719,
-				},
-			},
+			ID:        "pear/log@1.13.3",
+			Name:      "pear/log",
+			Version:   "1.13.3",
+			Dev:       true,
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "pear/pear_exception@v1.0.2",
-			Name:     "pear/pear_exception",
-			Version:  "v1.0.2",
-			Dev:      true,
-			Licenses: []string{"BSD-2-Clause"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 720,
-					EndLine:   778,
-				},
-			},
+			ID:        "pear/pear_exception@v1.0.2",
+			Name:      "pear/pear_exception",
+			Version:   "v1.0.2",
+			Dev:       true,
+			Licenses:  []string{"BSD-2-Clause"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "psr/http-message@1.0.1",
-			Name:     "psr/http-message",
-			Version:  "1.0.1",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 318,
-					EndLine:   370,
-				},
-			},
+			ID:        "psr/http-message@1.0.1",
+			Name:      "psr/http-message",
+			Version:   "1.0.1",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "ralouphie/getallheaders@3.0.3",
-			Name:     "ralouphie/getallheaders",
-			Version:  "3.0.3",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 371,
-					EndLine:   414,
-				},
-			},
+			ID:        "ralouphie/getallheaders@3.0.3",
+			Name:      "ralouphie/getallheaders",
+			Version:   "3.0.3",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "symfony/polyfill-intl-idn@v1.27.0",
-			Name:     "symfony/polyfill-intl-idn",
-			Version:  "v1.27.0",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 415,
-					EndLine:   501,
-				},
-			},
+			ID:        "symfony/polyfill-intl-idn@v1.27.0",
+			Name:      "symfony/polyfill-intl-idn",
+			Version:   "v1.27.0",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "symfony/polyfill-intl-normalizer@v1.27.0",
-			Name:     "symfony/polyfill-intl-normalizer",
-			Version:  "v1.27.0",
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 502,
-					EndLine:   583,
-				},
-			},
+			ID:        "symfony/polyfill-intl-normalizer@v1.27.0",
+			Name:      "symfony/polyfill-intl-normalizer",
+			Version:   "v1.27.0",
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}},
 		},
 		{
-			ID:       "symfony/polyfill-php72@v1.27.0",
-			Name:     "symfony/polyfill-php72",
-			Version:  "v1.27.0",
-			Licenses: []string{"MIT", "BSD-2-Clause"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 584,
-					EndLine:   657,
-				},
-			},
+			ID:        "symfony/polyfill-php72@v1.27.0",
+			Name:      "symfony/polyfill-php72",
+			Version:   "v1.27.0",
+			Licenses:  []string{"MIT", "BSD-2-Clause"},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 	// dependencies are filled manually

@@ -18,14 +18,11 @@
           "Name": "github.com/apple/swift-atomics",
           "Identifier": {
             "PURL": "pkg:swift/github.com/apple/swift-atomics@1.1.0",
-            "UID": "2e92b45ea6db543b"
+            "UID": "fbe16dd3d7b007c7"
           },
           "Version": "1.1.0",
           "Locations": [
-            {
-              "StartLine": 4,
-              "EndLine": 12
-            }
+            {}
           ],
           "AnalyzedBy": "swift"
         },
@@ -34,14 +31,11 @@
           "Name": "github.com/apple/swift-nio",
           "Identifier": {
             "PURL": "pkg:swift/github.com/apple/swift-nio@2.41.0",
-            "UID": "c9051e4608766d2f"
+            "UID": "25d32cf39808f090"
           },
           "Version": "2.41.0",
           "Locations": [
-            {
-              "StartLine": 13,
-              "EndLine": 21
-            }
+            {}
           ],
           "AnalyzedBy": "swift"
         }
@@ -53,7 +47,7 @@
           "PkgName": "github.com/apple/swift-nio",
           "PkgIdentifier": {
             "PURL": "pkg:swift/github.com/apple/swift-nio@2.41.0",
-            "UID": "c9051e4608766d2f"
+            "UID": "25d32cf39808f090"
           },
           "InstalledVersion": "2.41.0",
           "FixedVersion": "2.29.1, 2.39.1, 2.42.0",

@@ -29,7 +29,7 @@ func NewParser() *Parser {
 var versReg = regexp.MustCompile(`^\d{1,4}\.\d{1,4}\.\d{1,4}[-._a-zA-Z0-9]*$`)
 
 // Parse scans file to try to report the Python version.
-func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
 	if err != nil {
 		return nil, nil, ErrUnrecognizedExe

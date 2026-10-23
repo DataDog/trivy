@@ -17,14 +17,11 @@
           "Name": "werkzeug",
           "Identifier": {
             "PURL": "pkg:pypi/werkzeug@0.11.1",
-            "UID": "c69cfa509e6106cb"
+            "UID": "7fc6cfc71af7946b"
           },
           "Version": "0.11.1",
           "Locations": [
-            {
-              "StartLine": 19,
-              "EndLine": 26
-            }
+            {}
           ],
           "AnalyzedBy": "pipenv"
         }
@@ -35,7 +32,7 @@
           "PkgName": "werkzeug",
           "PkgIdentifier": {
             "PURL": "pkg:pypi/werkzeug@0.11.1",
-            "UID": "c69cfa509e6106cb"
+            "UID": "7fc6cfc71af7946b"
           },
           "InstalledVersion": "0.11.1",
           "FixedVersion": "0.15.3",
@@ -92,7 +89,7 @@
           "PkgName": "werkzeug",
           "PkgIdentifier": {
             "PURL": "pkg:pypi/werkzeug@0.11.1",
-            "UID": "c69cfa509e6106cb"
+            "UID": "7fc6cfc71af7946b"
           },
           "InstalledVersion": "0.11.1",
           "FixedVersion": "0.11.6",

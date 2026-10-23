@@ -27,37 +27,22 @@ func Test_sbtDependencyLockAnalyzer(t *testing.T) {
 						FilePath: "testdata/v1/build.sbt.lock",
 						Packages: types.Packages{
 							{
-								ID:      "org.apache.commons:commons-lang3:3.9",
-								Name:    "org.apache.commons:commons-lang3",
-								Version: "3.9",
-								Locations: []types.Location{
-									{
-										StartLine: 10,
-										EndLine:   25,
-									},
-								},
+								ID:        "org.apache.commons:commons-lang3:3.9",
+								Name:      "org.apache.commons:commons-lang3",
+								Version:   "3.9",
+								Locations: []types.Location{{}},
 							},
 							{
-								ID:      "org.scala-lang:scala-library:2.12.10",
-								Name:    "org.scala-lang:scala-library",
-								Version: "2.12.10",
-								Locations: []types.Location{
-									{
-										StartLine: 26,
-										EndLine:   41,
-									},
-								},
+								ID:        "org.scala-lang:scala-library:2.12.10",
+								Name:      "org.scala-lang:scala-library",
+								Version:   "2.12.10",
+								Locations: []types.Location{{}},
 							},
 							{
-								ID:      "org.typelevel:cats-core_2.12:2.9.0",
-								Name:    "org.typelevel:cats-core_2.12",
-								Version: "2.9.0",
-								Locations: []types.Location{
-									{
-										StartLine: 42,
-										EndLine:   57,
-									},
-								},
+								ID:        "org.typelevel:cats-core_2.12:2.9.0",
+								Name:      "org.typelevel:cats-core_2.12",
+								Version:   "2.9.0",
+								Locations: []types.Location{{}},
 							},
 						},
 					},

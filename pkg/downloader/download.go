@@ -51,14 +51,12 @@ func DownloadToTempDir(ctx context.Context, src string, opts Options) (string, e
 }
 
 // Download downloads the configured source to the destination.
-func Download(ctx context.Context, src, dst, pwd string, opts Options) (string, error) {
-	var rc io.ReadCloser
+func Download(_ context.Context, src, dst, _ string, opts Options) (string, error) {
+	var in io.Reader
 
-	u, err := url.ParseRequestURI(src)
-	if err != nil {
-		return "", xerrors.Errorf("failed to parse url: %w", err)
-	}
-	if u.Scheme != "" {
+	// Only http(s) sources are fetched remotely; anything else is a local path. Checking for any
+	// scheme would treat a Windows path such as C:\dir\file.tar.gz as a URL with scheme "c".
+	if u, err := url.Parse(src); err == nil && (u.Scheme == "http" || u.Scheme == "https") {
 		insecure := false
 		if opts.Insecure {
 			insecure = true
@@ -71,17 +69,18 @@ func Download(ctx context.Context, src, dst, pwd string, opts Options) (string, 
 		if err != nil {
 			return "", xerrors.Errorf("failed to get: %w", err)
 		}
-		rc = resp.Body
+		defer resp.Body.Close()
+		in = resp.Body
 	} else {
 		f, err := os.Open(src)
 		if err != nil {
 			return "", xerrors.Errorf("failed to open: %w", err)
 		}
-		rc = f
+		defer f.Close()
+		in = f
 	}
-	defer rc.Close()
 
-	r, err := uncompress(rc, src)
+	r, err := uncompress(in, src)
 	if err != nil {
 		return "", xerrors.Errorf("failed to uncompress: %w", err)
 	}

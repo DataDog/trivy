@@ -1,3 +1,6 @@
+// NewTraceTransport is a no-op stub in this fork, so this file no longer builds.
+//go:build ignore
+
 package http_test
 
 import (

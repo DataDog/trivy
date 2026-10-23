@@ -33,12 +33,12 @@ type ReportHook interface {
 }
 
 // All exported functions below are no-ops in this stripped build.
-func RegisterHook(_ Hook)            {}
-func DeregisterHook(_ string)        {}
-func Hooks() []Hook                  { return nil }
-func PreRun(_ context.Context, _ any) error                                   { return nil }
-func PostRun(_ context.Context, _ any) error                                  { return nil }
+func RegisterHook(_ Hook)                                                       {}
+func DeregisterHook(_ string)                                                   {}
+func Hooks() []Hook                                                             { return nil }
+func PreRun(_ context.Context, _ any) error                                     { return nil }
+func PostRun(_ context.Context, _ any) error                                    { return nil }
 func PreScan(_ context.Context, _ *types.ScanTarget, _ types.ScanOptions) error { return nil }
-func PostScan(_ context.Context, results types.Results) (types.Results, error) { return results, nil }
-func PreReport(_ context.Context, _ *types.Report, _ any) error               { return nil }
-func PostReport(_ context.Context, _ *types.Report, _ any) error              { return nil }
+func PostScan(_ context.Context, results types.Results) (types.Results, error)  { return results, nil }
+func PreReport(_ context.Context, _ *types.Report, _ any) error                 { return nil }
+func PostReport(_ context.Context, _ *types.Report, _ any) error                { return nil }

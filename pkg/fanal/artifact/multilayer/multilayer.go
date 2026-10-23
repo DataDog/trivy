@@ -192,7 +192,7 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.LayerSource) (ty
 
 	walkerOption := a.artifactOption.WalkerOption
 	walkerOption.AllFiles = true
-	err = a.walker.Walk(ctx, layer.Path, walkerOption, func(ctx context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
+	err = a.walker.Walk(ctx, layer.Path, walkerOption, func(_ context.Context, filePath string, info os.FileInfo, opener analyzer.Opener) error {
 		if err := a.analyzer.AnalyzeFile(egCtx, eg, limit, result, layer.Path, filePath, info, opener, nil, opts); err != nil {
 			return xerrors.Errorf("failed to analyze %s: %w", filePath, err)
 		}

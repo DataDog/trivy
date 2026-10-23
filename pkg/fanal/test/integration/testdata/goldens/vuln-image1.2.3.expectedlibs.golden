@@ -2525,7 +2525,7 @@
         "Name": "guzzlehttp/guzzle",
         "Identifier": {
           "PURL": "pkg:composer/guzzlehttp/guzzle@6.2.0",
-          "UID": "ac39d14e87a3f1d4"
+          "UID": "5d33707da5e882d4"
         },
         "Version": "6.2.0",
         "Licenses": [
@@ -2536,10 +2536,7 @@
           "guzzlehttp/psr7@1.5.2"
         ],
         "Locations": [
-          {
-            "StartLine": 9,
-            "EndLine": 73
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2548,17 +2545,14 @@
         "Name": "guzzlehttp/promises",
         "Identifier": {
           "PURL": "pkg:composer/guzzlehttp/promises@v1.3.1",
-          "UID": "36737ccf260db328"
+          "UID": "1d92467cd7b72096"
         },
         "Version": "v1.3.1",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 74,
-            "EndLine": 124
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2567,7 +2561,7 @@
         "Name": "guzzlehttp/psr7",
         "Identifier": {
           "PURL": "pkg:composer/guzzlehttp/psr7@1.5.2",
-          "UID": "119ab6de62c844c5"
+          "UID": "a428e7e3fc309924"
         },
         "Version": "1.5.2",
         "Licenses": [
@@ -2578,10 +2572,7 @@
           "ralouphie/getallheaders@2.0.5"
         ],
         "Locations": [
-          {
-            "StartLine": 125,
-            "EndLine": 191
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2590,7 +2581,7 @@
         "Name": "laravel/installer",
         "Identifier": {
           "PURL": "pkg:composer/laravel/installer@v2.0.1",
-          "UID": "b41ed8667187a7e5"
+          "UID": "4fc5770ff466335c"
         },
         "Version": "v2.0.1",
         "Licenses": [
@@ -2603,10 +2594,7 @@
           "symfony/process@v4.2.7"
         ],
         "Locations": [
-          {
-            "StartLine": 192,
-            "EndLine": 237
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2615,7 +2603,7 @@
         "Name": "pear/log",
         "Identifier": {
           "PURL": "pkg:composer/pear/log@1.13.1",
-          "UID": "b0cd4defb5f26c95"
+          "UID": "aacaa5d0088b01d1"
         },
         "Version": "1.13.1",
         "Licenses": [
@@ -2625,10 +2613,7 @@
           "pear/pear_exception@v1.0.0"
         ],
         "Locations": [
-          {
-            "StartLine": 238,
-            "EndLine": 290
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2637,17 +2622,14 @@
         "Name": "pear/pear_exception",
         "Identifier": {
           "PURL": "pkg:composer/pear/pear_exception@v1.0.0",
-          "UID": "dea61352fd729a53"
+          "UID": "48b41776bb2f0634"
         },
         "Version": "v1.0.0",
         "Licenses": [
           "BSD-2-Clause"
         ],
         "Locations": [
-          {
-            "StartLine": 291,
-            "EndLine": 345
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2656,17 +2638,14 @@
         "Name": "psr/http-message",
         "Identifier": {
           "PURL": "pkg:composer/psr/http-message@1.0.1",
-          "UID": "6d2dcda1cba472a2"
+          "UID": "6bd879b6545ca3b3"
         },
         "Version": "1.0.1",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 346,
-            "EndLine": 395
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2675,17 +2654,14 @@
         "Name": "ralouphie/getallheaders",
         "Identifier": {
           "PURL": "pkg:composer/ralouphie/getallheaders@2.0.5",
-          "UID": "8224e8d4f17efdec"
+          "UID": "d308349c2b731447"
         },
         "Version": "2.0.5",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 396,
-            "EndLine": 435
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2694,7 +2670,7 @@
         "Name": "symfony/console",
         "Identifier": {
           "PURL": "pkg:composer/symfony/console@v4.2.7",
-          "UID": "e9cf12709469792a"
+          "UID": "53abf96d7f176ff6"
         },
         "Version": "v4.2.7",
         "Licenses": [
@@ -2705,10 +2681,7 @@
           "symfony/polyfill-mbstring@v1.11.0"
         ],
         "Locations": [
-          {
-            "StartLine": 436,
-            "EndLine": 507
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2717,17 +2690,14 @@
         "Name": "symfony/contracts",
         "Identifier": {
           "PURL": "pkg:composer/symfony/contracts@v1.0.2",
-          "UID": "1e2f183e4752d9ad"
+          "UID": "1a52c4e596f94e6a"
         },
         "Version": "v1.0.2",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 508,
-            "EndLine": 575
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2736,7 +2706,7 @@
         "Name": "symfony/filesystem",
         "Identifier": {
           "PURL": "pkg:composer/symfony/filesystem@v4.2.7",
-          "UID": "3448bf72b1395572"
+          "UID": "6735bab07d93fbf8"
         },
         "Version": "v4.2.7",
         "Licenses": [
@@ -2746,10 +2716,7 @@
           "symfony/polyfill-ctype@v1.11.0"
         ],
         "Locations": [
-          {
-            "StartLine": 576,
-            "EndLine": 625
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2758,17 +2725,14 @@
         "Name": "symfony/polyfill-ctype",
         "Identifier": {
           "PURL": "pkg:composer/symfony/polyfill-ctype@v1.11.0",
-          "UID": "3ada0aa6437c75ac"
+          "UID": "872f05d22e32e7da"
         },
         "Version": "v1.11.0",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 626,
-            "EndLine": 683
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2777,17 +2741,14 @@
         "Name": "symfony/polyfill-mbstring",
         "Identifier": {
           "PURL": "pkg:composer/symfony/polyfill-mbstring@v1.11.0",
-          "UID": "2cc2563d9123b17d"
+          "UID": "ecc6b72580e5b40e"
         },
         "Version": "v1.11.0",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 684,
-            "EndLine": 742
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       },
@@ -2796,17 +2757,14 @@
         "Name": "symfony/process",
         "Identifier": {
           "PURL": "pkg:composer/symfony/process@v4.2.7",
-          "UID": "8daf5612abf52b"
+          "UID": "3e6e1c24005ca07"
         },
         "Version": "v4.2.7",
         "Licenses": [
           "MIT"
         ],
         "Locations": [
-          {
-            "StartLine": 743,
-            "EndLine": 791
-          }
+          {}
         ],
         "AnalyzedBy": "composer"
       }
@@ -2821,14 +2779,11 @@
         "Name": "asap",
         "Identifier": {
           "PURL": "pkg:npm/asap@2.0.6",
-          "UID": "e762d7c1b1951ae8"
+          "UID": "7d9fa59cf286c3a3"
         },
         "Version": "2.0.6",
         "Locations": [
-          {
-            "StartLine": 6,
-            "EndLine": 10
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2837,14 +2792,11 @@
         "Name": "jquery",
         "Identifier": {
           "PURL": "pkg:npm/jquery@3.3.9",
-          "UID": "b7401f5201d8b2a5"
+          "UID": "20fb57519e011578"
         },
         "Version": "3.3.9",
         "Locations": [
-          {
-            "StartLine": 16,
-            "EndLine": 20
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2853,14 +2805,11 @@
         "Name": "js-tokens",
         "Identifier": {
           "PURL": "pkg:npm/js-tokens@4.0.0",
-          "UID": "7a7cba6ecea81c6b"
+          "UID": "f6a51dd610a5bc06"
         },
         "Version": "4.0.0",
         "Locations": [
-          {
-            "StartLine": 21,
-            "EndLine": 25
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2869,14 +2818,11 @@
         "Name": "lodash",
         "Identifier": {
           "PURL": "pkg:npm/lodash@4.17.4",
-          "UID": "57b667cef554709e"
+          "UID": "6822e3f1e25351ad"
         },
         "Version": "4.17.4",
         "Locations": [
-          {
-            "StartLine": 11,
-            "EndLine": 15
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2885,17 +2831,14 @@
         "Name": "loose-envify",
         "Identifier": {
           "PURL": "pkg:npm/loose-envify@1.4.0",
-          "UID": "28d76414d7949e7a"
+          "UID": "32581c1e7a8faa80"
         },
         "Version": "1.4.0",
         "DependsOn": [
           "js-tokens@4.0.0"
         ],
         "Locations": [
-          {
-            "StartLine": 26,
-            "EndLine": 33
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2904,14 +2847,11 @@
         "Name": "object-assign",
         "Identifier": {
           "PURL": "pkg:npm/object-assign@4.1.1",
-          "UID": "9f57c5934ef7336a"
+          "UID": "e71874fc607c1d90"
         },
         "Version": "4.1.1",
         "Locations": [
-          {
-            "StartLine": 34,
-            "EndLine": 38
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2920,17 +2860,14 @@
         "Name": "promise",
         "Identifier": {
           "PURL": "pkg:npm/promise@8.0.3",
-          "UID": "a6ccee23123010ec"
+          "UID": "dcaaa971aa148971"
         },
         "Version": "8.0.3",
         "DependsOn": [
           "asap@2.0.6"
         ],
         "Locations": [
-          {
-            "StartLine": 39,
-            "EndLine": 46
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2939,7 +2876,7 @@
         "Name": "prop-types",
         "Identifier": {
           "PURL": "pkg:npm/prop-types@15.7.2",
-          "UID": "ee13953e01ee65fa"
+          "UID": "83a89203d9720af2"
         },
         "Version": "15.7.2",
         "DependsOn": [
@@ -2948,10 +2885,7 @@
           "react-is@16.8.6"
         ],
         "Locations": [
-          {
-            "StartLine": 47,
-            "EndLine": 56
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2960,7 +2894,7 @@
         "Name": "react",
         "Identifier": {
           "PURL": "pkg:npm/react@16.8.6",
-          "UID": "6cbae25492e380b"
+          "UID": "a730ac085c5d57c8"
         },
         "Version": "16.8.6",
         "DependsOn": [
@@ -2970,10 +2904,7 @@
           "scheduler@0.13.6"
         ],
         "Locations": [
-          {
-            "StartLine": 57,
-            "EndLine": 67
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2982,14 +2913,11 @@
         "Name": "react-is",
         "Identifier": {
           "PURL": "pkg:npm/react-is@16.8.6",
-          "UID": "7de7d9d88046153f"
+          "UID": "50e655ade2d744fb"
         },
         "Version": "16.8.6",
         "Locations": [
-          {
-            "StartLine": 68,
-            "EndLine": 72
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -2998,7 +2926,7 @@
         "Name": "redux",
         "Identifier": {
           "PURL": "pkg:npm/redux@4.0.1",
-          "UID": "44df29ef3a103eea"
+          "UID": "5f4474fdd9dc6abf"
         },
         "Version": "4.0.1",
         "DependsOn": [
@@ -3006,10 +2934,7 @@
           "symbol-observable@1.2.0"
         ],
         "Locations": [
-          {
-            "StartLine": 73,
-            "EndLine": 81
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -3018,7 +2943,7 @@
         "Name": "scheduler",
         "Identifier": {
           "PURL": "pkg:npm/scheduler@0.13.6",
-          "UID": "e24aba513da769d8"
+          "UID": "b37fe8213f63d3a4"
         },
         "Version": "0.13.6",
         "DependsOn": [
@@ -3026,10 +2951,7 @@
           "object-assign@4.1.1"
         ],
         "Locations": [
-          {
-            "StartLine": 82,
-            "EndLine": 90
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       },
@@ -3038,14 +2960,11 @@
         "Name": "symbol-observable",
         "Identifier": {
           "PURL": "pkg:npm/symbol-observable@1.2.0",
-          "UID": "98ca0c09e26aeac2"
+          "UID": "7a43852884da18a2"
         },
         "Version": "1.2.0",
         "Locations": [
-          {
-            "StartLine": 91,
-            "EndLine": 95
-          }
+          {}
         ],
         "AnalyzedBy": "npm"
       }
@@ -3059,14 +2978,11 @@
         "Name": "amqp",
         "Identifier": {
           "PURL": "pkg:pypi/amqp@2.4.2",
-          "UID": "9baf4ce77c407941"
+          "UID": "af7796e769d7cd5d"
         },
         "Version": "2.4.2",
         "Locations": [
-          {
-            "StartLine": 19,
-            "EndLine": 25
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3074,14 +2990,11 @@
         "Name": "autopep8",
         "Identifier": {
           "PURL": "pkg:pypi/autopep8@1.4.3",
-          "UID": "1a2da9b87c95d2d4"
+          "UID": "1e69d0e1e3ff52b3"
         },
         "Version": "1.4.3",
         "Locations": [
-          {
-            "StartLine": 26,
-            "EndLine": 31
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3089,14 +3002,11 @@
         "Name": "babel",
         "Identifier": {
           "PURL": "pkg:pypi/babel@2.6.0",
-          "UID": "8c7022376c5941e3"
+          "UID": "f53c0acec1b91404"
         },
         "Version": "2.6.0",
         "Locations": [
-          {
-            "StartLine": 32,
-            "EndLine": 38
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3104,14 +3014,11 @@
         "Name": "billiard",
         "Identifier": {
           "PURL": "pkg:pypi/billiard@3.6.0.0",
-          "UID": "4fea47802ce3931d"
+          "UID": "f3b499e639dfd7b9"
         },
         "Version": "3.6.0.0",
         "Locations": [
-          {
-            "StartLine": 39,
-            "EndLine": 44
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3119,14 +3026,11 @@
         "Name": "boto3",
         "Identifier": {
           "PURL": "pkg:pypi/boto3@1.9.130",
-          "UID": "fa6a31406750e2d9"
+          "UID": "76a3158f89465440"
         },
         "Version": "1.9.130",
         "Locations": [
-          {
-            "StartLine": 45,
-            "EndLine": 52
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3134,14 +3038,11 @@
         "Name": "botocore",
         "Identifier": {
           "PURL": "pkg:pypi/botocore@1.12.130",
-          "UID": "b7ce7380a5c94442"
+          "UID": "9b9a690f3d16a0e8"
         },
         "Version": "1.12.130",
         "Locations": [
-          {
-            "StartLine": 53,
-            "EndLine": 59
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3149,14 +3050,11 @@
         "Name": "celery",
         "Identifier": {
           "PURL": "pkg:pypi/celery@4.3.0",
-          "UID": "5b8b567d1334ddf9"
+          "UID": "978e094f69f0d91a"
         },
         "Version": "4.3.0",
         "Locations": [
-          {
-            "StartLine": 60,
-            "EndLine": 70
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3164,14 +3062,11 @@
         "Name": "certifi",
         "Identifier": {
           "PURL": "pkg:pypi/certifi@2019.3.9",
-          "UID": "72be2a08a90a6b38"
+          "UID": "97c6ff08c4ce3f0f"
         },
         "Version": "2019.3.9",
         "Locations": [
-          {
-            "StartLine": 71,
-            "EndLine": 77
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3179,14 +3074,11 @@
         "Name": "chardet",
         "Identifier": {
           "PURL": "pkg:pypi/chardet@3.0.4",
-          "UID": "dd48e213a44b6a6a"
+          "UID": "52f74509ae585be9"
         },
         "Version": "3.0.4",
         "Locations": [
-          {
-            "StartLine": 78,
-            "EndLine": 84
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3194,14 +3086,11 @@
         "Name": "decorator",
         "Identifier": {
           "PURL": "pkg:pypi/decorator@4.4.0",
-          "UID": "df0c4dcd57d294f2"
+          "UID": "ba425e140e80ac68"
         },
         "Version": "4.4.0",
         "Locations": [
-          {
-            "StartLine": 85,
-            "EndLine": 91
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3209,14 +3098,11 @@
         "Name": "django",
         "Identifier": {
           "PURL": "pkg:pypi/django@2.0.9",
-          "UID": "e86cef9dd44263e3"
+          "UID": "921116e40acd0e30"
         },
         "Version": "2.0.9",
         "Locations": [
-          {
-            "StartLine": 92,
-            "EndLine": 99
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3224,14 +3110,11 @@
         "Name": "django-celery-beat",
         "Identifier": {
           "PURL": "pkg:pypi/django-celery-beat@1.4.0",
-          "UID": "edf3c07b5af6e42b"
+          "UID": "6b400bb61d1b3aee"
         },
         "Version": "1.4.0",
         "Locations": [
-          {
-            "StartLine": 100,
-            "EndLine": 107
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3239,14 +3122,11 @@
         "Name": "django-cors-headers",
         "Identifier": {
           "PURL": "pkg:pypi/django-cors-headers@2.5.2",
-          "UID": "8b73fee78deec86c"
+          "UID": "a982371e570b7bcd"
         },
         "Version": "2.5.2",
         "Locations": [
-          {
-            "StartLine": 108,
-            "EndLine": 115
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3254,14 +3134,11 @@
         "Name": "django-extensions",
         "Identifier": {
           "PURL": "pkg:pypi/django-extensions@2.1.6",
-          "UID": "62ad8a951fac1ab0"
+          "UID": "fdb793de8029c3b6"
         },
         "Version": "2.1.6",
         "Locations": [
-          {
-            "StartLine": 116,
-            "EndLine": 123
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3269,13 +3146,10 @@
         "Name": "django-postgres-extra",
         "Identifier": {
           "PURL": "pkg:pypi/django-postgres-extra",
-          "UID": "12ca123a26ca8d5e"
+          "UID": "ba3a95a4b1faa94d"
         },
         "Locations": [
-          {
-            "StartLine": 124,
-            "EndLine": 128
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3283,14 +3157,11 @@
         "Name": "django-redis-cache",
         "Identifier": {
           "PURL": "pkg:pypi/django-redis-cache@2.0.0",
-          "UID": "141e09abf66456fe"
+          "UID": "c3225e5e1df1379a"
         },
         "Version": "2.0.0",
         "Locations": [
-          {
-            "StartLine": 129,
-            "EndLine": 135
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3298,14 +3169,11 @@
         "Name": "django-silk",
         "Identifier": {
           "PURL": "pkg:pypi/django-silk@3.0.1",
-          "UID": "d734f07fba2dba73"
+          "UID": "712d37c90741a3c5"
         },
         "Version": "3.0.1",
         "Locations": [
-          {
-            "StartLine": 136,
-            "EndLine": 143
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3313,14 +3181,11 @@
         "Name": "django-timezone-field",
         "Identifier": {
           "PURL": "pkg:pypi/django-timezone-field@3.0",
-          "UID": "569e7ef488355353"
+          "UID": "28364b0e9a8815a1"
         },
         "Version": "3.0",
         "Locations": [
-          {
-            "StartLine": 144,
-            "EndLine": 150
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3328,14 +3193,11 @@
         "Name": "djangorestframework",
         "Identifier": {
           "PURL": "pkg:pypi/djangorestframework@3.9.2",
-          "UID": "adcfc3371eb703f4"
+          "UID": "add445381bca646c"
         },
         "Version": "3.9.2",
         "Locations": [
-          {
-            "StartLine": 151,
-            "EndLine": 158
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3343,14 +3205,11 @@
         "Name": "djangorestframework-jwt",
         "Identifier": {
           "PURL": "pkg:pypi/djangorestframework-jwt@1.11.0",
-          "UID": "d80fe562af4286d0"
+          "UID": "5ef3b382baeb160f"
         },
         "Version": "1.11.0",
         "Locations": [
-          {
-            "StartLine": 159,
-            "EndLine": 166
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3358,14 +3217,11 @@
         "Name": "docutils",
         "Identifier": {
           "PURL": "pkg:pypi/docutils@0.14",
-          "UID": "91d6485f173d6173"
+          "UID": "e0ef9093d64bf43b"
         },
         "Version": "0.14",
         "Locations": [
-          {
-            "StartLine": 167,
-            "EndLine": 174
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3373,14 +3229,11 @@
         "Name": "flower",
         "Identifier": {
           "PURL": "pkg:pypi/flower@0.9.3",
-          "UID": "32a7c87f79b0839"
+          "UID": "dab040eac18488d9"
         },
         "Version": "0.9.3",
         "Locations": [
-          {
-            "StartLine": 175,
-            "EndLine": 181
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3388,14 +3241,11 @@
         "Name": "gprof2dot",
         "Identifier": {
           "PURL": "pkg:pypi/gprof2dot@2016.10.13",
-          "UID": "b4b8f2af48ce1580"
+          "UID": "e3aaff44f0d1599d"
         },
         "Version": "2016.10.13",
         "Locations": [
-          {
-            "StartLine": 182,
-            "EndLine": 187
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3403,14 +3253,11 @@
         "Name": "gunicorn",
         "Identifier": {
           "PURL": "pkg:pypi/gunicorn@19.9.0",
-          "UID": "5ededdc0bd0b919e"
+          "UID": "f5a3d3422fff4ccb"
         },
         "Version": "19.9.0",
         "Locations": [
-          {
-            "StartLine": 188,
-            "EndLine": 195
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3418,14 +3265,11 @@
         "Name": "hiredis",
         "Identifier": {
           "PURL": "pkg:pypi/hiredis@1.0.0",
-          "UID": "8888e27b4cd1f811"
+          "UID": "6ca2cd9122963aaf"
         },
         "Version": "1.0.0",
         "Locations": [
-          {
-            "StartLine": 196,
-            "EndLine": 229
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3433,14 +3277,11 @@
         "Name": "httplib2",
         "Identifier": {
           "PURL": "pkg:pypi/httplib2@0.12.1",
-          "UID": "d9ecad9f56ca17d6"
+          "UID": "afe668af940bdf2a"
         },
         "Version": "0.12.1",
         "Locations": [
-          {
-            "StartLine": 230,
-            "EndLine": 235
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3448,14 +3289,11 @@
         "Name": "idna",
         "Identifier": {
           "PURL": "pkg:pypi/idna@2.8",
-          "UID": "25611d269b47ca02"
+          "UID": "94eb79583e4c07af"
         },
         "Version": "2.8",
         "Locations": [
-          {
-            "StartLine": 236,
-            "EndLine": 242
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3463,14 +3301,11 @@
         "Name": "jinja2",
         "Identifier": {
           "PURL": "pkg:pypi/jinja2@2.10.1",
-          "UID": "79ef3c32974068b9"
+          "UID": "60b7b0b161b22217"
         },
         "Version": "2.10.1",
         "Locations": [
-          {
-            "StartLine": 243,
-            "EndLine": 249
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3478,14 +3313,11 @@
         "Name": "jmespath",
         "Identifier": {
           "PURL": "pkg:pypi/jmespath@0.9.4",
-          "UID": "43914f696b4355e6"
+          "UID": "d013bce5df27ee58"
         },
         "Version": "0.9.4",
         "Locations": [
-          {
-            "StartLine": 250,
-            "EndLine": 256
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3493,14 +3325,11 @@
         "Name": "kombu",
         "Identifier": {
           "PURL": "pkg:pypi/kombu@4.5.0",
-          "UID": "f48d0b2795397953"
+          "UID": "703cd0dd5f2523b7"
         },
         "Version": "4.5.0",
         "Locations": [
-          {
-            "StartLine": 257,
-            "EndLine": 263
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3508,14 +3337,11 @@
         "Name": "markupsafe",
         "Identifier": {
           "PURL": "pkg:pypi/markupsafe@1.1.1",
-          "UID": "5cf2024e695d83e8"
+          "UID": "e043f111953d53ce"
         },
         "Version": "1.1.1",
         "Locations": [
-          {
-            "StartLine": 264,
-            "EndLine": 296
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3523,14 +3349,11 @@
         "Name": "oauth2",
         "Identifier": {
           "PURL": "pkg:pypi/oauth2@1.9.0.post1",
-          "UID": "19177dcd235262cc"
+          "UID": "54b9293851e0ebf5"
         },
         "Version": "1.9.0.post1",
         "Locations": [
-          {
-            "StartLine": 297,
-            "EndLine": 304
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3538,14 +3361,11 @@
         "Name": "psycopg2-binary",
         "Identifier": {
           "PURL": "pkg:pypi/psycopg2-binary@2.8.1",
-          "UID": "f138613f8be7afb1"
+          "UID": "e1a189f41b92511f"
         },
         "Version": "2.8.1",
         "Locations": [
-          {
-            "StartLine": 305,
-            "EndLine": 338
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3553,14 +3373,11 @@
         "Name": "py",
         "Identifier": {
           "PURL": "pkg:pypi/py@1.8.0",
-          "UID": "6b0a3e00c69db213"
+          "UID": "3f94fac8b0a7d400"
         },
         "Version": "1.8.0",
         "Locations": [
-          {
-            "StartLine": 339,
-            "EndLine": 345
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3568,14 +3385,11 @@
         "Name": "pycodestyle",
         "Identifier": {
           "PURL": "pkg:pypi/pycodestyle@2.5.0",
-          "UID": "73b8e99f43005c36"
+          "UID": "3ef365aabd8d767e"
         },
         "Version": "2.5.0",
         "Locations": [
-          {
-            "StartLine": 346,
-            "EndLine": 352
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3583,14 +3397,11 @@
         "Name": "pycurl",
         "Identifier": {
           "PURL": "pkg:pypi/pycurl@7.43.0.2",
-          "UID": "72315985f01ce227"
+          "UID": "b644760b19e86f09"
         },
         "Version": "7.43.0.2",
         "Locations": [
-          {
-            "StartLine": 353,
-            "EndLine": 365
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3598,14 +3409,11 @@
         "Name": "pygments",
         "Identifier": {
           "PURL": "pkg:pypi/pygments@2.3.1",
-          "UID": "c1cb03a99767c2e3"
+          "UID": "80544e4b93e8de9d"
         },
         "Version": "2.3.1",
         "Locations": [
-          {
-            "StartLine": 366,
-            "EndLine": 372
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3613,14 +3421,11 @@
         "Name": "pyjwt",
         "Identifier": {
           "PURL": "pkg:pypi/pyjwt@1.7.1",
-          "UID": "257142733bd0e747"
+          "UID": "3ab16fee4f9d8e13"
         },
         "Version": "1.7.1",
         "Locations": [
-          {
-            "StartLine": 373,
-            "EndLine": 379
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3628,14 +3433,11 @@
         "Name": "python-crontab",
         "Identifier": {
           "PURL": "pkg:pypi/python-crontab@2.3.6",
-          "UID": "45b728c96c1645cd"
+          "UID": "5d99877dcb8f10bc"
         },
         "Version": "2.3.6",
         "Locations": [
-          {
-            "StartLine": 380,
-            "EndLine": 385
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3643,14 +3445,11 @@
         "Name": "python-dateutil",
         "Identifier": {
           "PURL": "pkg:pypi/python-dateutil@2.8.0",
-          "UID": "d252731fceb6a9c7"
+          "UID": "1a1b18d0a73c036"
         },
         "Version": "2.8.0",
         "Locations": [
-          {
-            "StartLine": 386,
-            "EndLine": 393
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3658,14 +3457,11 @@
         "Name": "python-http-client",
         "Identifier": {
           "PURL": "pkg:pypi/python-http-client@3.1.0",
-          "UID": "a9784b1b916ad3b6"
+          "UID": "ee3c973f7f6418b4"
         },
         "Version": "3.1.0",
         "Locations": [
-          {
-            "StartLine": 394,
-            "EndLine": 399
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3673,14 +3469,11 @@
         "Name": "pytz",
         "Identifier": {
           "PURL": "pkg:pypi/pytz@2019.1",
-          "UID": "b8c0d0ffedda0d09"
+          "UID": "a150609bb4c8d8c"
         },
         "Version": "2019.1",
         "Locations": [
-          {
-            "StartLine": 400,
-            "EndLine": 406
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3688,14 +3481,11 @@
         "Name": "pyyaml",
         "Identifier": {
           "PURL": "pkg:pypi/pyyaml@5.1",
-          "UID": "4e4bd3b3d22ba69a"
+          "UID": "34cb94cb691bea29"
         },
         "Version": "5.1",
         "Locations": [
-          {
-            "StartLine": 407,
-            "EndLine": 423
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3703,14 +3493,11 @@
         "Name": "redis",
         "Identifier": {
           "PURL": "pkg:pypi/redis@3.2.1",
-          "UID": "c2bbc785e877a9b6"
+          "UID": "b7139aecd0d04fca"
         },
         "Version": "3.2.1",
         "Locations": [
-          {
-            "StartLine": 424,
-            "EndLine": 430
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3718,14 +3505,11 @@
         "Name": "requests",
         "Identifier": {
           "PURL": "pkg:pypi/requests@2.21.0",
-          "UID": "b6db077c02e6131a"
+          "UID": "b21bf35383da9e2b"
         },
         "Version": "2.21.0",
         "Locations": [
-          {
-            "StartLine": 431,
-            "EndLine": 438
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3733,14 +3517,11 @@
         "Name": "retry",
         "Identifier": {
           "PURL": "pkg:pypi/retry@0.9.2",
-          "UID": "c4d0a6dc950b0844"
+          "UID": "a0bb0e05094f8e0e"
         },
         "Version": "0.9.2",
         "Locations": [
-          {
-            "StartLine": 439,
-            "EndLine": 446
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3748,14 +3529,11 @@
         "Name": "s3transfer",
         "Identifier": {
           "PURL": "pkg:pypi/s3transfer@0.2.0",
-          "UID": "adcb5d625aeb94b4"
+          "UID": "b9455b0b026c3777"
         },
         "Version": "0.2.0",
         "Locations": [
-          {
-            "StartLine": 447,
-            "EndLine": 453
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3763,14 +3541,11 @@
         "Name": "sendgrid",
         "Identifier": {
           "PURL": "pkg:pypi/sendgrid@6.0.4",
-          "UID": "198b2829df6c3727"
+          "UID": "539ce6f94c0e04ee"
         },
         "Version": "6.0.4",
         "Locations": [
-          {
-            "StartLine": 454,
-            "EndLine": 461
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3778,14 +3553,11 @@
         "Name": "sentry-sdk",
         "Identifier": {
           "PURL": "pkg:pypi/sentry-sdk@0.7.10",
-          "UID": "491f6048848fa097"
+          "UID": "cef349fb78eb0502"
         },
         "Version": "0.7.10",
         "Locations": [
-          {
-            "StartLine": 462,
-            "EndLine": 469
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3793,14 +3565,11 @@
         "Name": "six",
         "Identifier": {
           "PURL": "pkg:pypi/six@1.12.0",
-          "UID": "bdded6c8ee5bfaa7"
+          "UID": "4d7019a8bcc1c7f2"
         },
         "Version": "1.12.0",
         "Locations": [
-          {
-            "StartLine": 470,
-            "EndLine": 476
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3808,14 +3577,11 @@
         "Name": "sqlparse",
         "Identifier": {
           "PURL": "pkg:pypi/sqlparse@0.3.0",
-          "UID": "e883750010b639d3"
+          "UID": "eb159e68b203e6fa"
         },
         "Version": "0.3.0",
         "Locations": [
-          {
-            "StartLine": 477,
-            "EndLine": 483
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3823,14 +3589,11 @@
         "Name": "tornado",
         "Identifier": {
           "PURL": "pkg:pypi/tornado@5.1.1",
-          "UID": "244851c9871a8ea"
+          "UID": "e1614509d7813dde"
         },
         "Version": "5.1.1",
         "Locations": [
-          {
-            "StartLine": 484,
-            "EndLine": 495
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3838,14 +3601,11 @@
         "Name": "urllib3",
         "Identifier": {
           "PURL": "pkg:pypi/urllib3@1.24.1",
-          "UID": "9c45cb2cc68843ed"
+          "UID": "1e51326018e874f3"
         },
         "Version": "1.24.1",
         "Locations": [
-          {
-            "StartLine": 496,
-            "EndLine": 503
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3853,14 +3613,11 @@
         "Name": "vine",
         "Identifier": {
           "PURL": "pkg:pypi/vine@1.3.0",
-          "UID": "2f2618598d946d5b"
+          "UID": "2723603d7fd45980"
         },
         "Version": "1.3.0",
         "Locations": [
-          {
-            "StartLine": 504,
-            "EndLine": 510
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       },
@@ -3868,14 +3625,11 @@
         "Name": "xmltodict",
         "Identifier": {
           "PURL": "pkg:pypi/xmltodict@0.12.0",
-          "UID": "654fc5d352f80771"
+          "UID": "d6fab2bc6211a1d3"
         },
         "Version": "0.12.0",
         "Locations": [
-          {
-            "StartLine": 511,
-            "EndLine": 518
-          }
+          {}
         ],
         "AnalyzedBy": "pipenv"
       }

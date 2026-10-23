@@ -25,6 +25,7 @@ import (
 // are unique to this test and not shared with other tests.
 // Requires k8s (kind) cluster installed. Run with "mage test:k8s".
 func TestK8s(t *testing.T) {
+	t.Skip("The k8s command is stubbed out in this fork (pkg/k8s/commands/run_stub.go).")
 	// Set up testing DB
 	cacheDir := initDB(t)
 	t.Run("misconfig and vulnerability scan", func(t *testing.T) {

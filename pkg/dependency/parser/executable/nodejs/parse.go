@@ -28,7 +28,7 @@ func NewParser() *Parser {
 var versReg = regexp.MustCompile(`node\.js\/v(\d{1,3}\.\d{1,3}\.\d{1,3})`)
 
 // Parse scans file to try to report the NodeJS version.
-func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
 	if err != nil {
 		return nil, nil, ErrUnrecognizedExe

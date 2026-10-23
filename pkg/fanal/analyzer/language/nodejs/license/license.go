@@ -1,12 +1,12 @@
 package license
 
 import (
+	"context"
 	"errors"
 	"io"
 	"io/fs"
 	"path"
 	"strings"
-	"context"
 
 	"golang.org/x/xerrors"
 

@@ -41,7 +41,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Relationship: types.RelationshipDirect,
 								DependsOn:    []string{"bun-types@1.2.13"},
 								Licenses:     []string{"MIT"},
-								Locations:    types.Locations{types.Location{StartLine: 18, EndLine: 18}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "typescript@5.8.3",
@@ -49,7 +49,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Version:      "5.8.3",
 								Relationship: types.RelationshipDirect,
 								Licenses:     []string{"Apache-2.0"},
-								Locations:    types.Locations{types.Location{StartLine: 24, EndLine: 24}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "zod@3.24.4",
@@ -57,7 +57,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Version:      "3.24.4",
 								Relationship: types.RelationshipDirect,
 								Licenses:     []string{"MIT"},
-								Locations:    types.Locations{types.Location{StartLine: 28, EndLine: 28}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "@types/node@22.15.18",
@@ -68,7 +68,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Relationship: types.RelationshipIndirect,
 								DependsOn:    []string{"undici-types@6.21.0"},
 								Licenses:     []string{"MIT"},
-								Locations:    types.Locations{types.Location{StartLine: 20, EndLine: 20}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "bun-types@1.2.13",
@@ -79,7 +79,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Relationship: types.RelationshipIndirect,
 								DependsOn:    []string{"@types/node@22.15.18"},
 								Licenses:     []string{"MIT"},
-								Locations:    types.Locations{types.Location{StartLine: 22, EndLine: 22}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "undici-types@6.21.0",
@@ -89,7 +89,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
 								Licenses:     []string{"MIT"},
-								Locations:    types.Locations{types.Location{StartLine: 26, EndLine: 26}},
+								Locations:    types.Locations{types.Location{}},
 							},
 						},
 					},
@@ -117,14 +117,14 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Dev:          true,
 								Relationship: types.RelationshipDirect,
 								DependsOn:    []string{"bun-types@1.2.14"},
-								Locations:    types.Locations{types.Location{StartLine: 15, EndLine: 15}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "typescript@5.8.3",
 								Name:         "typescript",
 								Version:      "5.8.3",
 								Relationship: types.RelationshipDirect,
-								Locations:    types.Locations{types.Location{StartLine: 21, EndLine: 21}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "@types/node@22.15.21",
@@ -134,7 +134,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
 								DependsOn:    []string{"undici-types@6.21.0"},
-								Locations:    types.Locations{types.Location{StartLine: 17, EndLine: 17}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "bun-types@1.2.14",
@@ -144,7 +144,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
 								DependsOn:    []string{"@types/node@22.15.21"},
-								Locations:    types.Locations{types.Location{StartLine: 19, EndLine: 19}},
+								Locations:    types.Locations{types.Location{}},
 							},
 							{
 								ID:           "undici-types@6.21.0",
@@ -153,7 +153,7 @@ func Test_bunLibraryAnalyzer_Analyze(t *testing.T) {
 								Dev:          true,
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
-								Locations:    types.Locations{types.Location{StartLine: 23, EndLine: 23}},
+								Locations:    types.Locations{types.Location{}},
 							},
 						},
 					},

@@ -5,9 +5,10 @@ package javadb
 import (
 	"context"
 
+	"golang.org/x/xerrors"
+
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/oci"
-	"golang.org/x/xerrors"
 )
 
 func (u *Updater) downloadDB(ctx context.Context) error {

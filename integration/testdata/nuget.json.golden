@@ -18,15 +18,12 @@
           "Name": "Newtonsoft.Json",
           "Identifier": {
             "PURL": "pkg:nuget/Newtonsoft.Json@12.0.3",
-            "UID": "f11f6e4dc1155888"
+            "UID": "b215e2ca3af342a3"
           },
           "Version": "12.0.3",
           "Relationship": "direct",
           "Locations": [
-            {
-              "StartLine": 5,
-              "EndLine": 10
-            }
+            {}
           ],
           "AnalyzedBy": "nuget"
         },
@@ -35,7 +32,7 @@
           "Name": "NuGet.Frameworks",
           "Identifier": {
             "PURL": "pkg:nuget/NuGet.Frameworks@5.7.0",
-            "UID": "f5bb6bea9e88283"
+            "UID": "b507155c101c0144"
           },
           "Version": "5.7.0",
           "Relationship": "direct",
@@ -43,10 +40,7 @@
             "Newtonsoft.Json@12.0.3"
           ],
           "Locations": [
-            {
-              "StartLine": 11,
-              "EndLine": 19
-            }
+            {}
           ],
           "AnalyzedBy": "nuget"
         }
@@ -58,7 +52,7 @@
           "PkgName": "Newtonsoft.Json",
           "PkgIdentifier": {
             "PURL": "pkg:nuget/Newtonsoft.Json@12.0.3",
-            "UID": "f11f6e4dc1155888"
+            "UID": "b215e2ca3af342a3"
           },
           "InstalledVersion": "12.0.3",
           "FixedVersion": "13.0.1",

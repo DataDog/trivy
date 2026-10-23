@@ -58,18 +58,18 @@ func (o *ScannerOption) Sort() {
 type Scanner struct {
 }
 
-func NewScanner(t detection.FileType, opt ScannerOption) (*Scanner, error) {
+func NewScanner(_ detection.FileType, _ ScannerOption) (*Scanner, error) {
 	return nil, xerrors.New("pkg/misconf not implemented")
 }
 
-func (s *Scanner) Scan(ctx context.Context, fsys fs.FS) ([]types.Misconfiguration, error) {
+func (s *Scanner) Scan(_ context.Context, _ fs.FS) ([]types.Misconfiguration, error) {
 	return nil, xerrors.New("pkg/misconf not implemented")
 }
 
-func InitRegoScanner(opt ScannerOption) (*rego.Scanner, error) {
+func InitRegoScanner(_ ScannerOption) (*rego.Scanner, error) {
 	return nil, xerrors.New("pkg/misconf not implemented")
 }
 
-func CheckPathExists(path string) (fs.FileInfo, string, error) {
+func CheckPathExists(_ string) (fs.FileInfo, string, error) {
 	return nil, "", xerrors.New("pkg/misconf not implemented")
 }

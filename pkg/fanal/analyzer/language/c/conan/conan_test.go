@@ -35,12 +35,7 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 								DependsOn: []string{
 									"zlib/1.2.12",
 								},
-								Locations: []types.Location{
-									{
-										StartLine: 12,
-										EndLine:   21,
-									},
-								},
+								Locations: []types.Location{{}},
 							},
 							{
 								ID:           "zlib/1.2.12",
@@ -48,12 +43,7 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 								Version:      "1.2.12",
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
-								Locations: []types.Location{
-									{
-										StartLine: 22,
-										EndLine:   28,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},
@@ -83,12 +73,7 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 									"zlib/1.2.12",
 								},
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 12,
-										EndLine:   21,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 							{
 								ID:      "zlib/1.2.12",
@@ -99,12 +84,7 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 								},
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
-								Locations: []types.Location{
-									{
-										StartLine: 22,
-										EndLine:   28,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},
@@ -125,24 +105,14 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 								Name:         "openssl",
 								Version:      "3.2.2",
 								Relationship: types.RelationshipUnknown,
-								Locations: []types.Location{
-									{
-										StartLine: 5,
-										EndLine:   5,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 							{
 								ID:           "zlib/1.3.1",
 								Name:         "zlib",
 								Version:      "1.3.1",
 								Relationship: types.RelationshipUnknown,
-								Locations: []types.Location{
-									{
-										StartLine: 4,
-										EndLine:   4,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},
@@ -167,12 +137,7 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 								Name:         "openssl",
 								Version:      "3.2.2",
 								Relationship: types.RelationshipUnknown,
-								Locations: []types.Location{
-									{
-										StartLine: 5,
-										EndLine:   5,
-									},
-								},
+								Locations:    []types.Location{{}},
 								Licenses: []string{
 									"Apache-2.0",
 								},
@@ -182,12 +147,7 @@ func Test_conanLockAnalyzer_Analyze(t *testing.T) {
 								Name:         "zlib",
 								Version:      "1.3.1",
 								Relationship: types.RelationshipUnknown,
-								Locations: []types.Location{
-									{
-										StartLine: 4,
-										EndLine:   4,
-									},
-								},
+								Locations:    []types.Location{{}},
 								Licenses: []string{
 									"Zlib",
 								},

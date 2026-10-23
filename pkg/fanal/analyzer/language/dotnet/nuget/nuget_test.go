@@ -60,26 +60,16 @@ func Test_nugetLibraryAnalyzer_Analyze(t *testing.T) {
 								Name:         "Newtonsoft.Json",
 								Version:      "12.0.3",
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 5,
-										EndLine:   10,
-									},
-								},
-								Licenses: []string{"MIT"},
+								Locations:    []types.Location{{}},
+								Licenses:     []string{"MIT"},
 							},
 							{
 								ID:           "NuGet.Frameworks@5.7.0",
 								Name:         "NuGet.Frameworks",
 								Version:      "5.7.0",
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 11,
-										EndLine:   19,
-									},
-								},
-								DependsOn: []string{"Newtonsoft.Json@12.0.3"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"Newtonsoft.Json@12.0.3"},
 							},
 						},
 					},
@@ -103,26 +93,16 @@ func Test_nugetLibraryAnalyzer_Analyze(t *testing.T) {
 								Name:         "Newtonsoft.Json",
 								Version:      "12.0.3",
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 5,
-										EndLine:   10,
-									},
-								},
-								Licenses: []string{"MIT"},
+								Locations:    []types.Location{{}},
+								Licenses:     []string{"MIT"},
 							},
 							{
 								ID:           "NuGet.Frameworks@5.7.0",
 								Name:         "NuGet.Frameworks",
 								Version:      "5.7.0",
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 11,
-										EndLine:   19,
-									},
-								},
-								DependsOn: []string{"Newtonsoft.Json@12.0.3"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"Newtonsoft.Json@12.0.3"},
 							},
 						},
 					},
@@ -146,25 +126,15 @@ func Test_nugetLibraryAnalyzer_Analyze(t *testing.T) {
 								Name:         "Newtonsoft.Json",
 								Version:      "12.0.3",
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 5,
-										EndLine:   10,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 							{
 								ID:           "NuGet.Frameworks@5.7.0",
 								Name:         "NuGet.Frameworks",
 								Version:      "5.7.0",
 								Relationship: types.RelationshipDirect,
-								Locations: []types.Location{
-									{
-										StartLine: 11,
-										EndLine:   19,
-									},
-								},
-								DependsOn: []string{"Newtonsoft.Json@12.0.3"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"Newtonsoft.Json@12.0.3"},
 							},
 						},
 					},

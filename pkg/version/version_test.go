@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/aquasecurity/trivy-db/pkg/metadata"
-	"github.com/aquasecurity/trivy/pkg/policy"
 )
 
 func Test_BuildVersionInfo(t *testing.T) {
@@ -26,10 +25,8 @@ func Test_BuildVersionInfo(t *testing.T) {
 			UpdatedAt:    time.Date(2023, 7, 25, 1, 3, 52, 169192765, time.UTC),
 			DownloadedAt: time.Date(2023, 7, 25, 9, 37, 48, 906152000, time.UTC),
 		},
-		CheckBundle: &policy.Metadata{
-			Digest:       "sha256:829832357626da2677955e3b427191212978ba20012b6eaa03229ca28569ae43",
-			DownloadedAt: time.Date(2023, 7, 23, 16, 40, 33, 122462000, time.UTC),
-		},
+		// No CheckBundle: pkg/policy is stubbed out in this fork, so the bundle cached
+		// in testdata cannot be read.
 	}
 	assert.Equal(t, expected, NewVersionInfo("testdata/testcache"))
 }
@@ -46,9 +43,6 @@ Java DB:
   UpdatedAt: 2023-07-25 01:03:52.169192765 +0000 UTC
   NextUpdate: 2023-07-28 01:03:52.169192565 +0000 UTC
   DownloadedAt: 2023-07-25 09:37:48.906152 +0000 UTC
-Check Bundle:
-  Digest: sha256:829832357626da2677955e3b427191212978ba20012b6eaa03229ca28569ae43
-  DownloadedAt: 2023-07-23 16:40:33.122462 +0000 UTC
 `
 	versionInfo := NewVersionInfo("testdata/testcache")
 	assert.Equal(t, expected, versionInfo.String())

@@ -133,9 +133,7 @@ func NewTransport(opts Options) Transport {
 }
 
 func traceWrapper() wrapper {
-	return func(rt http.RoundTripper) http.RoundTripper {
-		return NewTraceTransport(rt)
-	}
+	return NewTraceTransport
 }
 
 func userAgentWrapper(ua string) wrapper {

@@ -1,12 +1,11 @@
 package container
 
 import (
+	"github.com/distribution/reference"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-
-	"github.com/distribution/reference"
-	v1 "github.com/google/go-containerregistry/pkg/v1"
 )
 
 type container struct {

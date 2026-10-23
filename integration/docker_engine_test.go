@@ -226,6 +226,9 @@ func TestDockerEngine(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "sad path, image size is larger than the maximum" {
+				t.Skip("checkImageSize is deliberately disabled in this fork (cad52818): it writes container image layers to disk, which the agent must not do.")
+			}
 			imageName := tt.input
 			if !tt.invalidImage {
 				// Removes any existing images with conflicting RepoTags and loading images

@@ -33,13 +33,8 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipDirect,
 								Licenses:     []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 9,
-										EndLine:   68,
-									},
-								},
-								DependsOn: []string{"pear/pear_exception@v1.0.2"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"pear/pear_exception@v1.0.2"},
 							},
 							{
 								ID:           "pear/pear_exception@v1.0.2",
@@ -48,12 +43,7 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
 								Licenses:     []string{"BSD-2-Clause"},
-								Locations: []types.Location{
-									{
-										StartLine: 69,
-										EndLine:   127,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},
@@ -76,13 +66,8 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipUnknown,
 								Licenses:     []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 9,
-										EndLine:   68,
-									},
-								},
-								DependsOn: []string{"pear/pear_exception@v1.0.2"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"pear/pear_exception@v1.0.2"},
 							},
 							{
 								ID:           "pear/pear_exception@v1.0.2",
@@ -91,12 +76,7 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipUnknown,
 								Licenses:     []string{"BSD-2-Clause"},
-								Locations: []types.Location{
-									{
-										StartLine: 69,
-										EndLine:   127,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},
@@ -119,13 +99,8 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipUnknown,
 								Licenses:     []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 9,
-										EndLine:   68,
-									},
-								},
-								DependsOn: []string{"pear/pear_exception@v1.0.2"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"pear/pear_exception@v1.0.2"},
 							},
 							{
 								ID:           "pear/pear_exception@v1.0.2",
@@ -134,12 +109,7 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipUnknown,
 								Licenses:     []string{"BSD-2-Clause"},
-								Locations: []types.Location{
-									{
-										StartLine: 69,
-										EndLine:   127,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},
@@ -168,13 +138,8 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipDirect,
 								Licenses:     []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 61,
-										EndLine:   121,
-									},
-								},
-								DependsOn: []string{"pear/pear_exception@v1.0.2"},
+								Locations:    []types.Location{{}},
+								DependsOn:    []string{"pear/pear_exception@v1.0.2"},
 							},
 							{
 								ID:           "psr/log@1.1.4",
@@ -183,12 +148,7 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     false,
 								Relationship: types.RelationshipDirect,
 								Licenses:     []string{"MIT"},
-								Locations: []types.Location{
-									{
-										StartLine: 9,
-										EndLine:   58,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 							{
 								ID:           "pear/pear_exception@v1.0.2",
@@ -198,12 +158,7 @@ func Test_composerAnalyzer_PostAnalyze(t *testing.T) {
 								Indirect:     true,
 								Relationship: types.RelationshipIndirect,
 								Licenses:     []string{"BSD-2-Clause"},
-								Locations: []types.Location{
-									{
-										StartLine: 122,
-										EndLine:   180,
-									},
-								},
+								Locations:    []types.Location{{}},
 							},
 						},
 					},

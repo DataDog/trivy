@@ -156,7 +156,7 @@ func (a *Artifact) Download(ctx context.Context, dir string, opt DownloadOption)
 	return nil
 }
 
-func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir string, quiet bool) error {
+func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir string, _ bool) error {
 	rc, err := layer.Compressed()
 	if err != nil {
 		return xerrors.Errorf("failed to fetch the layer: %w", err)

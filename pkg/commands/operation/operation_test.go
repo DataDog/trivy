@@ -1,3 +1,6 @@
+// pkg/policy is stubbed out in this fork, so this file no longer builds.
+//go:build ignore
+
 package operation
 
 import (

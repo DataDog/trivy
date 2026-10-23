@@ -25,12 +25,7 @@ var (
 					URL:  "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.19.4.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 7,
-					EndLine:   11,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "asap@2.0.6",
@@ -44,12 +39,7 @@ var (
 					URL:  "https://registry.npmjs.org/asap/-/asap-2.0.6.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 12,
-					EndLine:   17,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "body-parser@1.18.3",
@@ -63,12 +53,7 @@ var (
 					URL:  "https://registry.npmjs.org/body-parser/-/body-parser-1.18.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 18,
-					EndLine:   49,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "bytes@3.0.0",
@@ -82,12 +67,7 @@ var (
 					URL:  "https://registry.npmjs.org/bytes/-/bytes-3.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 50,
-					EndLine:   54,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "content-type@1.0.5",
@@ -101,12 +81,7 @@ var (
 					URL:  "https://registry.npmjs.org/content-type/-/content-type-1.0.5.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 55,
-					EndLine:   59,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "debug@2.5.2",
@@ -120,12 +95,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.5.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 60,
-					EndLine:   76,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "debug@2.6.9",
@@ -139,16 +109,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 35,
-					EndLine:   42,
-				},
-				{
-					StartLine: 111,
-					EndLine:   118,
-				},
-			},
+			Locations: []ftypes.Location{{}, {}},
 		},
 		{
 			ID:           "depd@1.1.2",
@@ -162,12 +123,7 @@ var (
 					URL:  "https://registry.npmjs.org/depd/-/depd-1.1.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 77,
-					EndLine:   81,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ee-first@1.1.1",
@@ -181,12 +137,7 @@ var (
 					URL:  "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 82,
-					EndLine:   86,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "encodeurl@1.0.2",
@@ -200,12 +151,7 @@ var (
 					URL:  "https://registry.npmjs.org/encodeurl/-/encodeurl-1.0.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 87,
-					EndLine:   91,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "escape-html@1.0.3",
@@ -219,12 +165,7 @@ var (
 					URL:  "https://registry.npmjs.org/escape-html/-/escape-html-1.0.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 92,
-					EndLine:   96,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "finalhandler@1.1.1",
@@ -238,12 +179,7 @@ var (
 					URL:  "https://registry.npmjs.org/finalhandler/-/finalhandler-1.1.1.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 97,
-					EndLine:   125,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "http-errors@1.6.3",
@@ -257,12 +193,7 @@ var (
 					URL:  "https://registry.npmjs.org/http-errors/-/http-errors-1.6.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 126,
-					EndLine:   136,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "iconv-lite@0.4.23",
@@ -276,12 +207,7 @@ var (
 					URL:  "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.23.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 137,
-					EndLine:   144,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "inherits@2.0.3",
@@ -295,12 +221,7 @@ var (
 					URL:  "https://registry.npmjs.org/inherits/-/inherits-2.0.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 145,
-					EndLine:   149,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "media-typer@0.3.0",
@@ -314,12 +235,7 @@ var (
 					URL:  "https://registry.npmjs.org/media-typer/-/media-typer-0.3.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 150,
-					EndLine:   154,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "mime-db@1.52.0",
@@ -333,12 +249,7 @@ var (
 					URL:  "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 155,
-					EndLine:   159,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "mime-types@2.1.35",
@@ -352,12 +263,7 @@ var (
 					URL:  "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 160,
-					EndLine:   167,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@0.7.2",
@@ -371,12 +277,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-0.7.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 69,
-					EndLine:   74,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@1.0.0",
@@ -390,12 +291,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-1.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 168,
-					EndLine:   172,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@2.0.0",
@@ -409,16 +305,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 43,
-					EndLine:   47,
-				},
-				{
-					StartLine: 119,
-					EndLine:   123,
-				},
-			},
+			Locations: []ftypes.Location{{}, {}},
 		},
 		{
 			ID:           "on-finished@2.3.0",
@@ -432,12 +319,7 @@ var (
 					URL:  "https://registry.npmjs.org/on-finished/-/on-finished-2.3.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 173,
-					EndLine:   180,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "parseurl@1.3.3",
@@ -451,12 +333,7 @@ var (
 					URL:  "https://registry.npmjs.org/parseurl/-/parseurl-1.3.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 181,
-					EndLine:   185,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "promise@8.3.0",
@@ -470,12 +347,7 @@ var (
 					URL:  "https://registry.npmjs.org/promise/-/promise-8.3.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 186,
-					EndLine:   194,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "qs@6.5.2",
@@ -489,12 +361,7 @@ var (
 					URL:  "https://registry.npmjs.org/qs/-/qs-6.5.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 195,
-					EndLine:   199,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "raw-body@2.3.3",
@@ -508,12 +375,7 @@ var (
 					URL:  "https://registry.npmjs.org/raw-body/-/raw-body-2.3.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 200,
-					EndLine:   210,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "safer-buffer@2.1.2",
@@ -527,12 +389,7 @@ var (
 					URL:  "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 211,
-					EndLine:   215,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "setprototypeof@1.1.0",
@@ -546,12 +403,7 @@ var (
 					URL:  "https://registry.npmjs.org/setprototypeof/-/setprototypeof-1.1.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 216,
-					EndLine:   220,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "statuses@1.4.0",
@@ -565,12 +417,7 @@ var (
 					URL:  "https://registry.npmjs.org/statuses/-/statuses-1.4.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 221,
-					EndLine:   225,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "type-is@1.6.18",
@@ -584,12 +431,7 @@ var (
 					URL:  "https://registry.npmjs.org/type-is/-/type-is-1.6.18.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 226,
-					EndLine:   234,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "unpipe@1.0.0",
@@ -603,12 +445,7 @@ var (
 					URL:  "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 235,
-					EndLine:   239,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 
@@ -712,12 +549,7 @@ var (
 					URL:  "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.19.4.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 24,
-					EndLine:   31,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "body-parser@1.18.3",
@@ -731,12 +563,7 @@ var (
 					URL:  "https://registry.npmjs.org/body-parser/-/body-parser-1.18.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 38,
-					EndLine:   57,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "debug@2.5.2",
@@ -750,12 +577,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.5.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 87,
-					EndLine:   95,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "finalhandler@1.1.1",
@@ -769,12 +591,7 @@ var (
 					URL:  "https://registry.npmjs.org/finalhandler/-/finalhandler-1.1.1.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 128,
-					EndLine:   144,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@1.0.0",
@@ -788,12 +605,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-1.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 215,
-					EndLine:   219,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "promise@8.3.0",
@@ -807,12 +619,7 @@ var (
 					URL:  "https://registry.npmjs.org/promise/-/promise-8.3.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 239,
-					EndLine:   247,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "asap@2.0.6",
@@ -826,12 +633,7 @@ var (
 					URL:  "https://registry.npmjs.org/asap/-/asap-2.0.6.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 32,
-					EndLine:   37,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "bytes@3.0.0",
@@ -845,12 +647,7 @@ var (
 					URL:  "https://registry.npmjs.org/bytes/-/bytes-3.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 71,
-					EndLine:   78,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "content-type@1.0.5",
@@ -864,12 +661,7 @@ var (
 					URL:  "https://registry.npmjs.org/content-type/-/content-type-1.0.5.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 79,
-					EndLine:   86,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "debug@2.6.9",
@@ -883,16 +675,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 58,
-					EndLine:   65,
-				},
-				{
-					StartLine: 145,
-					EndLine:   152,
-				},
-			},
+			Locations: []ftypes.Location{{}, {}},
 		},
 		{
 			ID:           "depd@1.1.2",
@@ -906,12 +689,7 @@ var (
 					URL:  "https://registry.npmjs.org/depd/-/depd-1.1.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 102,
-					EndLine:   109,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ee-first@1.1.1",
@@ -925,12 +703,7 @@ var (
 					URL:  "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 110,
-					EndLine:   114,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "encodeurl@1.0.2",
@@ -944,12 +717,7 @@ var (
 					URL:  "https://registry.npmjs.org/encodeurl/-/encodeurl-1.0.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 115,
-					EndLine:   122,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "escape-html@1.0.3",
@@ -963,12 +731,7 @@ var (
 					URL:  "https://registry.npmjs.org/escape-html/-/escape-html-1.0.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 123,
-					EndLine:   127,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "http-errors@1.6.3",
@@ -982,12 +745,7 @@ var (
 					URL:  "https://registry.npmjs.org/http-errors/-/http-errors-1.6.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 158,
-					EndLine:   171,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "iconv-lite@0.4.23",
@@ -1001,12 +759,7 @@ var (
 					URL:  "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.23.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 172,
-					EndLine:   182,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "inherits@2.0.3",
@@ -1020,12 +773,7 @@ var (
 					URL:  "https://registry.npmjs.org/inherits/-/inherits-2.0.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 183,
-					EndLine:   187,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "media-typer@0.3.0",
@@ -1039,12 +787,7 @@ var (
 					URL:  "https://registry.npmjs.org/media-typer/-/media-typer-0.3.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 188,
-					EndLine:   195,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "mime-db@1.52.0",
@@ -1058,12 +801,7 @@ var (
 					URL:  "https://registry.npmjs.org/mime-db/-/mime-db-1.52.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 196,
-					EndLine:   203,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "mime-types@2.1.35",
@@ -1077,12 +815,7 @@ var (
 					URL:  "https://registry.npmjs.org/mime-types/-/mime-types-2.1.35.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 204,
-					EndLine:   214,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@0.7.2",
@@ -1096,12 +829,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-0.7.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 96,
-					EndLine:   101,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@2.0.0",
@@ -1115,16 +843,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 66,
-					EndLine:   70,
-				},
-				{
-					StartLine: 153,
-					EndLine:   157,
-				},
-			},
+			Locations: []ftypes.Location{{}, {}},
 		},
 		{
 			ID:           "on-finished@2.3.0",
@@ -1138,12 +857,7 @@ var (
 					URL:  "https://registry.npmjs.org/on-finished/-/on-finished-2.3.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 220,
-					EndLine:   230,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "parseurl@1.3.3",
@@ -1157,12 +871,7 @@ var (
 					URL:  "https://registry.npmjs.org/parseurl/-/parseurl-1.3.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 231,
-					EndLine:   238,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "qs@6.5.2",
@@ -1176,12 +885,7 @@ var (
 					URL:  "https://registry.npmjs.org/qs/-/qs-6.5.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 248,
-					EndLine:   255,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "raw-body@2.3.3",
@@ -1195,12 +899,7 @@ var (
 					URL:  "https://registry.npmjs.org/raw-body/-/raw-body-2.3.3.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 256,
-					EndLine:   269,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "safer-buffer@2.1.2",
@@ -1214,12 +913,7 @@ var (
 					URL:  "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 270,
-					EndLine:   274,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "setprototypeof@1.1.0",
@@ -1233,12 +927,7 @@ var (
 					URL:  "https://registry.npmjs.org/setprototypeof/-/setprototypeof-1.1.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 275,
-					EndLine:   279,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "statuses@1.4.0",
@@ -1252,12 +941,7 @@ var (
 					URL:  "https://registry.npmjs.org/statuses/-/statuses-1.4.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 280,
-					EndLine:   287,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "type-is@1.6.18",
@@ -1271,12 +955,7 @@ var (
 					URL:  "https://registry.npmjs.org/type-is/-/type-is-1.6.18.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 288,
-					EndLine:   299,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "unpipe@1.0.0",
@@ -1290,12 +969,7 @@ var (
 					URL:  "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 300,
-					EndLine:   307,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 
@@ -1325,12 +999,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.5.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 39,
-					EndLine:   46,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "function1",
@@ -1344,12 +1013,7 @@ var (
 					URL:  "functions/func1",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 18,
-					EndLine:   23,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "nested_func@1.0.0",
@@ -1363,12 +1027,7 @@ var (
 					URL:  "functions/nested_func",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 24,
-					EndLine:   30,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "debug@2.6.9",
@@ -1381,12 +1040,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 31,
-					EndLine:   38,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@0.7.2",
@@ -1399,12 +1053,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-0.7.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 47,
-					EndLine:   51,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@2.0.0",
@@ -1417,12 +1066,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 56,
-					EndLine:   60,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 
@@ -1457,12 +1101,7 @@ var (
 					URL:  "testapp",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 26,
-					EndLine:   31,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "lodash@4.17.21",
@@ -1476,12 +1115,7 @@ var (
 					URL:  "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 16,
-					EndLine:   21,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 	// docker run --name node --rm -it node@sha256:51dd437f31812df71108b81385e2945071ec813d5815fa3403855669c8f3432b sh
@@ -1506,12 +1140,7 @@ var (
 					URL:  "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 30,
-					EndLine:   36,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "winston-mail@2.0.0",
@@ -1525,12 +1154,7 @@ var (
 					URL:  "https://registry.npmjs.org/winston-mail/-/winston-mail-2.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 60,
-					EndLine:   74,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "mustache@2.3.2",
@@ -1544,12 +1168,7 @@ var (
 					URL:  "https://registry.npmjs.org/mustache/-/mustache-2.3.2.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 18,
-					EndLine:   29,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "triple-beam@1.4.1",
@@ -1563,12 +1182,7 @@ var (
 					URL:  "https://registry.npmjs.org/triple-beam/-/triple-beam-1.4.1.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 37,
-					EndLine:   46,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "winston@3.17.0",
@@ -1582,12 +1196,7 @@ var (
 					URL:  "https://registry.npmjs.org/winston/-/winston-3.17.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 47,
-					EndLine:   59,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 	npmV3WithPeerDependenciesDeps = []ftypes.Dependency{
@@ -1623,12 +1232,7 @@ var (
 					URL:  "functions/func1",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 15,
-					EndLine:   21,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "debug@2.6.9",
@@ -1641,12 +1245,7 @@ var (
 					URL:  "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 22,
-					EndLine:   29,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "ms@2.0.0",
@@ -1659,12 +1258,7 @@ var (
 					URL:  "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 34,
-					EndLine:   38,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 	}
 
@@ -1692,12 +1286,7 @@ var (
 					URL:  "https://registry.npmjs.org/fsevents/-/fsevents-1.2.9.tgz",
 				},
 			},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 18,
-					EndLine:   37,
-				},
-			},
+			Locations: []ftypes.Location{{}},
 		},
 		{
 			ID:           "minimist@0.0.8",
@@ -1711,17 +1300,8 @@ var (
 					URL:  "https://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz",
 				},
 			},
-			Licenses: []string{"MIT"},
-			Locations: []ftypes.Location{
-				{
-					StartLine: 38,
-					EndLine:   43,
-				},
-				{
-					StartLine: 68,
-					EndLine:   72,
-				},
-			},
+			Licenses:  []string{"MIT"},
+			Locations: []ftypes.Location{{}, {}},
 		},
 		{
 			ID:           "mkdirp@0.5.1",
@@ -1730,12 +1310,7 @@ var (
 			Licenses:     []string{"MIT"},
 			Relationship: ftypes.RelationshipIndirect,
 			Dev:          true,
-			Locations: []ftypes.Location{
-				{
-					StartLine: 44,
-					EndLine:   55,
-				},
-			},
+			Locations:    []ftypes.Location{{}},
 		},
 		{
 			ID:           "node-pre-gyp@0.12.0",
@@ -1744,12 +1319,7 @@ var (
 			Licenses:     []string{"BSD-3-Clause"},
 			Relationship: ftypes.RelationshipIndirect,
 			Dev:          true,
-			Locations: []ftypes.Location{
-				{
-					StartLine: 56,
-					EndLine:   67,
-				},
-			},
+			Locations:    []ftypes.Location{{}},
 		},
 	}
 

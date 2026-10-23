@@ -198,8 +198,8 @@ func TestArtifact_Inspect(t *testing.T) {
 				ImageMetadata: artifact.ImageMetadata{
 					ID: "sha256:49193a2310dbad4c02382da87ac624a80a92387a4f7536235f9ba590e5bcd7b5",
 					DiffIDs: []string{
-						"sha256:3c79e832b1b4891a1cb4a326ef8524e0bd14a2537150ac0e203a5677176c1ca1",
 						"sha256:dd565ff850e7003356e2b252758f9bdc1ff2803f61e995e24c7844f6297f8fc3",
+						"sha256:3c79e832b1b4891a1cb4a326ef8524e0bd14a2537150ac0e203a5677176c1ca1",
 					},
 					RepoTags: []string{
 						"maven-test-project:latest",
@@ -380,8 +380,8 @@ func TestArtifact_Inspect(t *testing.T) {
 				ImageMetadata: artifact.ImageMetadata{
 					ID: "sha256:49193a2310dbad4c02382da87ac624a80a92387a4f7536235f9ba590e5bcd7b5",
 					DiffIDs: []string{
-						"sha256:3c79e832b1b4891a1cb4a326ef8524e0bd14a2537150ac0e203a5677176c1ca1",
 						"sha256:dd565ff850e7003356e2b252758f9bdc1ff2803f61e995e24c7844f6297f8fc3",
+						"sha256:3c79e832b1b4891a1cb4a326ef8524e0bd14a2537150ac0e203a5677176c1ca1",
 					},
 					RepoTags: []string{
 						"maven-test-project:latest",

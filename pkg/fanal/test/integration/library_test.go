@@ -131,7 +131,7 @@ var tests = []testCase{
 			Family: "alpine",
 		},
 		wantApplicationFile: "testdata/goldens/vuln-image1.2.3.expectedlibs.golden",
-		wantPkgsFromCmds:    "testdata/goldens/vuln-image1.2.3.expectedpkgsfromcmds.golden",
+		// No wantPkgsFromCmds: the imgconf analyzers are disabled in this fork (d05235e4).
 	},
 }
 
@@ -145,6 +145,9 @@ func TestFanal_Library_DockerMode(t *testing.T) {
 	cli := testutil.NewDockerClient(t)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "happy path, registry.redhat.io/ubi7" {
+				t.Skip("The buildinfo dockerfile analyzer is stubbed out in this fork, so Red Hat build info is not extracted.")
+			}
 			ctx := t.Context()
 			d := t.TempDir()
 
@@ -185,6 +188,9 @@ func TestFanal_Library_DockerMode(t *testing.T) {
 func TestFanal_Library_TarMode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.name == "happy path, registry.redhat.io/ubi7" {
+				t.Skip("The buildinfo dockerfile analyzer is stubbed out in this fork, so Red Hat build info is not extracted.")
+			}
 			t.Parallel()
 			ctx := t.Context()
 			d := t.TempDir()

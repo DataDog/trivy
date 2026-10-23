@@ -20,7 +20,7 @@ const dockerfileAnalyzerVersion = 1
 // For Red Hat products
 type dockerfileAnalyzer struct{}
 
-func (a dockerfileAnalyzer) Analyze(_ context.Context, target analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
+func (a dockerfileAnalyzer) Analyze(_ context.Context, _ analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
 	return nil, xerrors.New("dockerfile analyzer is stubbed out")
 }
 
@@ -38,17 +38,6 @@ func (a dockerfileAnalyzer) Type() analyzer.Type {
 
 func (a dockerfileAnalyzer) Version() int {
 	return dockerfileAnalyzerVersion
-}
-
-// parseVersion parses version from a file name
-func parseVersion(nvr string) string {
-	releaseIndex := strings.LastIndex(nvr, "-")
-	if releaseIndex < 0 {
-		return ""
-	}
-	versionIndex := strings.LastIndex(nvr[:releaseIndex], "-")
-	version := nvr[versionIndex+1:]
-	return version
 }
 
 func (a dockerfileAnalyzer) StaticPaths() []string {
