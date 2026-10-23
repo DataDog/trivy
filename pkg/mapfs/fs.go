@@ -65,6 +65,12 @@ func New(opts ...Option) *FS {
 	return fsys
 }
 
+// UnderlyingRoot returns the local directory the virtual paths are relative to, or "" when the files
+// do not live under a single directory on disk (e.g. image layers).
+func (m *FS) UnderlyingRoot() string {
+	return m.underlyingRoot
+}
+
 // Filter removes the specified skippedFiles and returns a new FS
 func (m *FS) Filter(skippedFiles []string) (*FS, error) {
 	if len(skippedFiles) == 0 {

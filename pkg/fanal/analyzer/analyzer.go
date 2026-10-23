@@ -700,7 +700,8 @@ func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *Compos
 			return xerrors.Errorf("unable to filter filesystem: %w", err)
 		}
 
-		if err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, result, opts, opts.PostAnalyzerTimeout); err != nil {
+		dir := filteredFS.UnderlyingRoot()
+		if err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, dir, result, opts, opts.PostAnalyzerTimeout); err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
 				errs = errors.Join(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
 			} else {
@@ -711,7 +712,7 @@ func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *Compos
 	return errs
 }
 
-func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, result *AnalysisResult, opts AnalysisOptions, t time.Duration) error {
+func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, dir string, result *AnalysisResult, opts AnalysisOptions, t time.Duration) error {
 	if t > 0 {
 		ctx1, cancel := context.WithTimeout(ctx, t)
 		defer cancel()
@@ -719,6 +720,7 @@ func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyz
 	}
 	onFile := func(path string, info fs.FileInfo, r xio.ReadSeekerAt) (*AnalysisResult, error) {
 		return ag.analyze(ctx, a, AnalysisInput{
+			Dir:      dir,
 			FilePath: path,
 			Info:     info,
 			Content:  r,
