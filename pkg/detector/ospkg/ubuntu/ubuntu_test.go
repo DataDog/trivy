@@ -166,6 +166,65 @@ func TestScanner_Detect(t *testing.T) {
 			},
 		},
 		{
+			name: "FIPS package is matched against the FIPS bucket",
+			fixtures: []string{
+				"testdata/fixtures/ubuntu.yaml",
+				"testdata/fixtures/data-source.yaml",
+			},
+			args: args{
+				osVer: "20.04",
+				pkgs: []ftypes.Package{
+					{
+						Name:       "openssl",
+						Version:    "3.0.2-0ubuntu1.17+Fips1",
+						SrcName:    "openssl",
+						SrcVersion: "3.0.2-0ubuntu1.17+Fips1",
+						Layer: ftypes.Layer{
+							DiffID: "sha256:932da51564135c98a49a34a193d6cd363d8fa4184d957fde16c9d8527b3f3b02",
+						},
+					},
+				},
+			},
+			want: []types.DetectedVulnerability{
+				{
+					PkgName:          "openssl",
+					VulnerabilityID:  "CVE-2099-FIPS",
+					InstalledVersion: "3.0.2-0ubuntu1.17+Fips1",
+					FixedVersion:     "3.0.2-0ubuntu1.17+Fips2",
+					Layer: ftypes.Layer{
+						DiffID: "sha256:932da51564135c98a49a34a193d6cd363d8fa4184d957fde16c9d8527b3f3b02",
+					},
+					DataSource: &dbTypes.DataSource{
+						ID:   vulnerability.Ubuntu,
+						Name: "Ubuntu CVE Tracker",
+						URL:  "https://git.launchpad.net/ubuntu-cve-tracker",
+					},
+				},
+			},
+		},
+		{
+			name: "non-FIPS package does not match the FIPS bucket",
+			fixtures: []string{
+				"testdata/fixtures/ubuntu.yaml",
+				"testdata/fixtures/data-source.yaml",
+			},
+			args: args{
+				osVer: "20.04",
+				pkgs: []ftypes.Package{
+					{
+						Name:       "openssl",
+						Version:    "3.0.2-0ubuntu1.17",
+						SrcName:    "openssl",
+						SrcVersion: "3.0.2-0ubuntu1.17",
+						Layer: ftypes.Layer{
+							DiffID: "sha256:932da51564135c98a49a34a193d6cd363d8fa4184d957fde16c9d8527b3f3b02",
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
 			name: "broken bucket",
 			fixtures: []string{
 				"testdata/fixtures/invalid.yaml",
