@@ -46,14 +46,14 @@ func IsGzip(f *bufio.Reader) bool {
 }
 
 func IsExecutable(fileInfo os.FileInfo) bool {
-	// For Windows
-	if filepath.Ext(fileInfo.Name()) == ".exe" {
-		return true
-	}
-
 	mode := fileInfo.Mode()
 	if !mode.IsRegular() {
 		return false
+	}
+
+	// For Windows
+	if filepath.Ext(fileInfo.Name()) == ".exe" {
+		return true
 	}
 
 	// Check unpackaged file
