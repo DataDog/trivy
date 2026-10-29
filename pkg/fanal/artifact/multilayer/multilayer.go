@@ -12,6 +12,7 @@ package multilayer
 import (
 	"context"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/xerrors"
@@ -204,12 +205,10 @@ func (a Artifact) inspectLayer(ctx context.Context, layer types.LayerSource) (ty
 			return nil
 		}
 
-		tmpFilePath, err := composite.CopyFileToTemp(opener, info)
-		if err != nil {
-			return xerrors.Errorf("failed to copy file to temp: %w", err)
-		}
-		if err := composite.CreateLink(analyzerTypes, "", filePath, tmpFilePath); err != nil {
-			return xerrors.Errorf("failed to write a file: %w", err)
+		// The layer stays on disk until the analysis ends, so link the file
+		// where it is rather than copy it.
+		if err := composite.CreateLink(analyzerTypes, layer.Path, filePath, filepath.Join(layer.Path, filePath)); err != nil {
+			return xerrors.Errorf("failed to create link: %w", err)
 		}
 		return nil
 	})
