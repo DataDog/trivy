@@ -3,7 +3,7 @@ package executable
 import (
 	"context"
 	"os"
-	"path/filepath"
+	"path"
 	"regexp"
 
 	javaparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/java"
@@ -20,27 +20,27 @@ func init() {
 	analyzer.RegisterAnalyzer(&executableAnalyzer{})
 }
 
-const version = 1
+const version = 2
 
 // executableAnalyzer calculates SHA-256 for each binary not managed by package managers (called unpackaged binaries)
 // so that it can search for SBOM attestation in post-handler.
 type executableAnalyzer struct{}
 
 // Returns boolean argument in first argument, indicating whether the Executable version is detectable
-func isDetectableLibraryExecutable(fileInfo os.FileInfo) (bool, types.TargetType, error) {
-	isPythonExecutable := isDetectablePythonExecutable(fileInfo)
+func isDetectableLibraryExecutable(name string) (bool, types.TargetType, error) {
+	isPythonExecutable := isDetectablePythonExecutable(name)
 	if isPythonExecutable {
 		return true, types.PythonExecutable, nil
 	}
-	isNodeJsExecutable := isDetectableNodeJsExecutable(fileInfo)
+	isNodeJsExecutable := isDetectableNodeJsExecutable(name)
 	if isNodeJsExecutable {
 		return true, types.NodeJsExecutable, nil
 	}
-	isPhpExecutable := isDetectablePhpExecutable(fileInfo)
+	isPhpExecutable := isDetectablePhpExecutable(name)
 	if isPhpExecutable {
 		return true, types.PhpExecutable, nil
 	}
-	isJavaExecutable := isDetectableJavaExecutable(fileInfo)
+	isJavaExecutable := isDetectableJavaExecutable(name)
 	if isJavaExecutable {
 		return true, types.JavaExecutable, nil
 	}
@@ -57,27 +57,27 @@ var (
 	phpCgiNameRegex           = regexp.MustCompile("(.*/|^)php-cgi[0-9]*$")
 )
 
-func isDetectablePythonExecutable(fileInfo os.FileInfo) bool {
-	isPythonExecutable := pythonExecutableNameRegex.FindSubmatch([]byte(fileInfo.Name()))
-	isPythonLibSo := pythonLibNameRegex.FindSubmatch([]byte(fileInfo.Name()))
+func isDetectablePythonExecutable(name string) bool {
+	isPythonExecutable := pythonExecutableNameRegex.FindSubmatch([]byte(name))
+	isPythonLibSo := pythonLibNameRegex.FindSubmatch([]byte(name))
 	return (isPythonExecutable != nil || isPythonLibSo != nil)
 }
 
-func isDetectableNodeJsExecutable(fileInfo os.FileInfo) bool {
-	isNodeJsExecutable := nodejsExecutableNameRegex.FindSubmatch([]byte(fileInfo.Name()))
+func isDetectableNodeJsExecutable(name string) bool {
+	isNodeJsExecutable := nodejsExecutableNameRegex.FindSubmatch([]byte(name))
 	return (isNodeJsExecutable != nil)
 }
 
-func isDetectablePhpExecutable(fileInfo os.FileInfo) bool {
-	isPHPExecutable := phpExecutableNameRegex.FindSubmatch([]byte(fileInfo.Name()))
-	isPHPLib := phpLibNameRegex.FindSubmatch([]byte(fileInfo.Name()))
-	isPHPFpm := phpFpmNameRegex.FindSubmatch([]byte(fileInfo.Name()))
-	isPHPCgi := phpCgiNameRegex.FindSubmatch([]byte(fileInfo.Name()))
+func isDetectablePhpExecutable(name string) bool {
+	isPHPExecutable := phpExecutableNameRegex.FindSubmatch([]byte(name))
+	isPHPLib := phpLibNameRegex.FindSubmatch([]byte(name))
+	isPHPFpm := phpFpmNameRegex.FindSubmatch([]byte(name))
+	isPHPCgi := phpCgiNameRegex.FindSubmatch([]byte(name))
 	return (isPHPExecutable != nil || isPHPLib != nil || isPHPFpm != nil || isPHPCgi != nil)
 }
 
-func isDetectableJavaExecutable(fileInfo os.FileInfo) bool {
-	return filepath.Base(fileInfo.Name()) == "java"
+func isDetectableJavaExecutable(name string) bool {
+	return name == "java"
 }
 
 func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
@@ -87,7 +87,9 @@ func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.Analysis
 		return nil, nil
 	}
 
-	isDetectableLib, binaryType, err := isDetectableLibraryExecutable(input.Info)
+	// Info may describe a copy of the file under a temporary name, so match
+	// the name the file has in the artifact.
+	isDetectableLib, binaryType, err := isDetectableLibraryExecutable(path.Base(input.FilePath))
 	if isDetectableLib && binaryType != "" && err == nil {
 		var res *analyzer.AnalysisResult = nil
 		switch binaryType {
