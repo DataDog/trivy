@@ -603,6 +603,11 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 		if !ok {
 			continue
 		}
+		// Filter ignores the context, and some analyzers work before they
+		// check it, so stop here once the context is done.
+		if err := ctx.Err(); err != nil {
+			return errors.Join(errs, xerrors.Errorf("post analysis stopped before %s: %w", a.Type(), err))
+		}
 
 		skippedFiles := result.SystemInstalledFiles
 		if ag.detectionPriority == types.PriorityComprehensive {
@@ -672,6 +677,9 @@ func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *Compos
 		fsys, ok := compositeFS.Get(a.Type())
 		if !ok {
 			continue
+		}
+		if err := ctx.Err(); err != nil {
+			return errors.Join(errs, xerrors.Errorf("deferred analysis stopped before %s: %w", a.Type(), err))
 		}
 
 		skippedFiles := result.SystemInstalledFiles
