@@ -3,6 +3,8 @@ package mapfs_test
 import (
 	"io"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -98,6 +100,43 @@ func TestFS_Filter(t *testing.T) {
 		fi, err := newFS.Stat("a/b/c/c.txt")
 		require.NoError(t, err)
 		assert.Equal(t, "c.txt", fi.Name())
+	})
+}
+
+func TestFS_VanishedFile(t *testing.T) {
+	dir := t.TempDir()
+	kept := filepath.Join(dir, "kept.txt")
+	gone := filepath.Join(dir, "gone.txt")
+	require.NoError(t, os.WriteFile(kept, []byte("kept"), 0o600))
+	require.NoError(t, os.WriteFile(gone, []byte("gone"), 0o600))
+
+	fsys := mapfs.New()
+	require.NoError(t, fsys.MkdirAll("app", fs.ModePerm))
+	require.NoError(t, fsys.WriteFile("app/kept.txt", kept))
+	require.NoError(t, fsys.WriteFile("app/gone.txt", gone))
+	require.NoError(t, os.Remove(gone))
+
+	t.Run("Filter", func(t *testing.T) {
+		newFS, err := fsys.Filter([]string{"app/other.txt"})
+		require.NoError(t, err)
+		_, err = newFS.Stat("app/kept.txt")
+		require.NoError(t, err)
+		_, err = newFS.Stat("app/gone.txt")
+		require.ErrorIs(t, err, fs.ErrNotExist)
+	})
+	t.Run("WalkDir", func(t *testing.T) {
+		var got []string
+		err := fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !d.IsDir() {
+				got = append(got, path)
+			}
+			return nil
+		})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"app/kept.txt"}, got)
 	})
 }
 
