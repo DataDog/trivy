@@ -1,6 +1,7 @@
 package vm_test
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/fs"
@@ -35,7 +36,7 @@ type mockWalker struct {
 	root string
 }
 
-func (m *mockWalker) Walk(_ *io.SectionReader, _ string, _ walker.Option, fn walker.WalkFunc) error {
+func (m *mockWalker) Walk(ctx context.Context, _ *io.SectionReader, _ string, _ walker.Option, fn walker.WalkFunc) error {
 	return filepath.WalkDir(m.root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -55,7 +56,7 @@ func (m *mockWalker) Walk(_ *io.SectionReader, _ string, _ walker.Option, fn wal
 			return err
 		}
 		relPath = filepath.ToSlash(relPath)
-		return fn(relPath, info, opener)
+		return fn(ctx, relPath, info, opener)
 	})
 }
 

@@ -2165,6 +2165,27 @@ func TestArtifact_Inspect(t *testing.T) {
 	}
 }
 
+type fakeImage struct {
+	v1.Image
+	types.ImageExtension
+}
+
+func (f fakeImage) ID() (string, error) {
+	return "", nil
+}
+
+func (f fakeImage) Name() string {
+	return ""
+}
+
+func (f fakeImage) RepoDigests() []string {
+	return nil
+}
+
+func (f fakeImage) RepoTags() []string {
+	return nil
+}
+
 func TestArtifact_InspectWithMaxImageSize(t *testing.T) {
 	randomImage, err := random.Image(1000, 2, random.WithSource(rand.NewSource(0)))
 	require.NoError(t, err)
