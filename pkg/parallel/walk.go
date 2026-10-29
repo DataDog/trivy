@@ -23,6 +23,8 @@ func WalkDir[T any](ctx context.Context, fsys fs.FS, root string, parallel int,
 		parallel = defaultParallel // Set the default value
 	}
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	g, ctx := errgroup.WithContext(ctx)
 	paths := make(chan string)
 
@@ -76,6 +78,9 @@ func WalkDir[T any](ctx context.Context, fsys fs.FS, root string, parallel int,
 
 	for res := range c {
 		if err := onResult(res); err != nil {
+			// Stop the walk and the workers blocked sending their results.
+			cancel()
+			_ = g.Wait()
 			return err
 		}
 	}
