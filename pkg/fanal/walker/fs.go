@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"golang.org/x/xerrors"
 
@@ -28,6 +29,12 @@ func (w *FS) Walk(ctx context.Context, root string, opt Option, fn WalkFunc) err
 	opt.SkipDirs = w.BuildSkipPaths(root, opt.SkipDirs)
 	opt.SkipDirs = append(opt.SkipDirs, defaultSkipDirs...)
 	opt.OnlyDirs = w.BuildSkipPaths(root, opt.OnlyDirs)
+
+	prefetchCtx, cancel := context.WithCancel(ctx)
+	var prefetched sync.WaitGroup
+	prefetched.Go(func() { Prefetch(prefetchCtx, os.DirFS(root), opt, PrefetchWorkers) })
+	defer prefetched.Wait()
+	defer cancel()
 
 	walkDirFunc := w.WalkDirFunc(ctx, root, fn, opt)
 	walkDirFunc = w.onError(walkDirFunc, opt)
