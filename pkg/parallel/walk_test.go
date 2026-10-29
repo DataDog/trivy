@@ -2,9 +2,12 @@ package parallel_test
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io/fs"
 	"testing"
 	"testing/fstest"
+	"testing/synctest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -47,4 +50,25 @@ func TestWalkDir_UnreadableFile(t *testing.T) {
 	err := parallel.WalkDir(context.Background(), fsys, ".", 1, onFile, onResult)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"app/readable.txt"}, got)
+}
+
+func TestWalkDir_ResultError(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		fsys := fstest.MapFS{}
+		for i := range 10 {
+			fsys[fmt.Sprintf("app/file%d", i)] = &fstest.MapFile{Data: []byte("data")}
+		}
+		onFile := func(string, fs.FileInfo, xio.ReadSeekerAt) (int, error) {
+			return 1, nil
+		}
+		errStop := errors.New("stop")
+		onResult := func(int) error {
+			return errStop
+		}
+		// A background context stays live after the test returns, unlike
+		// t.Context, so a worker WalkDir leaves blocked stays blocked, and
+		// synctest reports it.
+		err := parallel.WalkDir(context.Background(), fsys, ".", 2, onFile, onResult)
+		require.ErrorIs(t, err, errStop)
+	})
 }
