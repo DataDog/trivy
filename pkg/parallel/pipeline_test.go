@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"testing/synctest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -110,4 +111,21 @@ func TestPipeline_Do(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestPipeline_DoResultError(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		errStop := errors.New("stop")
+		onItem := func(_ context.Context, i int) (int, error) {
+			return i, nil
+		}
+		onResult := func(int) error {
+			return errStop
+		}
+		p := parallel.NewPipeline(2, false, []int{1, 2, 3, 4, 5, 6}, onItem, onResult)
+		// A background context stays live after the test returns, unlike
+		// t.Context, so a worker Do leaves blocked stays blocked, and synctest
+		// reports it.
+		require.ErrorIs(t, p.Do(context.Background()), errStop)
+	})
 }

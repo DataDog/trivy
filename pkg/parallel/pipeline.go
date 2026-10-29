@@ -45,6 +45,8 @@ func NewPipeline[T, U any](numWorkers int, progress bool, items []T,
 // Do executes pipeline processing.
 // It exits when any error occurs.
 func (p *Pipeline[T, U]) Do(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	g, ctx := errgroup.WithContext(ctx)
 	itemCh := make(chan T)
 
@@ -90,6 +92,9 @@ func (p *Pipeline[T, U]) Do(ctx context.Context) error {
 	// Process output data received from the channel
 	for res := range results {
 		if err := p.onResult(res); err != nil {
+			// Stop the feeder and the workers blocked sending their results.
+			cancel()
+			_ = g.Wait()
 			return err
 		}
 	}
