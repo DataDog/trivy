@@ -1,6 +1,7 @@
 package mapfs
 
 import (
+	"errors"
 	"io"
 	"io/fs"
 	"os"
@@ -139,9 +140,14 @@ func (f *file) ReadDir(name string) ([]fs.DirEntry, error) {
 			if value.isVirtual() {
 				entries = append(entries, &value.stat)
 			} else {
-				var fi os.FileInfo
-				fi, err = os.Stat(value.underlyingPath)
-				if err != nil {
+				fi, serr := os.Stat(value.underlyingPath)
+				switch {
+				case errors.Is(serr, fs.ErrNotExist), errors.Is(serr, fs.ErrPermission):
+					// The file went away or became unreadable after it was
+					// linked. Leave it out, as a walk of the disk would.
+					return true
+				case serr != nil:
+					err = serr
 					return false
 				}
 				entries = append(entries, &fileStat{
