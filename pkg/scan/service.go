@@ -50,8 +50,14 @@ func NewService(backend Backend, ar artifact.Artifact) Service {
 // then delegates the actual scanning to the configured backend implementation.
 func (s Service) ScanArtifact(ctx context.Context, options types.ScanOptions) (types.Report, error) {
 	artifactInfo, err := s.artifact.Inspect(ctx)
-	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	switch {
+	case err == nil:
+	case !errors.Is(err, context.DeadlineExceeded):
 		return types.Report{}, xerrors.Errorf("failed analysis: %w", err)
+	case len(artifactInfo.BlobIDs) == 0:
+		// The analysis ran out of time before it produced anything, and an
+		// error wrapping the deadline would promise a partial report.
+		return types.Report{}, xerrors.Errorf("failed analysis: %v", err)
 	}
 	err1 := err
 	defer func() {

@@ -1,6 +1,9 @@
 package scan_test
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -250,6 +253,56 @@ func TestScanner_ScanArtifact(t *testing.T) {
 				got.Results[i].Packages = nil
 			}
 			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// stubArtifact returns ref and err from Inspect.
+type stubArtifact struct {
+	ref artifact.Reference
+	err error
+}
+
+func (a stubArtifact) Inspect(context.Context) (artifact.Reference, error) { return a.ref, a.err }
+
+func (a stubArtifact) Clean(artifact.Reference) error { return nil }
+
+// stubBackend reports whether Scan ran.
+type stubBackend struct {
+	scanned *bool
+}
+
+func (b stubBackend) Scan(context.Context, string, string, []string, tTypes.ScanOptions) (tTypes.ScanResponse, error) {
+	*b.scanned = true
+	return tTypes.ScanResponse{}, nil
+}
+
+func TestScanner_ScanArtifactDeadline(t *testing.T) {
+	deadline := fmt.Errorf("walk dir error: timeout on usr: %w", context.DeadlineExceeded)
+	tests := []struct {
+		name string
+		ref  artifact.Reference
+		// partial reports whether ScanArtifact returns a report along with
+		// an error that wraps the deadline.
+		partial bool
+	}{
+		{
+			name:    "partial result",
+			ref:     artifact.Reference{Name: "host", ID: "sha256:a", BlobIDs: []string{"sha256:a"}},
+			partial: true,
+		},
+		{
+			name: "no result",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var scanned bool
+			s := scan.NewService(stubBackend{scanned: &scanned}, stubArtifact{ref: tt.ref, err: deadline})
+			_, err := s.ScanArtifact(t.Context(), tTypes.ScanOptions{})
+			require.ErrorContains(t, err, "timeout on usr")
+			assert.Equal(t, tt.partial, errors.Is(err, context.DeadlineExceeded))
+			assert.Equal(t, tt.partial, scanned)
 		})
 	}
 }
