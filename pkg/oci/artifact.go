@@ -3,6 +3,7 @@ package oci
 import (
 	"context"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -271,9 +272,13 @@ func shouldTryOtherRepo(err error) bool {
 		return true
 	}
 
-	// `GCR` periodically returns `BLOB_UNKNOWN` error.
+	// `GCR` periodically returns `BLOB_UNKNOWN` error, and mirror.gcr.io
+	// a plain 404 from the download URL its blob requests redirect to.
 	// cf. https://github.com/aquasecurity/trivy/discussions/8020
 	// In this case we need to check other repositories.
+	if terr.StatusCode == http.StatusNotFound {
+		return true
+	}
 	for _, e := range terr.Errors {
 		if e.Code == transport.BlobUnknownErrorCode {
 			return true
