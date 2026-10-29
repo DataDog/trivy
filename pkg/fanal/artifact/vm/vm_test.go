@@ -2,13 +2,16 @@ package vm_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 
 	ebsfile "github.com/masahiro331/go-ebs-file"
 	"github.com/stretchr/testify/assert"
@@ -215,4 +218,79 @@ var expectedBlobInfo = types.BlobInfo{
 			},
 		},
 	},
+}
+
+// blockingAnalyzer analyzes every file, each analysis waiting for release.
+type blockingAnalyzer struct {
+	release chan struct{}
+	done    atomic.Bool
+}
+
+func (a *blockingAnalyzer) Type() analyzer.Type { return "blocking" }
+
+func (a *blockingAnalyzer) Version() int { return 1 }
+
+func (a *blockingAnalyzer) Required(string, os.FileInfo) bool { return true }
+
+func (a *blockingAnalyzer) Analyze(context.Context, analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
+	<-a.release
+	a.done.Store(true)
+	return nil, nil
+}
+
+// failingWalker hands the file path to the walk function, then fails with err.
+type failingWalker struct {
+	path string
+	err  error
+}
+
+func (w failingWalker) Walk(ctx context.Context, _ *io.SectionReader, _ string, _ walker.Option, fn walker.WalkFunc) error {
+	info, err := os.Stat(w.path)
+	if err != nil {
+		return err
+	}
+	opener := func() (xio.ReadSeekCloserAt, error) {
+		return os.Open(w.path)
+	}
+	if err := fn(ctx, "/file", info, opener); err != nil {
+		return err
+	}
+	return w.err
+}
+
+// TestArtifact_InspectWaitsForAnalyzers checks that Inspect returns a walk
+// error only once the analyzers already running have finished.
+func TestArtifact_InspectWaitsForAnalyzers(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "file")
+	require.NoError(t, os.WriteFile(path, []byte("data"), 0o644))
+
+	synctest.Test(t, func(t *testing.T) {
+		blocking := &blockingAnalyzer{release: make(chan struct{})}
+		analyzer.RegisterAnalyzer(blocking)
+		defer analyzer.DeregisterAnalyzer(blocking.Type())
+
+		errWalk := errors.New("walk failed")
+		a, err := vm.NewArtifact("testdata/mock.img", cachetest.NewCache(t, nil), failingWalker{path: path, err: errWalk}, artifact.Option{})
+		require.NoError(t, err)
+
+		var inspectErr error
+		returned := make(chan struct{})
+		go func() {
+			_, inspectErr = a.Inspect(t.Context())
+			close(returned)
+		}()
+
+		synctest.Wait()
+		select {
+		case <-returned:
+			close(blocking.release)
+			t.Fatal("Inspect returned before its analyzer finished")
+		default:
+		}
+
+		close(blocking.release)
+		<-returned
+		require.ErrorIs(t, inspectErr, errWalk)
+		assert.True(t, blocking.done.Load())
+	})
 }

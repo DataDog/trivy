@@ -130,6 +130,8 @@ func (a *Storage) Analyze(ctx context.Context, r *io.SectionReader) (types.BlobI
 		return nil
 	})
 	if err != nil {
+		// Let the analyzers already running finish before returning.
+		_ = eg.Wait()
 		return types.BlobInfo{}, xerrors.Errorf("walk vm error: %w", err)
 	}
 
