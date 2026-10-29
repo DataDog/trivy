@@ -53,6 +53,13 @@ type AnalyzerOptions struct {
 	MisconfScannerOption misconf.ScannerOption
 	SecretScannerOption  SecretScannerOption
 	LicenseScannerOption LicenseScannerOption
+
+	// DeferApplicationAnalyzers runs the per-file application analyzers
+	// (TypeDeferred) after the walk and PostAnalyze, on the files no OS
+	// package owns. Set it only for an artifact whose files stay on disk, so
+	// that deferring a file costs a link: an image layer or a VM disk would
+	// copy each one aside. Unset, they run during the walk, as upstream does.
+	DeferApplicationAnalyzers bool
 }
 
 type SecretScannerOption struct {
@@ -138,7 +145,8 @@ type AnalyzerGroup struct {
 	postAnalyzers []PostAnalyzer
 	// deferredAnalyzers are per-file analyzers (executable + the language
 	// analyzers) that run after OS package detection so that files owned by an
-	// OS package are never opened or parsed. See DeferredAnalyze.
+	// OS package are never opened or parsed. See DeferredAnalyze. It holds
+	// analyzers only when AnalyzerOptions.DeferApplicationAnalyzers is set.
 	deferredAnalyzers []analyzer
 	filePatterns      map[Type]FilePatterns
 	detectionPriority types.DetectionPriority
@@ -434,10 +442,11 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 				return AnalyzerGroup{}, xerrors.Errorf("analyzer initialization error: %w", err)
 			}
 		}
-		// Application/language analyzers are deferred until after OS detection
-		// (see DeferredAnalyze) so package-owned files are skipped; OS analyzers
-		// stay inline because they populate SystemInstalledFiles.
-		if slices.Contains(TypeDeferred, analyzerType) {
+		// Application/language analyzers may be deferred until after OS
+		// detection (see DeferredAnalyze), so that package-owned files are
+		// skipped. OS analyzers stay inline because they populate
+		// SystemInstalledFiles.
+		if opts.DeferApplicationAnalyzers && slices.Contains(TypeDeferred, analyzerType) {
 			group.deferredAnalyzers = append(group.deferredAnalyzers, a)
 		} else {
 			group.analyzers = append(group.analyzers, a)

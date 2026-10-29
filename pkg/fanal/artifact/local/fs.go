@@ -57,7 +57,9 @@ func NewArtifact(rootPath string, c cache.ArtifactCache, w Walker, opt artifact.
 		return nil, xerrors.Errorf("handler initialize error: %w", err)
 	}
 
-	a, err := analyzer.NewAnalyzerGroup(opt.AnalyzerOptions())
+	aopts := opt.AnalyzerOptions()
+	aopts.DeferApplicationAnalyzers = true
+	a, err := analyzer.NewAnalyzerGroup(aopts)
 	if err != nil {
 		return nil, xerrors.Errorf("analyzer group error: %w", err)
 	}

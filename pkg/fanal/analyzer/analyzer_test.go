@@ -364,6 +364,7 @@ func TestAnalyzerGroup_AnalyzeFile(t *testing.T) {
 		testFilePath      string
 		disabledAnalyzers []analyzer.Type
 		filePatterns      []string
+		deferApplication  bool
 	}
 	tests := []struct {
 		name    string
@@ -444,9 +445,56 @@ func TestAnalyzerGroup_AnalyzeFile(t *testing.T) {
 				filePath:     "/app/Gemfile.lock",
 				testFilePath: "testdata/app/Gemfile.lock",
 			},
-			// Language analyzers (bundler) are deferred until after OS package
-			// detection, so AnalyzeFile does not run them inline. The positive
-			// case is covered by TestAnalyzerGroup_DeferredAnalyze.
+			want: &analyzer.AnalysisResult{
+				Applications: []types.Application{
+					{
+						Type:     "bundler",
+						FilePath: "/app/Gemfile.lock",
+						Packages: types.Packages{
+							{
+								ID:           "actioncable@5.2.3",
+								Name:         "actioncable",
+								Version:      "5.2.3",
+								Indirect:     false,
+								Relationship: types.RelationshipDirect,
+								DependsOn: []string{
+									"actionpack@5.2.3",
+								},
+								Locations: []types.Location{
+									{
+										StartLine: 4,
+										EndLine:   4,
+									},
+								},
+								AnalyzedBy: analyzer.TypeBundler,
+							},
+							{
+								ID:           "actionpack@5.2.3",
+								Name:         "actionpack",
+								Version:      "5.2.3",
+								Indirect:     true,
+								Relationship: types.RelationshipIndirect,
+								Locations: []types.Location{
+									{
+										StartLine: 6,
+										EndLine:   6,
+									},
+								},
+								AnalyzedBy: analyzer.TypeBundler,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "deferred library analyzer",
+			args: args{
+				filePath:         "/app/Gemfile.lock",
+				testFilePath:     "testdata/app/Gemfile.lock",
+				deferApplication: true,
+			},
+			// TestAnalyzerGroup_DeferredAnalyze covers the deferred run.
 			want: &analyzer.AnalysisResult{},
 		},
 		{
@@ -472,9 +520,47 @@ func TestAnalyzerGroup_AnalyzeFile(t *testing.T) {
 				testFilePath: "testdata/app/Gemfile.lock",
 				filePatterns: []string{"bundler:Gemfile(-.*)?\\.lock"},
 			},
-			// Deferred analyzer (bundler) routed via file pattern is likewise not
-			// run by AnalyzeFile; see TestAnalyzerGroup_DeferredAnalyze.
-			want: &analyzer.AnalysisResult{},
+			want: &analyzer.AnalysisResult{
+				Applications: []types.Application{
+					{
+						Type:     "bundler",
+						FilePath: "/app/Gemfile-dev.lock",
+						Packages: types.Packages{
+							{
+								ID:           "actioncable@5.2.3",
+								Name:         "actioncable",
+								Version:      "5.2.3",
+								Indirect:     false,
+								Relationship: types.RelationshipDirect,
+								DependsOn: []string{
+									"actionpack@5.2.3",
+								},
+								Locations: []types.Location{
+									{
+										StartLine: 4,
+										EndLine:   4,
+									},
+								},
+								AnalyzedBy: analyzer.TypeBundler,
+							},
+							{
+								ID:           "actionpack@5.2.3",
+								Name:         "actionpack",
+								Version:      "5.2.3",
+								Indirect:     true,
+								Relationship: types.RelationshipIndirect,
+								Locations: []types.Location{
+									{
+										StartLine: 6,
+										EndLine:   6,
+									},
+								},
+								AnalyzedBy: analyzer.TypeBundler,
+							},
+						},
+					},
+				},
+			},
 		},
 		{
 			name: "ignore permission error",
@@ -518,8 +604,9 @@ func TestAnalyzerGroup_AnalyzeFile(t *testing.T) {
 
 			got := new(analyzer.AnalysisResult)
 			a, err := analyzer.NewAnalyzerGroup(analyzer.AnalyzerOptions{
-				FilePatterns:      tt.args.filePatterns,
-				DisabledAnalyzers: tt.args.disabledAnalyzers,
+				FilePatterns:              tt.args.filePatterns,
+				DisabledAnalyzers:         tt.args.disabledAnalyzers,
+				DeferApplicationAnalyzers: tt.args.deferApplication,
 			})
 			if err != nil && tt.wantErr != "" {
 				require.ErrorContains(t, err, tt.wantErr)
@@ -707,7 +794,7 @@ func TestAnalyzerGroup_DeferredAnalyze(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a, err := analyzer.NewAnalyzerGroup(analyzer.AnalyzerOptions{})
+			a, err := analyzer.NewAnalyzerGroup(analyzer.AnalyzerOptions{DeferApplicationAnalyzers: true})
 			require.NoError(t, err)
 
 			composite, err := analyzer.NewCompositeFS()
@@ -719,6 +806,27 @@ func TestAnalyzerGroup_DeferredAnalyze(t *testing.T) {
 			got := &analyzer.AnalysisResult{SystemInstalledFiles: tt.installedFiles}
 			require.NoError(t, a.DeferredAnalyze(t.Context(), composite, got, analyzer.AnalysisOptions{}))
 			got.SystemInstalledFiles = nil // input, not asserted
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestAnalyzerGroup_RequiredDeferredAnalyzers(t *testing.T) {
+	info, err := os.Stat("testdata/app/Gemfile.lock")
+	require.NoError(t, err)
+	tests := []struct {
+		name     string
+		deferred bool
+		want     []analyzer.Type
+	}{
+		{name: "during the walk"},
+		{name: "deferred", deferred: true, want: []analyzer.Type{analyzer.TypeBundler}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a, err := analyzer.NewAnalyzerGroup(analyzer.AnalyzerOptions{DeferApplicationAnalyzers: tt.deferred})
+			require.NoError(t, err)
+			got := a.RequiredDeferredAnalyzers("app/Gemfile.lock", info)
 			assert.Equal(t, tt.want, got)
 		})
 	}

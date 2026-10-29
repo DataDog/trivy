@@ -71,7 +71,9 @@ func NewArtifact(ctr types.Container, c cache.ArtifactCache, w Walker, opt artif
 		return nil, xerrors.Errorf("handler init error: %w", err)
 	}
 
-	a, err := analyzer.NewAnalyzerGroup(opt.AnalyzerOptions())
+	aopts := opt.AnalyzerOptions()
+	aopts.DeferApplicationAnalyzers = true
+	a, err := analyzer.NewAnalyzerGroup(aopts)
 	if err != nil {
 		return nil, xerrors.Errorf("analyzer group error: %w", err)
 	}
