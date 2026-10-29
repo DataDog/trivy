@@ -4,11 +4,12 @@ import (
 	"context"
 	"log/slog"
 	"slices"
+	"sync"
 )
 
 func init() {
 	// Set the default logger so that logs are buffered until the logger is initialized.
-	slog.SetDefault(New(&DeferredHandler{records: new([]deferredRecord)}))
+	slog.SetDefault(New(newDeferredHandler()))
 }
 
 // DeferredHandler is needed to save logs and print them after calling `PrintLogs()` command.
@@ -18,8 +19,18 @@ type DeferredHandler struct {
 	attrs []slog.Attr
 
 	// Shared with all instances of the handler.
-	// NOTE: non-thread safe
-	records *[]deferredRecord
+	buf *deferredBuffer
+}
+
+// A deferredBuffer holds the records of a DeferredHandler and of its copies,
+// which goroutines log through concurrently.
+type deferredBuffer struct {
+	mu      sync.Mutex
+	records []deferredRecord
+}
+
+func newDeferredHandler() *DeferredHandler {
+	return &DeferredHandler{buf: new(deferredBuffer)}
 }
 
 type deferredRecord struct {
@@ -33,7 +44,9 @@ func (*DeferredHandler) Enabled(context.Context, slog.Level) bool {
 
 func (d *DeferredHandler) Handle(ctx context.Context, record slog.Record) error {
 	record.AddAttrs(d.attrs...)
-	*d.records = append(*d.records, deferredRecord{
+	d.buf.mu.Lock()
+	defer d.buf.mu.Unlock()
+	d.buf.records = append(d.buf.records, deferredRecord{
 		ctx:    ctx,
 		Record: record,
 	})
@@ -52,11 +65,13 @@ func (*DeferredHandler) WithGroup(_ string) slog.Handler {
 }
 
 func (d *DeferredHandler) Flush(h slog.Handler) {
-	for _, record := range *d.records {
+	d.buf.mu.Lock()
+	defer d.buf.mu.Unlock()
+	for _, record := range d.buf.records {
 		if !h.Enabled(record.ctx, record.Level) {
 			continue
 		}
 		_ = h.Handle(record.ctx, record.Record)
 	}
-	d.records = nil
+	d.buf.records = nil
 }
