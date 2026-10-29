@@ -2,6 +2,7 @@ package executable
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -127,4 +128,42 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+// An artifact whose walk cannot keep a file, such as an image layer, hands
+// the analyzer a copy under a temporary name.
+func Test_executableAnalyzer_AnalyzeCopy(t *testing.T) {
+	b, err := os.ReadFile("testdata/python2.7")
+	require.NoError(t, err)
+	tmp := filepath.Join(t.TempDir(), "analyzer-file-123")
+	require.NoError(t, os.WriteFile(tmp, b, 0o600))
+	f, err := os.Open(tmp)
+	require.NoError(t, err)
+	defer f.Close()
+	stat, err := f.Stat()
+	require.NoError(t, err)
+
+	got, err := executableAnalyzer{}.Analyze(t.Context(), analyzer.AnalysisInput{
+		FilePath: "usr/local/bin/python2.7",
+		Content:  f,
+		Info:     stat,
+	})
+	require.NoError(t, err)
+	want := &analyzer.AnalysisResult{
+		Applications: []types.Application{
+			{
+				Type:     types.PythonExecutable,
+				FilePath: "usr/local/bin/python2.7",
+				Packages: types.Packages{
+					{
+						ID:       "python@2.7.18",
+						Name:     "python",
+						Version:  "2.7.18",
+						FilePath: "usr/local/bin/python2.7",
+					},
+				},
+			},
+		},
+	}
+	assert.Equal(t, want, got)
 }
