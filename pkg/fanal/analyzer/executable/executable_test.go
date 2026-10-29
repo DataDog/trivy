@@ -1,9 +1,11 @@
 package executable
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/fstest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -166,4 +168,30 @@ func Test_executableAnalyzer_AnalyzeCopy(t *testing.T) {
 		},
 	}
 	assert.Equal(t, want, got)
+}
+
+func Test_executableAnalyzer_Required(t *testing.T) {
+	tests := []struct {
+		filePath string
+		mode     fs.FileMode
+		want     bool
+	}{
+		{filePath: "usr/bin/python3.11", mode: 0o755, want: true},
+		{filePath: "usr/lib/x86_64-linux-gnu/libpython3.11.so.1.0", mode: 0o755, want: true},
+		{filePath: "usr/local/bin/node", mode: 0o755, want: true},
+		{filePath: "usr/sbin/php-fpm", mode: 0o755, want: true},
+		{filePath: "usr/lib/jvm/java-17/bin/java", mode: 0o755, want: true},
+		{filePath: "usr/bin/ls", mode: 0o755, want: false},
+		{filePath: "opt/app/lib/libtorch.so", mode: 0o755, want: false},
+		{filePath: "usr/bin/python3", mode: 0o644, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.filePath, func(t *testing.T) {
+			fsys := fstest.MapFS{tt.filePath: {Mode: tt.mode}}
+			info, err := fsys.Stat(tt.filePath)
+			require.NoError(t, err)
+			got := executableAnalyzer{}.Required(tt.filePath, info)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

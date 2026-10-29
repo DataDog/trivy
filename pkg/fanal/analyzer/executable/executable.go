@@ -113,8 +113,14 @@ func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.Analysis
 	return nil, nil
 }
 
-func (a executableAnalyzer) Required(_ string, fileInfo os.FileInfo) bool {
-	return utils.IsExecutable(fileInfo)
+// Required reports whether the analyzer can detect a version in the file:
+// an executable named like a python, node, php, or java interpreter.
+func (a executableAnalyzer) Required(filePath string, fileInfo os.FileInfo) bool {
+	if !utils.IsExecutable(fileInfo) {
+		return false
+	}
+	detectable, _, _ := isDetectableLibraryExecutable(path.Base(filePath))
+	return detectable
 }
 
 func (a executableAnalyzer) Type() analyzer.Type {
