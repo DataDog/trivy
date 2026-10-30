@@ -3,8 +3,11 @@ package binary
 import (
 	"context"
 	"debug/buildinfo"
+	"debug/elf"
 	"fmt"
+	"io"
 	"runtime/debug"
+	"slices"
 	"sort"
 	"strings"
 
@@ -15,6 +18,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/dependency"
+	exe "github.com/aquasecurity/trivy/pkg/dependency/parser/executable"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/set"
@@ -56,7 +60,10 @@ func NewParser() *Parser {
 
 // Parse scans file to try to report the Go and module versions.
 func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
-	info, err := buildinfo.Read(r)
+	if !mayBeGo(r) {
+		return nil, nil, ErrNonGoBinary
+	}
+	info, err := buildinfo.Read(exe.MachOFirstArch(r))
 	if err != nil {
 		return nil, nil, convertError(err)
 	}
@@ -136,6 +143,46 @@ func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package,
 
 	sort.Sort(pkgs)
 	return pkgs, deps, nil
+}
+
+// goSections are the sections that the Go linker writes to ELF and
+// Mach-O files.
+var goSections = []string{
+	".go.buildinfo", ".gopclntab", ".note.go.buildid",
+	"__go_buildinfo", "__gopclntab",
+}
+
+// mayBeGo reports whether r may be a Go binary, from the section headers
+// of an ELF file or the load commands of a Mach-O file. It reports false
+// for a file that has named sections, all outside goSections. buildinfo.Read
+// would search the first writable segment of such an ELF file for the
+// build information, and read the whole symbol table of such a Mach-O
+// file.
+func mayBeGo(r io.ReaderAt) bool {
+	names, err := sectionNames(r)
+	if err != nil || len(names) == 0 {
+		return true
+	}
+	return slices.ContainsFunc(names, func(name string) bool {
+		return slices.Contains(goSections, name)
+	})
+}
+
+// sectionNames returns the names of the sections of the ELF or Mach-O
+// file r. The sections of an ELF file whose header gives SHN_UNDEF for its
+// section name table have empty names, which sectionNames leaves out.
+func sectionNames(r io.ReaderAt) ([]string, error) {
+	f, err := elf.NewFile(r)
+	if err != nil {
+		return exe.MachOSections(r)
+	}
+	names := make([]string, 0, len(f.Sections))
+	for _, s := range f.Sections {
+		if s.Name != "" {
+			names = append(names, s.Name)
+		}
+	}
+	return names, nil
 }
 
 // checkVersion detects `(devel)` versions, removes them and adds a debug message about it.
