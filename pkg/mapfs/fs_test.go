@@ -101,6 +101,20 @@ func TestFS_Filter(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "c.txt", fi.Name())
 	})
+	t.Run("absolute paths", func(t *testing.T) {
+		// dpkg and rpm record the files they install as absolute paths.
+		newFS, err := fsys.Filter([]string{
+			"/hello.txt",
+			"/a/b/c/.dotfile",
+		})
+		require.NoError(t, err)
+		_, err = newFS.Stat("hello.txt")
+		require.ErrorIs(t, err, fs.ErrNotExist)
+		_, err = newFS.Stat("a/b/c/.dotfile")
+		require.ErrorIs(t, err, fs.ErrNotExist)
+		_, err = newFS.Stat("a/b/c/c.txt")
+		require.NoError(t, err)
+	})
 }
 
 func TestFS_VanishedFile(t *testing.T) {
