@@ -7,9 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
-	"unicode"
 
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
@@ -19,11 +17,9 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/aquasecurity/trivy/pkg/licensing"
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
-	xpath "github.com/aquasecurity/trivy/pkg/x/path"
 )
 
 func init() {
@@ -32,30 +28,24 @@ func init() {
 
 const version = 2
 
-var (
-	requiredFiles = []string{
-		types.GoMod,
-		types.GoSum,
-	}
-	licenseRegexp = regexp.MustCompile(`^(?i)((UN)?LICEN(S|C)E|COPYING|README|NOTICE).*$`)
-)
+var requiredFiles = []string{
+	types.GoMod,
+	types.GoSum,
+}
 
 type gomodAnalyzer struct {
 	// root go.mod/go.sum
 	modParser language.Parser
 	sumParser language.Parser
 
-	licenseClassifierConfidenceLevel float64
-
 	logger *log.Logger
 }
 
 func newGoModAnalyzer(opt analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	return &gomodAnalyzer{
-		modParser:                        mod.NewParser(true, opt.DetectionPriority == types.PriorityComprehensive),
-		sumParser:                        sum.NewParser(),
-		licenseClassifierConfidenceLevel: opt.LicenseScannerOption.ClassifierConfidenceLevel,
-		logger:                           log.WithPrefix("golang"),
+		modParser: mod.NewParser(true, opt.DetectionPriority == types.PriorityComprehensive),
+		sumParser: sum.NewParser(),
+		logger:    log.WithPrefix("golang"),
 	}, nil
 }
 
@@ -89,10 +79,6 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return nil
 	})
 
-	if err := a.fillAdditionalData(input.FS, apps); err != nil {
-		a.logger.Warn("Unable to collect additional info", log.Err(err))
-	}
-
 	// Add orphan indirect dependencies under the main module
 	a.addOrphanIndirectDepsUnderRoot(apps)
 
@@ -113,16 +99,7 @@ func (a *gomodAnalyzer) Required(filePath string, _ os.FileInfo) bool {
 	// Save required files (go.mod/go.sum)
 	// Note: vendor directory doesn't contain these files, so we can skip checking for this.
 	// See: https://github.com/aquasecurity/trivy/issues/8527#issuecomment-2777848027
-	if slices.Contains(requiredFiles, fileName) {
-		return true
-	}
-
-	// Save license files from vendor directory
-	if licenseRegexp.MatchString(fileName) && xpath.Contains(filePath, "vendor") {
-		return true
-	}
-
-	return false
+	return slices.Contains(requiredFiles, fileName)
 }
 
 func (a *gomodAnalyzer) Type() analyzer.Type {
@@ -131,28 +108,6 @@ func (a *gomodAnalyzer) Type() analyzer.Type {
 
 func (a *gomodAnalyzer) Version() int {
 	return version
-}
-
-// fillAdditionalData collects licenses from the vendor directory next to each
-// go.mod, then updates applications.
-func (a *gomodAnalyzer) fillAdditionalData(fsys fs.FS, apps []types.Application) error {
-	licenses := make(map[string][]string)
-	for i, app := range apps {
-		// vendor directory next to go.mod
-		vendorDir, err := newVendorDir(fsys, app.FilePath)
-		if err != nil {
-			continue
-		}
-
-		for j, pkg := range app.Packages {
-			licenseNames, err := findLicense(vendorDir, pkg, licenses, a.licenseClassifierConfidenceLevel)
-			if err != nil {
-				return xerrors.Errorf("unable to collect license: %w", err)
-			}
-			apps[i].Packages[j].Licenses = licenseNames
-		}
-	}
-	return nil
 }
 
 // addOrphanIndirectDepsUnderRoot adds the orphan indirect dependencies under
@@ -229,101 +184,4 @@ func mergeGoSum(gomod, gosum *types.Application) {
 	}
 
 	gomod.Packages = lo.Values(uniq)
-}
-
-func findLicense(vendor vendorDir, pkg types.Package, licenses map[string][]string, classifierConfidenceLevel float64) ([]string, error) {
-	if licenses[pkg.ID] != nil {
-		return licenses[pkg.ID], nil
-	}
-
-	sub, err := vendor.Resolve(pkg)
-	if err != nil {
-		return nil, nil
-	}
-
-	var license *types.LicenseFile
-	err = fs.WalkDir(sub, ".", func(path string, d fs.DirEntry, err error) error {
-		switch {
-		case err != nil:
-			return err
-		case !d.Type().IsRegular():
-			return nil
-		case !licenseRegexp.MatchString(filepath.Base(path)):
-			return nil
-		}
-
-		// e.g. vendor/github.com/aquasecurity/go-dep-parser/LICENSE
-		f, err := sub.Open(path)
-		if err != nil {
-			return xerrors.Errorf("file (%s) open error: %w", path, err)
-		}
-		defer f.Close()
-
-		if l, err := licensing.Classify(path, f, classifierConfidenceLevel); err != nil {
-			return xerrors.Errorf("license classify error: %w", err)
-		} else if l != nil && len(l.Findings) > 0 { // License found
-			license = l
-			return fs.SkipAll // Stop walking
-		}
-		return nil
-	})
-
-	switch {
-	// The module path may not exist
-	case errors.Is(err, os.ErrNotExist):
-		return nil, nil
-	case err != nil && !errors.Is(err, io.EOF):
-		return nil, xerrors.Errorf("unable to find a known open source license: %w", err)
-	case license == nil || len(license.Findings) == 0:
-		return nil, nil
-	}
-
-	// License found
-	licenseNames := license.Findings.Names()
-	licenses[pkg.ID] = licenseNames
-	return licenseNames, nil
-}
-
-// normalizeModName escapes upper characters
-// e.g. 'github.com/BurntSushi/toml' => 'github.com/!burnt!sushi'
-func normalizeModName(name string) string {
-	var newName []rune
-	for _, c := range name {
-		if unicode.IsUpper(c) {
-			// 'A' => '!a'
-			newName = append(newName, '!', unicode.ToLower(c))
-		} else {
-			newName = append(newName, c)
-		}
-	}
-	return string(newName)
-}
-
-type vendorDir struct {
-	root fs.FS
-}
-
-func newVendorDir(fsys fs.FS, modPath string) (vendorDir, error) {
-	// vendor directory is in the same directory as go.mod
-	vendor := filepath.Join(filepath.Dir(modPath), "vendor")
-	sub, err := fs.Sub(fsys, vendor)
-	if err != nil {
-		return vendorDir{}, xerrors.Errorf("failed to access vendor directory: %w", err)
-	}
-
-	// Check if the directory exists.
-	// fs.Sub doesn't return an error for non-existent directories,
-	// so we need to explicitly verify the directory exists.
-	if _, err := fs.Stat(sub, "."); err != nil {
-		return vendorDir{}, xerrors.Errorf("vendor directory does not exist: %w", err)
-	}
-
-	return vendorDir{root: sub}, nil
-}
-
-// Resolve resolves the module directory for a given package.
-// It doesn't add the version suffix to the module name.
-// e.g. vendor/ => vendor/github.com/aquasecurity/go-dep-parser
-func (d vendorDir) Resolve(pkg types.Package) (fs.FS, error) {
-	return fs.Sub(d.root, normalizeModName(pkg.Name))
 }

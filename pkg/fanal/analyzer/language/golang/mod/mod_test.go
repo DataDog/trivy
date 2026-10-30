@@ -263,6 +263,11 @@ func Test_gomodAnalyzer_Required(t *testing.T) {
 			filePath: "a/b/c/d/test.sum",
 			want:     false,
 		},
+		{
+			name:     "license in vendor",
+			filePath: "test/vendor/github.com/aquasecurity/go-dep-parser/LICENSE",
+			want:     false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
