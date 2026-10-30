@@ -2,11 +2,9 @@ package packaging
 
 import (
 	"context"
-	"errors"
 	"io"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -18,10 +16,8 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/licensing"
-	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
-	xslices "github.com/aquasecurity/trivy/pkg/x/slices"
 )
 
 func init() {
@@ -30,11 +26,9 @@ func init() {
 
 const version = 2
 
-func newPackagingAnalyzer(opt analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
+func newPackagingAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	return &packagingAnalyzer{
-		logger:                           log.WithPrefix("python"),
-		pkgParser:                        packaging.NewParser(),
-		licenseClassifierConfidenceLevel: opt.LicenseScannerOption.ClassifierConfidenceLevel,
+		pkgParser: packaging.NewParser(),
 	}, nil
 }
 
@@ -55,9 +49,7 @@ var (
 )
 
 type packagingAnalyzer struct {
-	logger                           *log.Logger
-	pkgParser                        language.Parser
-	licenseClassifierConfidenceLevel float64
+	pkgParser language.Parser
 }
 
 // PostAnalyze analyzes egg and wheel files.
@@ -82,22 +74,7 @@ func (a packagingAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostA
 			return nil
 		}
 
-		opener := func(licPath string) (io.ReadCloser, error) {
-			// Note that fs.FS is always slashed regardless of the platform,
-			// and path.Join should be used rather than filepath.Join.
-			f, err := input.FS.Open(path.Join(path.Dir(filePath), licPath))
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil, nil
-			} else if err != nil {
-				return nil, xerrors.Errorf("file open error: %w", err)
-			}
-			return f, nil
-		}
-
-		if err = fillAdditionalData(opener, app, a.licenseClassifierConfidenceLevel); err != nil {
-			a.logger.Warn("Unable to collect additional info", log.Err(err))
-		}
-
+		dropLicenseFiles(app)
 		apps = append(apps, *app)
 		return nil
 	})
@@ -112,53 +89,19 @@ func (a packagingAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostA
 	return result, nil
 }
 
-type fileOpener func(filePath string) (io.ReadCloser, error)
-
-func fillAdditionalData(opener fileOpener, app *types.Application, licenseClassifierConfidenceLevel float64) error {
+// dropLicenseFiles deletes the file:// licenses that the parser makes from
+// License-File fields. They point at license files, and licensing.Classify
+// returns empty findings for every file in this build.
+func dropLicenseFiles(app *types.Application) {
 	for i, pkg := range app.Packages {
 		var licenses []string
 		for _, lic := range pkg.Licenses {
-			// Parser adds `file://` prefix to filepath from `License-File` field
-			// We need to read this file to find licenses
-			// Otherwise, this is the name of the license
 			if !strings.HasPrefix(lic, licensing.LicenseFilePrefix) {
 				licenses = append(licenses, lic)
-				continue
 			}
-			licensePath := path.Base(strings.TrimPrefix(lic, licensing.LicenseFilePrefix))
-
-			foundLicenses, err := classifyLicenses(opener, licensePath, licenseClassifierConfidenceLevel)
-			if err != nil {
-				return xerrors.Errorf("unable to classify licenses: %w", err)
-			}
-			licenses = append(licenses, foundLicenses...)
 		}
 		app.Packages[i].Licenses = licenses
 	}
-
-	return nil
-}
-
-func classifyLicenses(opener fileOpener, licPath string, licenseClassifierConfidenceLevel float64) ([]string, error) {
-	f, err := opener(licPath)
-	if err != nil {
-		return nil, xerrors.Errorf("unable to open license file: %w", err)
-	} else if f == nil { // File doesn't exist
-		return nil, nil
-	}
-	defer f.Close()
-
-	l, err := licensing.Classify("", f, licenseClassifierConfidenceLevel)
-	if err != nil {
-		return nil, xerrors.Errorf("license classify error: %w", err)
-	} else if l == nil { // No licenses found
-		return nil, nil
-	}
-
-	// License found
-	return xslices.Map(l.Findings, func(finding types.LicenseFinding) string {
-		return finding.Name
-	}), nil
 }
 
 func (a packagingAnalyzer) parse(ctx context.Context, filePath string, r xio.ReadSeekerAt, checksum bool) (*types.Application, error) {
@@ -166,7 +109,7 @@ func (a packagingAnalyzer) parse(ctx context.Context, filePath string, r xio.Rea
 }
 
 func (a packagingAnalyzer) Required(filePath string, _ os.FileInfo) bool {
-	return strings.Contains(filePath, ".dist-info") || isEggFile(filePath)
+	return strings.HasSuffix(filePath, ".dist-info/METADATA") || isEggFile(filePath)
 }
 
 func isEggFile(filePath string) bool {

@@ -176,9 +176,24 @@ func Test_packagingAnalyzer_Required(t *testing.T) {
 			want:     true,
 		},
 		{
+			name:     "wheel RECORD",
+			filePath: "python3.8/site-packages/wrapt-1.12.1.dist-info/RECORD",
+			want:     false,
+		},
+		{
+			name:     "wheel WHEEL",
+			filePath: "python3.8/site-packages/wrapt-1.12.1.dist-info/WHEEL",
+			want:     false,
+		},
+		{
 			name:     "wheel license",
 			filePath: "python3.8/site-packages/wrapt-1.12.1.dist-info/LICENSE",
-			want:     true,
+			want:     false,
+		},
+		{
+			name:     "wheel license in licenses dir",
+			filePath: "python3.8/site-packages/wrapt-1.12.1.dist-info/licenses/LICENSE",
+			want:     false,
 		},
 		{
 			name:     "sad",
