@@ -52,6 +52,33 @@ func TestWalkDir_UnreadableFile(t *testing.T) {
 	assert.Equal(t, []string{"app/readable.txt"}, got)
 }
 
+func TestWalkDir_Canceled(t *testing.T) {
+	fsys := fstest.MapFS{
+		"app/a.jar": {Data: []byte("a")},
+		"app/b.jar": {Data: []byte("b")},
+	}
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	// The walk queues both files before the worker reaches b.jar, whose
+	// parse sees the context done, as the jar parser does.
+	onFile := func(path string, _ fs.FileInfo, _ xio.ReadSeekerAt) (string, error) {
+		if path == "app/b.jar" {
+			cancel()
+			return "", ctx.Err()
+		}
+		return path, nil
+	}
+	var got []string
+	onResult := func(path string) error {
+		got = append(got, path)
+		return nil
+	}
+	err := parallel.WalkDir(ctx, fsys, ".", 1, onFile, onResult)
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Equal(t, []string{"app/a.jar"}, got)
+}
+
 func TestWalkDir_ResultError(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		fsys := fstest.MapFS{}
