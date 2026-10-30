@@ -3,6 +3,7 @@ package jar_test
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -606,6 +607,111 @@ func BenchmarkParse_nestedArchive(b *testing.B) {
 				require.NoError(b, err)
 				require.Len(b, got, n)
 			}
+		})
+	}
+}
+
+func TestParse_nestingDepth(t *testing.T) {
+	// level0.jar holds level1.jar, which holds level2.jar, and so on.
+	const levels = 10
+	data := makeZip(t, zip.Store, pomProperties(fmt.Sprint("level", levels), "1.0"))
+	for i := levels - 1; i >= 0; i-- {
+		data = makeZip(t, zip.Store, pomProperties(fmt.Sprint("level", i), "1.0"),
+			zipEntry{name: fmt.Sprintf("level%d.jar", i+1), data: data})
+	}
+
+	p := jar.NewParser(nil, jar.WithFilePath("level0.jar"), jar.WithOffline(true), jar.WithSize(int64(len(data))))
+	got, _, err := p.Parse(t.Context(), bytes.NewReader(data))
+	require.NoError(t, err)
+
+	// Parse reads the archives nested up to 8 deep.
+	var want []ftypes.Package
+	filePath := "level0.jar"
+	for i := range 9 {
+		want = append(want, ftypes.Package{
+			Name:     fmt.Sprintf("test:level%d", i),
+			Version:  "1.0",
+			FilePath: filePath,
+		})
+		filePath += fmt.Sprintf("/level%d.jar", i+1)
+	}
+	assert.Equal(t, want, got)
+}
+
+// A countingReader counts the bytes read from r.
+type countingReader struct {
+	r *bytes.Reader
+	n int64
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	return n, err
+}
+
+func (c *countingReader) ReadAt(p []byte, off int64) (int, error) {
+	n, err := c.r.ReadAt(p, off)
+	c.n += int64(n)
+	return n, err
+}
+
+func (c *countingReader) Seek(offset int64, whence int) (int64, error) {
+	return c.r.Seek(offset, whence)
+}
+
+func TestParse_cancel(t *testing.T) {
+	// Parse searches for each of these jars by SHA-1.
+	lib := func(name string) zipEntry {
+		return zipEntry{
+			name: "lib/" + name + ".jar",
+			data: makeZip(t, zip.Store, zipEntry{name: name + ".class"}),
+		}
+	}
+	tests := []struct {
+		name     string
+		entries  []zipEntry
+		cancelAt int // the search that cancels the context, or 0 to cancel it before Parse
+	}{
+		{
+			name:    "before parse",
+			entries: []zipEntry{lib("a"), lib("b")},
+		},
+		{
+			name:     "between entries",
+			entries:  []zipEntry{lib("a"), lib("b")},
+			cancelAt: 1,
+		},
+		{
+			name:     "in the last entry",
+			entries:  []zipEntry{lib("a")},
+			cancelAt: 1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := makeZip(t, zip.Store, tt.entries...)
+			r := &countingReader{r: bytes.NewReader(app)}
+
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			if tt.cancelAt == 0 {
+				cancel()
+			}
+			var searches int
+			var read int64 // bytes read when the context was canceled
+			c := notFoundClient{onCall: func() {
+				searches++
+				if searches == tt.cancelAt {
+					cancel()
+					read = r.n
+				}
+			}}
+
+			p := jar.NewParser(c, jar.WithFilePath("app.jar"), jar.WithSize(int64(len(app))))
+			_, _, err := p.Parse(ctx, r)
+			require.ErrorIs(t, err, context.Canceled)
+			assert.Equal(t, read, r.n, "bytes read")
 		})
 	}
 }
