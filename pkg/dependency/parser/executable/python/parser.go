@@ -3,7 +3,6 @@
 package pythonparser
 
 import (
-	"bytes"
 	"context"
 	"regexp"
 
@@ -52,24 +51,10 @@ func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Packag
 
 // findVers finds and returns the Python version in the executable x.
 func findVers(x exe.Exe) (mod, vers string) {
-	text, size := x.DataStart()
-	data, err := x.ReadData(text, size)
-	if err != nil {
-		return
+	// Python's version pattern is [NUL]3.11.2[NUL]: versReg matches a
+	// whole string.
+	if m := exe.FindSubmatch(x, versReg); m != nil {
+		vers = string(m[0])
 	}
-
-	// Python's version pattern is [NUL]3.11.2[NUL]
-	for len(data) > 0 {
-		// Extract the version number
-		// split by null characters, this is important so that we don't match for version number-like strings without the null character
-		head, tail, _ := bytes.Cut(data, []byte("\000"))
-		match := versReg.FindSubmatch(head)
-		if match != nil {
-			vers = string(match[0])
-			break
-		}
-		data = tail
-	}
-
 	return "python", vers
 }
