@@ -19,7 +19,7 @@ func TestParse(t *testing.T) {
 	}{
 		{
 			name:      "ELF",
-			inputFile: "testdata/php.elf",
+			inputFile: "../nodejs/testdata/php.elf",
 			want: []types.Package{
 				{
 					ID:      "php@8.0.7",
@@ -40,7 +40,7 @@ func TestParse(t *testing.T) {
 			require.NoError(t, err)
 
 			parser := NewParser()
-			got, _, err := parser.Parse(f)
+			got, _, err := parser.Parse(t.Context(), f)
 			if tt.wantErr != "" {
 				require.Error(t, err)
 				require.ErrorContains(t, err, tt.wantErr)
