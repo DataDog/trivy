@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"io"
 	"io/fs"
 	"maps"
 	"os"
@@ -434,7 +435,8 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 		group.filePatterns[Type(fileType)] = append(group.filePatterns[Type(fileType)], r)
 	}
 
-	for analyzerType, a := range analyzers {
+	for _, analyzerType := range osFirst(analyzers) {
+		a := analyzers[analyzerType]
 		if !belongToGroup(groupName, analyzerType, opts.DisabledAnalyzers, a) {
 			continue
 		}
@@ -471,8 +473,9 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 }
 
 // osFirst returns the types of m sorted by name, with the OS analyzers
-// first. Post-analyzers run in this order, so that the files OS packages
-// installed are known before the other analyzers filter their input.
+// first. Analyzers run in this order, so that the files OS packages
+// installed are known before the other post-analyzers filter their input,
+// and a deferred file goes to the same analyzer first in every scan.
 func osFirst[V any](m map[Type]V) []Type {
 	return slices.SortedFunc(maps.Keys(m), func(a, b Type) int {
 		if aOS, bOS := slices.Contains(TypeOSes, a), slices.Contains(TypeOSes, b); aOS != bOS {
@@ -692,61 +695,125 @@ func (ag AnalyzerGroup) postAnalyzeWithTimeout(ctx context.Context, a PostAnalyz
 // DeferredAnalyze runs the deferred (application/language) analyzers on the
 // composite filesystem after OS detection, filtering out files owned by an OS
 // package (SystemInstalledFiles) so they are never opened or parsed. It mirrors
-// PostAnalyze; the difference is each deferred analyzer is a per-file analyzer,
-// invoked once per surviving file. Must run after the walk and PostAnalyze, so
-// SystemInstalledFiles is complete (e.g. dpkg is a post-analyzer).
+// PostAnalyze; the difference is each deferred analyzer is a per-file analyzer.
+// Each file is opened once and goes to the analyzers that require it, in
+// order, until one of them reports it. Must run after the walk and
+// PostAnalyze, so SystemInstalledFiles is complete (e.g. dpkg is a
+// post-analyzer).
 func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *CompositeFS, result *AnalysisResult, opts AnalysisOptions) error {
-	var errs error
+	if err := ctx.Err(); err != nil {
+		return xerrors.Errorf("deferred analysis stopped: %w", err)
+	}
 	skipped := mapfs.NewPathSet()
 	ag.skip(skipped, result)
+
+	// The tree of each analyzer has one root, the Dir of its files, so a
+	// pass reads the trees of one root.
+	var passes []*deferredPass
 	for _, a := range ag.deferredAnalyzers {
 		fsys, ok := compositeFS.Get(a.Type())
 		if !ok {
 			continue
 		}
-		if err := ctx.Err(); err != nil {
-			return errors.Join(errs, xerrors.Errorf("deferred analysis stopped before %s: %w", a.Type(), err))
+		fsys = fsys.Without(skipped)
+		i := slices.IndexFunc(passes, func(p *deferredPass) bool {
+			return p.files.UnderlyingRoot() == fsys.UnderlyingRoot()
+		})
+		if i < 0 {
+			i = len(passes)
+			passes = append(passes, &deferredPass{
+				files:     mapfs.New(mapfs.WithUnderlyingRoot(fsys.UnderlyingRoot())),
+				analyzers: make(map[string][]analyzer),
+			})
 		}
-
-		filteredFS := fsys.Without(skipped)
-		found, err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, filteredFS.UnderlyingRoot(), opts, opts.PostAnalyzerTimeout)
-		result.Merge(found)
-		ag.skip(skipped, found)
-		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				errs = errors.Join(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
-			} else {
-				return xerrors.Errorf("deferred analysis error: %w", err)
-			}
+		p := passes[i]
+		p.files.AddAll(fsys)
+		for f := range fsys.Files() {
+			p.analyzers[f] = append(p.analyzers[f], a)
 		}
 	}
-	return errs
+
+	if t := opts.PostAnalyzerTimeout; t > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, t)
+		defer cancel()
+	}
+	for _, p := range passes {
+		found, err := ag.deferredAnalyzePass(ctx, p, opts)
+		result.Merge(found)
+		switch {
+		case errors.Is(err, context.DeadlineExceeded):
+			return xerrors.Errorf("deferred analysis timeout: %w", err)
+		case err != nil:
+			return xerrors.Errorf("deferred analysis error: %w", err)
+		}
+	}
+	return nil
 }
 
-// deferredAnalyzeWithTimeout runs a on every file of fsys and returns what it
-// found, which is partial when err is set.
-func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, dir string, opts AnalysisOptions, t time.Duration) (*AnalysisResult, error) {
-	if t > 0 {
-		ctx1, cancel := context.WithTimeout(ctx, t)
-		defer cancel()
-		ctx = ctx1
-	}
+// A deferredPass holds the files of one root and the analyzers of each.
+type deferredPass struct {
+	files     *mapfs.FS
+	analyzers map[string][]analyzer // by path, in the group's order
+}
+
+// deferredAnalyzePass runs on each file of p the analyzers listed for its
+// path, and returns what they found, which is partial when err is set.
+func (ag AnalyzerGroup) deferredAnalyzePass(ctx context.Context, p *deferredPass, opts AnalysisOptions) (*AnalysisResult, error) {
+	dir := p.files.UnderlyingRoot()
 	onFile := func(path string, info fs.FileInfo, r xio.ReadSeekerAt) (*AnalysisResult, error) {
-		return ag.analyze(ctx, a, AnalysisInput{
-			Dir:      dir,
-			FilePath: path,
-			Info:     info,
-			Content:  r,
-			Options:  opts,
-		})
+		found := NewAnalysisResult()
+		for i, a := range p.analyzers[path] {
+			if i > 0 {
+				if _, err := r.Seek(0, io.SeekStart); err != nil {
+					return found, xerrors.Errorf("seek error: %w", err)
+				}
+			}
+			res, err := ag.analyze(ctx, a, AnalysisInput{
+				Dir:      dir,
+				FilePath: path,
+				Info:     info,
+				Content:  r,
+				Options:  opts,
+			})
+			if err != nil {
+				ag.logger.Debug("Deferred analysis error", log.String("analyzer", string(a.Type())),
+					log.FilePath(path), log.Err(err))
+				continue
+			}
+			found.Merge(res)
+			if reports(res, path) {
+				break
+			}
+		}
+		return found, nil
 	}
 	found := NewAnalysisResult()
 	onResult := func(res *AnalysisResult) error {
 		found.Merge(res)
 		return nil
 	}
-	err := parallel.WalkDir(ctx, fsys, ".", ag.parallel, onFile, onResult)
+	err := parallel.WalkDir(ctx, p.files, ".", ag.parallel, onFile, onResult)
 	return found, err
+}
+
+// reports reports whether r holds an application or package found in the
+// file at path.
+func reports(r *AnalysisResult, path string) bool {
+	if r == nil {
+		return false
+	}
+	for _, app := range r.Applications {
+		if app.FilePath == path {
+			return true
+		}
+		for _, pkg := range app.Packages {
+			if pkg.FilePath == path {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // PostAnalyzerFS returns a composite filesystem that contains multiple filesystems for each post-analyzer
