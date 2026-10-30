@@ -816,6 +816,31 @@ func TestAnalyzerGroup_DeferredAnalyze(t *testing.T) {
 	}
 }
 
+func TestNewAnalyzerGroup_PostAnalyzerOrder(t *testing.T) {
+	isOS := func(typ analyzer.Type) bool { return slices.Contains(analyzer.TypeOSes, typ) }
+
+	// The post-analyzers are registered in a map, so build the group a few
+	// times to catch an order that changes from one group to the next.
+	var want []analyzer.Type
+	for range 10 {
+		a, err := analyzer.NewAnalyzerGroup(analyzer.AnalyzerOptions{})
+		require.NoError(t, err)
+		got := a.PostAnalyzerTypes()
+		if want == nil {
+			want = got
+			continue
+		}
+		require.Equal(t, want, got)
+	}
+
+	require.Contains(t, want, analyzer.TypeDpkg)
+	require.Contains(t, want, analyzer.TypeJar)
+	firstLang := slices.IndexFunc(want, func(typ analyzer.Type) bool { return !isOS(typ) })
+	for _, typ := range want[firstLang:] {
+		assert.False(t, isOS(typ), "OS analyzer %s runs after %s", typ, want[firstLang])
+	}
+}
+
 func TestAnalyzerGroup_RequiredDeferredAnalyzers(t *testing.T) {
 	info, err := os.Stat("testdata/app/Gemfile.lock")
 	require.NoError(t, err)

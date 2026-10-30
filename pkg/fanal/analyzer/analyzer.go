@@ -1,9 +1,11 @@
 package analyzer
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"io/fs"
+	"maps"
 	"os"
 	"regexp"
 	"slices"
@@ -453,7 +455,8 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 		}
 	}
 
-	for analyzerType, init := range postAnalyzers {
+	for _, analyzerType := range osFirst(postAnalyzers) {
+		init := postAnalyzers[analyzerType]
 		a, err := init(opts)
 		if err != nil {
 			return AnalyzerGroup{}, xerrors.Errorf("post-analyzer init error: %w", err)
@@ -465,6 +468,21 @@ func NewAnalyzerGroup(opts AnalyzerOptions) (AnalyzerGroup, error) {
 	}
 
 	return group, nil
+}
+
+// osFirst returns the types of m sorted by name, with the OS analyzers
+// first. Post-analyzers run in this order, so that the files OS packages
+// installed are known before the other analyzers filter their input.
+func osFirst[V any](m map[Type]V) []Type {
+	return slices.SortedFunc(maps.Keys(m), func(a, b Type) int {
+		if aOS, bOS := slices.Contains(TypeOSes, a), slices.Contains(TypeOSes, b); aOS != bOS {
+			if aOS {
+				return -1
+			}
+			return 1
+		}
+		return cmp.Compare(a, b)
+	})
 }
 
 type Versions struct {
