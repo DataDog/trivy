@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,6 +16,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/hashicorp/go-multierror"
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
@@ -89,12 +91,27 @@ func (a yarnAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 		licenses, err := a.traverseLicenses(ctx, input.FS, filePath)
 		if err != nil {
 			a.logger.Debug("Unable to traverse licenses", log.Err(err))
+			licenses = make(map[string][]string)
 		}
 
 		// Parse package.json alongside yarn.lock to find direct deps and mark dev deps
-		if err = a.analyzeDependencies(ctx, input.FS, path.Dir(filePath), app, parser.patterns); err != nil {
+		dirs, err := a.analyzeDependencies(ctx, input.FS, path.Dir(filePath), app, parser.patterns)
+		if err != nil {
 			a.logger.Warn("Unable to parse package.json to remove dev dependencies",
 				log.FilePath(path.Join(path.Dir(filePath), types.NpmPkg)), log.Err(err))
+		}
+
+		// Yarn installs in the node_modules of a workspace the packages
+		// it keeps out of the root, such as a version that conflicts with
+		// a hoisted one.
+		for _, dir := range dirs {
+			nm := path.Join(dir, "node_modules")
+			if _, err := fs.Stat(input.FS, nm); err != nil {
+				continue
+			}
+			if l, err := a.license.Traverse(ctx, input.FS, nm); err == nil {
+				maps.Copy(licenses, l)
+			}
 		}
 
 		// Fill licenses
@@ -165,57 +182,58 @@ func (a yarnAnalyzer) Version() int {
 
 // analyzeDependencies analyzes the package.json file next to yarn.lock,
 // distinguishing between direct and transitive dependencies as well as production and development dependencies.
-func (a yarnAnalyzer) analyzeDependencies(ctx context.Context, fsys fs.FS, dir string, app *types.Application, patterns map[string][]string) error {
+// It returns the directory of each workspace.
+func (a yarnAnalyzer) analyzeDependencies(ctx context.Context, fsys fs.FS, dir string, app *types.Application, patterns map[string][]string) ([]string, error) {
 	packageJsonPath := path.Join(dir, types.NpmPkg)
-	root, workspaces, err := a.parsePackageJSON(ctx, fsys, packageJsonPath)
+	root, workspaces, dirs, err := a.parsePackageJSON(ctx, fsys, packageJsonPath)
 	if errors.Is(err, fs.ErrNotExist) {
 		a.logger.Debug("package.json not found", log.FilePath(packageJsonPath))
-		return nil
+		return nil, nil
 	} else if err != nil {
-		return xerrors.Errorf("unable to parse root package.json: %w", err)
+		return nil, xerrors.Errorf("unable to parse root package.json: %w", err)
 	}
 
 	// Since yarn.lock file can contain same packages with different versions
 	// we need to save versions separately for version comparison.
-	pkgs := lo.SliceToMap(app.Packages, func(pkg types.Package) (string, types.Package) {
-		return pkg.ID, pkg
-	})
+	pkgs := newPkgIndex(app.Packages)
 
 	if err := a.resolveRootDependencies(&root, pkgs, patterns); err != nil {
-		return xerrors.Errorf("unable to resolve root dependencies: %w", err)
+		return nil, xerrors.Errorf("unable to resolve root dependencies: %w", err)
 	}
 
 	if err := a.resolveWorkspaceDependencies(workspaces, pkgs, patterns); err != nil {
-		return xerrors.Errorf("unable to resolve workspace dependencies: %w", err)
+		return nil, xerrors.Errorf("unable to resolve workspace dependencies: %w", err)
 	}
 
-	pkgSlice := lo.Values(pkgs)
+	pkgSlice := lo.Values(pkgs.byID)
 	sort.Sort(types.Packages(pkgSlice))
 
 	// Save packages
 	app.Packages = pkgSlice
-	return nil
+	return dirs, nil
 }
 
-func (a yarnAnalyzer) parsePackageJSON(ctx context.Context, fsys fs.FS, filePath string) (packagejson.Package, []packagejson.Package, error) {
+// parsePackageJSON returns the root package of the package.json at
+// filePath, and the package and the directory of each of its workspaces.
+func (a yarnAnalyzer) parsePackageJSON(ctx context.Context, fsys fs.FS, filePath string) (packagejson.Package, []packagejson.Package, []string, error) {
 	// Parse package.json
 	f, err := fsys.Open(filePath)
 	if err != nil {
-		return packagejson.Package{}, nil, xerrors.Errorf("file open error: %w", err)
+		return packagejson.Package{}, nil, nil, xerrors.Errorf("file open error: %w", err)
 	}
 	defer func() { _ = f.Close() }()
 
 	root, err := a.packageJsonParser.Parse(f)
 	if err != nil {
-		return packagejson.Package{}, nil, xerrors.Errorf("parse error: %w", err)
+		return packagejson.Package{}, nil, nil, xerrors.Errorf("parse error: %w", err)
 	}
 
 	root.Package.ID = cmp.Or(root.Package.ID, filePath) // In case the package.json doesn't have a name or version
 	root.Package.Relationship = types.RelationshipRoot
 
-	workspaces, err := a.traverseWorkspaces(ctx, fsys, path.Dir(filePath), root.Workspaces)
+	workspaces, dirs, err := a.traverseWorkspaces(ctx, fsys, path.Dir(filePath), root.Workspaces)
 	if err != nil {
-		return packagejson.Package{}, nil, xerrors.Errorf("traverse workspaces error: %w", err)
+		return packagejson.Package{}, nil, nil, xerrors.Errorf("traverse workspaces error: %w", err)
 	}
 	for i := range workspaces {
 		workspaces[i].Package.Relationship = types.RelationshipWorkspace
@@ -224,10 +242,42 @@ func (a yarnAnalyzer) parsePackageJSON(ctx context.Context, fsys fs.FS, filePath
 		root.DependsOn = append(root.DependsOn, workspaces[i].ID)
 	}
 
-	return root, workspaces, nil
+	return root, workspaces, dirs, nil
 }
 
-func (a yarnAnalyzer) resolveRootDependencies(root *packagejson.Package, pkgs map[string]types.Package,
+// pkgIndex holds packages by ID and lists the IDs of the packages of each name.
+type pkgIndex struct {
+	byID   map[string]types.Package
+	byName map[string][]string
+}
+
+func newPkgIndex(pkgs []types.Package) *pkgIndex {
+	idx := &pkgIndex{
+		byID:   make(map[string]types.Package, len(pkgs)),
+		byName: make(map[string][]string, len(pkgs)),
+	}
+	for _, pkg := range pkgs {
+		idx.set(pkg)
+	}
+	return idx
+}
+
+// set stores pkg in place of the package with its ID, if any.
+func (idx *pkgIndex) set(pkg types.Package) {
+	old, ok := idx.byID[pkg.ID]
+	idx.byID[pkg.ID] = pkg
+	if ok && old.Name == pkg.Name {
+		return
+	}
+	if ok {
+		idx.byName[old.Name] = slices.DeleteFunc(idx.byName[old.Name], func(id string) bool {
+			return id == pkg.ID
+		})
+	}
+	idx.byName[pkg.Name] = append(idx.byName[pkg.Name], pkg.ID)
+}
+
+func (a yarnAnalyzer) resolveRootDependencies(root *packagejson.Package, pkgs *pkgIndex,
 	patterns map[string][]string) error {
 	if err := a.resolveDependencies(root, pkgs, patterns); err != nil {
 		return xerrors.Errorf("unable to resolve dependencies: %w", err)
@@ -235,12 +285,12 @@ func (a yarnAnalyzer) resolveRootDependencies(root *packagejson.Package, pkgs ma
 
 	// Add root package to the package map
 	slices.Sort(root.Package.DependsOn)
-	pkgs[root.Package.ID] = root.Package
+	pkgs.set(root.Package)
 
 	return nil
 }
 
-func (a yarnAnalyzer) resolveWorkspaceDependencies(workspaces []packagejson.Package, pkgs map[string]types.Package,
+func (a yarnAnalyzer) resolveWorkspaceDependencies(workspaces []packagejson.Package, pkgs *pkgIndex,
 	patterns map[string][]string) error {
 	if len(workspaces) == 0 {
 		return nil
@@ -253,7 +303,7 @@ func (a yarnAnalyzer) resolveWorkspaceDependencies(workspaces []packagejson.Pack
 
 		// Add workspace to the package map
 		slices.Sort(workspace.Package.DependsOn)
-		pkgs[workspace.ID] = workspace.Package
+		pkgs.set(workspace.Package)
 	}
 
 	return nil
@@ -261,7 +311,7 @@ func (a yarnAnalyzer) resolveWorkspaceDependencies(workspaces []packagejson.Pack
 
 // resolveDependencies resolves production and development dependencies from direct dependencies and patterns.
 // It also flags dependencies as direct or indirect and updates the dependencies of the parent package.
-func (a yarnAnalyzer) resolveDependencies(pkg *packagejson.Package, pkgs map[string]types.Package, patterns map[string][]string) error {
+func (a yarnAnalyzer) resolveDependencies(pkg *packagejson.Package, pkgs *pkgIndex, patterns map[string][]string) error {
 	// Recursively walk dependencies and flags development dependencies.
 	// Walk development dependencies first to avoid overwriting production dependencies.
 	directDevDeps := pkg.DevDependencies
@@ -280,16 +330,20 @@ func (a yarnAnalyzer) resolveDependencies(pkg *packagejson.Package, pkgs map[str
 
 // walkDependencies recursively walk dependencies and flags them as direct or indirect.
 // Note that it overwrites the existing package map.
-func (a yarnAnalyzer) walkDependencies(parent *types.Package, pkgs map[string]types.Package, directDeps map[string]string,
+func (a yarnAnalyzer) walkDependencies(parent *types.Package, pkgs *pkgIndex, directDeps map[string]string,
 	patterns map[string][]string, dev bool) error {
 
-	// Identify direct dependencies
+	// Identify direct dependencies. Collect the candidates first:
+	// renaming an alias below moves its ID to another name.
+	var ids []string
+	for name := range directDeps {
+		ids = append(ids, pkgs.byName[name]...)
+	}
+
 	seenIDs := set.New[string]()
-	for _, pkg := range pkgs {
-		constraint, ok := directDeps[pkg.Name]
-		if !ok {
-			continue
-		}
+	for _, id := range ids {
+		pkg := pkgs.byID[id]
+		constraint := directDeps[pkg.Name]
 
 		// Handle aliases
 		// cf. https://classic.yarnpkg.com/lang/en/docs/cli/add/#toc-yarn-add-alias
@@ -321,7 +375,7 @@ func (a yarnAnalyzer) walkDependencies(parent *types.Package, pkgs map[string]ty
 		pkg.Indirect = false
 		pkg.Relationship = types.RelationshipDirect
 
-		pkgs[pkg.ID] = pkg
+		pkgs.set(pkg)
 		seenIDs.Append(pkg.ID)
 
 		// Add a direct dependency to the parent package
@@ -334,13 +388,13 @@ func (a yarnAnalyzer) walkDependencies(parent *types.Package, pkgs map[string]ty
 	return nil
 }
 
-func (a yarnAnalyzer) walkIndirectDependencies(pkg types.Package, pkgs map[string]types.Package, seenIDs set.Set[string]) {
+func (a yarnAnalyzer) walkIndirectDependencies(pkg types.Package, pkgs *pkgIndex, seenIDs set.Set[string]) {
 	for _, pkgID := range pkg.DependsOn {
 		if seenIDs.Contains(pkgID) {
 			continue // Skip if we've already seen this package
 		}
 
-		dep, ok := pkgs[pkgID]
+		dep, ok := pkgs.byID[pkgID]
 		if !ok {
 			continue
 		}
@@ -350,7 +404,7 @@ func (a yarnAnalyzer) walkIndirectDependencies(pkg types.Package, pkgs map[strin
 		}
 		dep.Indirect = true
 		dep.Relationship = types.RelationshipIndirect
-		pkgs[dep.ID] = dep
+		pkgs.set(dep)
 
 		seenIDs.Append(dep.ID)
 
@@ -359,39 +413,71 @@ func (a yarnAnalyzer) walkIndirectDependencies(pkg types.Package, pkgs map[strin
 	}
 }
 
-func (a yarnAnalyzer) traverseWorkspaces(ctx context.Context, fsys fs.FS, dir string, workspaces []string) ([]packagejson.Package, error) {
+// globEscaper escapes the characters that doublestar reads as pattern
+// syntax, the ones it unescapes in a literal part of a pattern.
+var globEscaper = strings.NewReplacer("*", `\*`, "?", `\?`, "[", `\[`, "]", `\]`, "{", `\{`, "}", `\}`)
+
+// traverseWorkspaces returns the package.json and the directory of each
+// workspace. As in Yarn, a workspace is a directory outside node_modules
+// that matches one of the patterns and holds a package.json.
+func (a yarnAnalyzer) traverseWorkspaces(ctx context.Context, fsys fs.FS, dir string, workspaces []string) ([]packagejson.Package, []string, error) {
 	var pkgs []packagejson.Package
+	var dirs []string
 
-	required := func(path string, _ fs.DirEntry) bool {
-		return filepath.Base(path) == types.NpmPkg
-	}
-
-	walkDirFunc := func(path string, _ fs.DirEntry, r io.Reader) error {
-		pkg, err := a.packageJsonParser.Parse(r)
-		if err != nil {
-			return xerrors.Errorf("unable to parse %q: %w", path, err)
+	walkFunc := func(match string, d fs.DirEntry) error {
+		if err := ctx.Err(); err != nil {
+			return err
 		}
-		pkg.Package.ID = cmp.Or(pkg.Package.ID, path) // In case the package.json doesn't have a name or version
+		// Workspaces lie outside node_modules. On a match of a one-level
+		// pattern such as *, doublestar takes SkipDir to skip the rest of
+		// the match's directory, so return SkipDir only below node_modules,
+		// where every sibling is in node_modules too.
+		elems := strings.Split(match, "/")
+		switch i := slices.Index(elems, "node_modules"); {
+		case i == len(elems)-1:
+			return nil
+		case i >= 0:
+			return fs.SkipDir
+		}
+		if !d.IsDir() {
+			return nil
+		}
+
+		pkgJSONPath := path.Join(match, types.NpmPkg)
+		f, err := fsys.Open(pkgJSONPath)
+		if errors.Is(err, fs.ErrNotExist) || errors.Is(err, fs.ErrPermission) {
+			return nil
+		} else if err != nil {
+			return xerrors.Errorf("file open error: %w", err)
+		}
+		defer f.Close()
+
+		pkg, err := a.packageJsonParser.Parse(f)
+		if err != nil {
+			a.logger.Debug("Unable to parse workspace package.json", log.FilePath(pkgJSONPath), log.Err(err))
+			return nil
+		}
+		pkg.Package.ID = cmp.Or(pkg.Package.ID, pkgJSONPath) // In case the package.json doesn't have a name or version
 		pkgs = append(pkgs, pkg)
+		dirs = append(dirs, match)
 		return nil
 	}
 
 	for _, workspace := range workspaces {
 		// We need to add the path to the `package.json` file
 		// to properly get the pattern to search in `fs`
-		workspace = path.Join(dir, workspace)
-		matches, err := fs.Glob(fsys, workspace)
-		if err != nil {
-			return nil, err
+		workspace = path.Join(globEscaper.Replace(dir), workspace)
+		// mapfs reads a name above its root from the disk, outside the
+		// scanned files.
+		if !fs.ValidPath(workspace) {
+			a.logger.Debug("Skip the workspace pattern above the root", log.String("pattern", workspace))
+			continue
 		}
-		for _, match := range matches {
-			if err := fsutils.WalkDir(ctx, fsys, match, required, fsutils.DefaultWalkErrorCallback, walkDirFunc); err != nil {
-				return nil, xerrors.Errorf("walk error: %w", err)
-			}
+		if err := doublestar.GlobWalk(fsys, workspace, walkFunc); err != nil {
+			return nil, nil, xerrors.Errorf("walk error: %w", err)
 		}
-
 	}
-	return pkgs, nil
+	return pkgs, dirs, nil
 }
 
 func (a yarnAnalyzer) traverseLicenses(ctx context.Context, fsys fs.FS, lockPath string) (map[string][]string, error) {

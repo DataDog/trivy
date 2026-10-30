@@ -2,8 +2,14 @@ package yarn
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io/fs"
 	"os"
+	"path"
+	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -12,6 +18,7 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
+	"github.com/aquasecurity/trivy/pkg/mapfs"
 )
 
 func Test_yarnLibraryAnalyzer_Analyze(t *testing.T) {
@@ -808,6 +815,66 @@ func Test_yarnLibraryAnalyzer_Analyze(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "workspace with node_modules",
+			dir:  "testdata/workspace-node-modules",
+			want: &analyzer.AnalysisResult{
+				Applications: []types.Application{
+					{
+						Type:     types.Yarn,
+						FilePath: "yarn.lock",
+						Packages: types.Packages{
+							{
+								ID:           "yarn-workspace-test@1.0.0",
+								Name:         "yarn-workspace-test",
+								Version:      "1.0.0",
+								Relationship: types.RelationshipRoot,
+								DependsOn: []string{
+									"a@0.0.0",
+								},
+							},
+							{
+								ID:           "a@0.0.0",
+								Name:         "a",
+								Version:      "0.0.0",
+								Relationship: types.RelationshipWorkspace,
+								DependsOn: []string{
+									"is-odd@3.0.1",
+								},
+							},
+							{
+								ID:           "is-odd@3.0.1",
+								Name:         "is-odd",
+								Version:      "3.0.1",
+								Relationship: types.RelationshipDirect,
+								DependsOn:    []string{"is-number@6.0.0"},
+								Licenses:     []string{"MIT"},
+								Locations: []types.Location{
+									{
+										StartLine: 23,
+										EndLine:   30,
+									},
+								},
+							},
+							{
+								ID:           "is-number@6.0.0",
+								Name:         "is-number",
+								Version:      "6.0.0",
+								Indirect:     true,
+								Relationship: types.RelationshipIndirect,
+								Licenses:     []string{"MIT"},
+								Locations: []types.Location{
+									{
+										StartLine: 16,
+										EndLine:   21,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		// docker run --rm -it node@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 sh
 		// mkdir test && cd "$_"
 		// yarn set version 1.22.19
@@ -1029,6 +1096,103 @@ is-odd@^3.0.1:
   version "3.0.1"
 `
 
+// packageIDs returns the sorted IDs of the packages of the single
+// application in r.
+func packageIDs(t *testing.T, r *analyzer.AnalysisResult) []string {
+	t.Helper()
+	require.Len(t, r.Applications, 1)
+	var ids []string
+	for _, pkg := range r.Applications[0].Packages {
+		ids = append(ids, pkg.ID)
+	}
+	slices.Sort(ids)
+	return ids
+}
+
+func Test_yarnLibraryAnalyzer_PostAnalyze_workspaceAboveRoot(t *testing.T) {
+	// The scanned files are linked from layer, as CreateLink links them,
+	// and the workspace pattern climbs to a package.json beside layer.
+	tmp := t.TempDir()
+	files := map[string]string{
+		"layer/app/yarn.lock":      isOddLock,
+		"layer/app/package.json":   `{"name": "root", "version": "1.0.0", "dependencies": {"is-odd": "^3.0.1"}, "workspaces": ["../../host/*"]}`,
+		"host/secret/package.json": `{"name": "secret", "version": "6.6.6"}`,
+	}
+	for name, data := range files {
+		p := filepath.Join(tmp, filepath.FromSlash(name))
+		require.NoError(t, os.MkdirAll(filepath.Dir(p), 0o755))
+		require.NoError(t, os.WriteFile(p, []byte(data), 0o644))
+	}
+	layer := filepath.Join(tmp, "layer")
+	fsys := mapfs.New(mapfs.WithUnderlyingRoot(layer))
+	require.NoError(t, fsys.MkdirAll("app", os.ModePerm))
+	for _, name := range []string{"app/yarn.lock", "app/package.json"} {
+		require.NoError(t, fsys.WriteFile(name, filepath.Join(layer, filepath.FromSlash(name))))
+	}
+
+	a, err := newYarnAnalyzer(analyzer.AnalyzerOptions{})
+	require.NoError(t, err)
+	got, err := a.PostAnalyze(t.Context(), analyzer.PostAnalysisInput{FS: fsys})
+	require.NoError(t, err)
+	assert.Equal(t, []string{"is-odd@3.0.1", "root@1.0.0"}, packageIDs(t, got))
+}
+
+func Test_yarnLibraryAnalyzer_PostAnalyze_workspacesBesideNodeModules(t *testing.T) {
+	tests := []struct {
+		name    string
+		pattern string
+		files   []string // the package.json of each workspace and of left-pad
+	}{
+		{
+			// * matches api, node_modules and web, in that order.
+			name:    "one level",
+			pattern: "*",
+			files:   []string{"api", "node_modules/left-pad", "web"},
+		},
+		{
+			name:    "any depth",
+			pattern: "packages/**",
+			files:   []string{"packages/api", "packages/web", "packages/web/node_modules/left-pad"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fsys := fstest.MapFS{
+				"yarn.lock":    {Data: []byte(isOddLock)},
+				"package.json": {Data: []byte(`{"name": "root", "version": "1.0.0", "workspaces": ["` + tt.pattern + `"]}`)},
+			}
+			for _, dir := range tt.files {
+				data := fmt.Sprintf(`{"name": %q, "version": "1.0.0", "dependencies": {"is-odd": "^3.0.1"}}`, path.Base(dir))
+				fsys[dir+"/package.json"] = &fstest.MapFile{Data: []byte(data)}
+			}
+
+			a, err := newYarnAnalyzer(analyzer.AnalyzerOptions{})
+			require.NoError(t, err)
+			got, err := a.PostAnalyze(t.Context(), analyzer.PostAnalysisInput{FS: fsys})
+			require.NoError(t, err)
+			assert.Equal(t, []string{"api@1.0.0", "is-odd@3.0.1", "root@1.0.0", "web@1.0.0"}, packageIDs(t, got))
+		})
+	}
+}
+
+func Test_yarnLibraryAnalyzer_PostAnalyze_patternCharsInDir(t *testing.T) {
+	for _, dir := range []string{"{{cookiecutter.slug}}", "x{y", "a*b", "a?b", "[ab]", `a\b`} {
+		t.Run(dir, func(t *testing.T) {
+			fsys := fstest.MapFS{
+				dir + "/yarn.lock":               {Data: []byte(isOddLock)},
+				dir + "/package.json":            {Data: []byte(`{"name": "root", "version": "1.0.0", "workspaces": ["packages/*"]}`)},
+				dir + "/packages/a/package.json": {Data: []byte(`{"name": "a", "version": "1.0.0", "dependencies": {"is-odd": "^3.0.1"}}`)},
+			}
+
+			a, err := newYarnAnalyzer(analyzer.AnalyzerOptions{})
+			require.NoError(t, err)
+			got, err := a.PostAnalyze(t.Context(), analyzer.PostAnalysisInput{FS: fsys})
+			require.NoError(t, err)
+			assert.Equal(t, []string{"a@1.0.0", "is-odd@3.0.1", "root@1.0.0"}, packageIDs(t, got))
+		})
+	}
+}
+
 // cancelFS calls cancel when the file name is opened.
 type cancelFS struct {
 	fs.FS
@@ -1063,4 +1227,73 @@ func Test_yarnLibraryAnalyzer_PostAnalyze_canceled(t *testing.T) {
 	got, err := a.PostAnalyze(ctx, analyzer.PostAnalysisInput{FS: fsys})
 	require.ErrorIs(t, err, context.Canceled)
 	assert.Empty(t, got.Applications)
+}
+
+// Benchmark_yarnLibraryAnalyzer_PostAnalyze analyzes monorepos whose
+// yarn.lock holds libraries of 4 leaves each. Each workspace depends on
+// 5 libraries and has a dev dependency on another. The files are in a
+// mapfs, as in a scan.
+func Benchmark_yarnLibraryAnalyzer_PostAnalyze(b *testing.B) {
+	const (
+		leaves = 4 // per library
+		deps   = 5 // per workspace
+	)
+	for _, size := range []struct {
+		workspaces int
+		libs       int
+	}{
+		{workspaces: 100, libs: 1000},
+		{workspaces: 1000, libs: 2000},
+	} {
+		name := fmt.Sprintf("workspaces=%d/packages=%d", size.workspaces, size.libs*(1+leaves))
+		b.Run(name, func(b *testing.B) {
+			var lock strings.Builder
+			lock.WriteString("# yarn lockfile v1\n")
+			for i := range size.libs {
+				fmt.Fprintf(&lock, "\nlib-%d@^1.0.0:\n  version \"1.0.0\"\n  dependencies:\n", i)
+				for j := range leaves {
+					fmt.Fprintf(&lock, "    leaf-%d \"^1.0.0\"\n", leaves*i+j)
+				}
+			}
+			for i := range leaves * size.libs {
+				fmt.Fprintf(&lock, "\nleaf-%d@^1.0.0:\n  version \"1.0.0\"\n", i)
+			}
+
+			fsys := mapfs.New()
+			write := func(name string, data []byte) {
+				require.NoError(b, fsys.MkdirAll(path.Dir(name), os.ModePerm))
+				require.NoError(b, fsys.WriteVirtualFile(name, data, 0o644))
+			}
+			write("yarn.lock", []byte(lock.String()))
+			write("package.json", []byte(`{"name": "root", "version": "1.0.0", "workspaces": ["packages/*"]}`))
+			for w := range size.workspaces {
+				prod := make(map[string]string)
+				for j := range deps {
+					prod[fmt.Sprintf("lib-%d", (deps*w+j)%size.libs)] = "^1.0.0"
+				}
+				dev := map[string]string{fmt.Sprintf("lib-%d", (deps*w+size.libs/2)%size.libs): "^1.0.0"}
+				data, err := json.Marshal(map[string]any{
+					"name":            fmt.Sprintf("ws-%d", w),
+					"version":         "1.0.0",
+					"dependencies":    prod,
+					"devDependencies": dev,
+				})
+				require.NoError(b, err)
+				write(fmt.Sprintf("packages/ws-%d/package.json", w), data)
+			}
+
+			a, err := newYarnAnalyzer(analyzer.AnalyzerOptions{})
+			require.NoError(b, err)
+			got, err := a.PostAnalyze(b.Context(), analyzer.PostAnalysisInput{FS: fsys})
+			require.NoError(b, err)
+			require.Len(b, got.Applications[0].Packages, 1+size.workspaces+size.libs*(1+leaves))
+
+			b.ReportAllocs()
+			for b.Loop() {
+				if _, err := a.PostAnalyze(b.Context(), analyzer.PostAnalysisInput{FS: fsys}); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
 }
