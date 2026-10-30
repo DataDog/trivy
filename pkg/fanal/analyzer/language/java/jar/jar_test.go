@@ -1,8 +1,12 @@
 package jar
 
 import (
+	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -148,6 +152,144 @@ func Test_javaLibraryAnalyzer_Analyze(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})
+	}
+}
+
+// A countingFS counts the bytes read with Read from the files it opens.
+// Hashing a jar reads it with Read, and the zip reader uses ReadAt.
+type countingFS struct {
+	*mapfs.FS
+	n atomic.Int64
+}
+
+func (fsys *countingFS) Open(path string) (fs.File, error) {
+	f, err := fsys.FS.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	rf, ok := f.(readSeekerAtFile)
+	if !ok {
+		return f, nil
+	}
+	return countingFile{rf, &fsys.n}, nil
+}
+
+type readSeekerAtFile interface {
+	fs.File
+	io.Seeker
+	io.ReaderAt
+}
+
+type countingFile struct {
+	readSeekerAtFile
+	n *atomic.Int64
+}
+
+func (f countingFile) Read(p []byte) (int, error) {
+	n, err := f.readSeekerAtFile.Read(p)
+	f.n.Add(int64(n))
+	return n, err
+}
+
+func Test_javaLibraryAnalyzer_hashOnce(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputFile string
+		want      *analyzer.AnalysisResult
+	}{
+		{
+			name:      "jar found in trivy-java-db by sha1",
+			inputFile: "testdata/test.jar",
+			want: &analyzer.AnalysisResult{
+				Applications: []types.Application{
+					{
+						Type:     types.Jar,
+						FilePath: "testdata/test.jar",
+						Packages: types.Packages{
+							{
+								Name:     "org.apache.tomcat.embed:tomcat-embed-websocket",
+								FilePath: "testdata/test.jar",
+								Version:  "9.0.65",
+								Digest:   "sha1:bd70dfeb39cc83c6934be24fa377b21e541dbe76",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "par not found in trivy-java-db",
+			inputFile: "testdata/test.par",
+			want: &analyzer.AnalysisResult{
+				Applications: []types.Application{
+					{
+						Type:     types.Jar,
+						FilePath: "testdata/test.par",
+						Packages: types.Packages{
+							{
+								Name:     "com.fasterxml.jackson.core:jackson-core",
+								FilePath: "testdata/test.par/lib/jackson-core-2.9.10.jar",
+								Version:  "2.9.10",
+								Digest:   "sha1:d40913470259cfba6dcc90f96bcaa9bcff1b72e0",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo, err := name.NewTag(javadb.DefaultGHCRRepository)
+			require.NoError(t, err)
+			javadb.Init("testdata", []name.Reference{repo}, true, false, types.RegistryOptions{Insecure: false})
+
+			mfs := mapfs.New()
+			err = mfs.MkdirAll(filepath.Dir(tt.inputFile), os.ModePerm)
+			require.NoError(t, err)
+			err = mfs.WriteFile(tt.inputFile, tt.inputFile)
+			require.NoError(t, err)
+			fsys := &countingFS{FS: mfs}
+
+			a := javaLibraryAnalyzer{}
+			got, err := a.PostAnalyze(t.Context(), analyzer.PostAnalysisInput{
+				FS:      fsys,
+				Options: analyzer.AnalysisOptions{FileChecksumJar: true},
+			})
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+
+			// The Java DB search and the checksum share one read of the jar.
+			fi, err := os.Stat(tt.inputFile)
+			require.NoError(t, err)
+			assert.Equal(t, fi.Size(), fsys.n.Load(), "bytes read")
+		})
+	}
+}
+
+func Benchmark_javaLibraryAnalyzer_PostAnalyze(b *testing.B) {
+	repo, err := name.NewTag(javadb.DefaultGHCRRepository)
+	require.NoError(b, err)
+	javadb.Init("testdata", []name.Reference{repo}, true, false, types.RegistryOptions{Insecure: false})
+
+	// Copies of a jar found in trivy-java-db by sha1.
+	const n = 16
+	mfs := mapfs.New()
+	for i := range n {
+		dir := fmt.Sprintf("lib%d", i)
+		require.NoError(b, mfs.MkdirAll(dir, os.ModePerm))
+		require.NoError(b, mfs.WriteFile(dir+"/test.jar", "testdata/test.jar"))
+	}
+
+	a := javaLibraryAnalyzer{parallel: 1}
+	b.ReportAllocs()
+	for b.Loop() {
+		got, err := a.PostAnalyze(b.Context(), analyzer.PostAnalysisInput{
+			FS:      mfs,
+			Options: analyzer.AnalysisOptions{FileChecksumJar: true},
+		})
+		require.NoError(b, err)
+		require.Len(b, got.Applications, n)
 	}
 }
 

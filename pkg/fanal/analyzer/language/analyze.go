@@ -18,6 +18,13 @@ type Parser interface {
 	Parse(_ context.Context, r xio.ReadSeekerAt) ([]types.Package, []types.Dependency, error)
 }
 
+// A digester is a Parser that may compute the SHA-1 digest of the file it
+// parses. Digest returns the digest computed by the last call to Parse, or ""
+// if Parse did not compute it.
+type digester interface {
+	Digest() digest.Digest
+}
+
 // Analyze returns an analysis result of the lock file
 func Analyze(ctx context.Context, fileType types.LangType, filePath string, r xio.ReadSeekerAt, parser Parser) (*analyzer.AnalysisResult, error) {
 	app, err := Parse(ctx, fileType, filePath, r, parser)
@@ -59,7 +66,7 @@ func Parse(ctx context.Context, fileType types.LangType, filePath string, r io.R
 
 	// The file path of each library should be empty in case of dependency list such as lock file
 	// since they all will be the same path.
-	return toApplication(fileType, filePath, "", nil, parsedPkgs, parsedDependencies), nil
+	return toApplication(fileType, filePath, "", nil, parser, parsedPkgs, parsedDependencies), nil
 }
 
 // ParsePackage returns a parsed result of the package file
@@ -76,16 +83,16 @@ func ParsePackage(ctx context.Context, fileType types.LangType, filePath string,
 
 	// The file path of each library should be empty in case of dependency list such as lock file
 	// since they all will be the same path.
-	return toApplication(fileType, filePath, filePath, r, parsedPkgs, parsedDependencies), nil
+	return toApplication(fileType, filePath, filePath, r, parser, parsedPkgs, parsedDependencies), nil
 }
 
-func toApplication(fileType types.LangType, filePath, libFilePath string, r xio.ReadSeekerAt, pkgs []types.Package, depGraph []types.Dependency) *types.Application {
+func toApplication(fileType types.LangType, filePath, libFilePath string, r xio.ReadSeekerAt, parser Parser, pkgs []types.Package, depGraph []types.Dependency) *types.Application {
 	if len(pkgs) == 0 {
 		return nil
 	}
 
 	// Calculate the file digest when one of `spdx` formats is selected
-	d, err := calculateDigest(r)
+	d, err := calculateDigest(r, parser)
 	if err != nil {
 		log.Warn("Unable to get checksum", log.FilePath(filePath), log.Err(err))
 	}
@@ -112,9 +119,14 @@ func toApplication(fileType types.LangType, filePath, libFilePath string, r xio.
 	}
 }
 
-func calculateDigest(r xio.ReadSeekerAt) (digest.Digest, error) {
+func calculateDigest(r xio.ReadSeekerAt, parser Parser) (digest.Digest, error) {
 	if r == nil {
 		return "", nil
+	}
+	if p, ok := parser.(digester); ok {
+		if d := p.Digest(); d != "" {
+			return d, nil
+		}
 	}
 	// return reader to start after it has been read in analyzer
 	if _, err := r.Seek(0, io.SeekStart); err != nil {

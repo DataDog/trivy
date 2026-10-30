@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"context"
 	"crypto/sha1" // nolint:gosec
-	"encoding/hex"
 	"errors"
 	"io"
 	"os"
@@ -18,6 +17,7 @@ import (
 	mavenversion "github.com/masahiro331/go-mvn-version"
 	"golang.org/x/xerrors"
 
+	"github.com/aquasecurity/trivy/pkg/digest"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
@@ -41,6 +41,10 @@ type Parser struct {
 	size         int64
 
 	client Client
+
+	// digest is the SHA-1 digest of the file given to Parse, set if Parse
+	// searched for the file by its digest.
+	digest digest.Digest
 }
 
 type Option func(*Parser)
@@ -77,14 +81,24 @@ func NewParser(c Client, opts ...Option) *Parser {
 }
 
 func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
-	pkgs, deps, err := p.parseArtifact(p.rootFilePath, p.size, r)
+	p.digest = ""
+	pkgs, deps, err := p.parseArtifact(p.rootFilePath, p.size, r, true)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("unable to parse %s: %w", p.rootFilePath, err)
 	}
 	return removePackageDuplicates(pkgs), deps, nil
 }
 
-func (p *Parser) parseArtifact(filePath string, size int64, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+// Digest returns the SHA-1 digest of the file read by the last call to
+// Parse, or "" if Parse did not compute it. Parse computes the digest when
+// it searches for the file by digest.
+func (p *Parser) Digest() digest.Digest {
+	return p.digest
+}
+
+// parseArtifact returns the packages in the archive r. If root is set, r is
+// the file given to Parse.
+func (p *Parser) parseArtifact(filePath string, size int64, r xio.ReadSeekerAt, root bool) ([]ftypes.Package, []ftypes.Dependency, error) {
 	p.logger.Debug("Parsing Java artifacts...", log.FilePath(filePath))
 
 	// Try to extract artifactId and version from the file name
@@ -122,7 +136,7 @@ func (p *Parser) parseArtifact(filePath string, size int64, r xio.ReadSeekerAt) 
 	}
 
 	// If groupId and artifactId are not found, call Maven Central's search API with SHA-1 digest.
-	props, err := p.searchBySHA1(r, filePath)
+	props, err := p.searchBySHA1(r, filePath, root)
 	if err == nil {
 		return append(pkgs, props.Package()), nil, nil
 	} else if !errors.Is(err, ArtifactNotFoundErr) {
@@ -223,7 +237,7 @@ func (p *Parser) parseInnerJar(zf *zip.File, rootPath string) ([]ftypes.Package,
 	}
 
 	// Parse jar/war/ear recursively
-	innerPkgs, innerDeps, err := p.parseArtifact(fullPath, int64(zf.UncompressedSize64), f)
+	innerPkgs, innerDeps, err := p.parseArtifact(fullPath, int64(zf.UncompressedSize64), f, false)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("failed to parse %s: %w", zf.Name, err)
 	}
@@ -231,7 +245,9 @@ func (p *Parser) parseInnerJar(zf *zip.File, rootPath string) ([]ftypes.Package,
 	return innerPkgs, innerDeps, nil
 }
 
-func (p *Parser) searchBySHA1(r io.ReadSeeker, filePath string) (Properties, error) {
+// searchBySHA1 searches for the archive r by its SHA-1 digest. If root is
+// set, it keeps the digest for Digest.
+func (p *Parser) searchBySHA1(r io.ReadSeeker, filePath string, root bool) (Properties, error) {
 	if _, err := r.Seek(0, io.SeekStart); err != nil {
 		return Properties{}, xerrors.Errorf("file seek error: %w", err)
 	}
@@ -240,8 +256,11 @@ func (p *Parser) searchBySHA1(r io.ReadSeeker, filePath string) (Properties, err
 	if _, err := io.Copy(h, r); err != nil {
 		return Properties{}, xerrors.Errorf("unable to calculate SHA-1: %w", err)
 	}
-	s := hex.EncodeToString(h.Sum(nil))
-	prop, err := p.client.SearchBySHA1(s)
+	d := digest.NewDigest(digest.SHA1, h)
+	if root {
+		p.digest = d
+	}
+	prop, err := p.client.SearchBySHA1(d.Encoded())
 	if err != nil {
 		return Properties{}, err
 	}

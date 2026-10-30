@@ -1,6 +1,8 @@
 package jar_test
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/java/jar"
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/java/jar/sonatype"
+	"github.com/aquasecurity/trivy/pkg/digest"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 )
 
@@ -355,6 +358,107 @@ func TestParse(t *testing.T) {
 			sort.Sort(ftypes.Packages(v.want))
 
 			assert.Equal(t, v.want, got)
+		})
+	}
+}
+
+// A notFoundClient is a Client that finds no artifact.
+type notFoundClient struct{}
+
+func (notFoundClient) Exists(_, _ string) (bool, error) {
+	return false, nil
+}
+
+func (notFoundClient) SearchBySHA1(_ string) (jar.Properties, error) {
+	return jar.Properties{}, jar.ArtifactNotFoundErr
+}
+
+func (notFoundClient) SearchByArtifactID(_, _ string) (string, error) {
+	return "", jar.ArtifactNotFoundErr
+}
+
+// A zipEntry is a file in an archive made by makeZip.
+type zipEntry struct {
+	name string
+	data []byte
+}
+
+// makeZip returns a zip archive of entries, each compressed with method.
+func makeZip(t testing.TB, method uint16, entries ...zipEntry) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+	for _, e := range entries {
+		f, err := w.CreateHeader(&zip.FileHeader{Name: e.name, Method: method})
+		require.NoError(t, err)
+		_, err = f.Write(e.data)
+		require.NoError(t, err)
+	}
+	require.NoError(t, w.Close())
+	return buf.Bytes()
+}
+
+// pomProperties returns the pom.properties entry of test:artifactID:version.
+func pomProperties(artifactID, version string) zipEntry {
+	return zipEntry{
+		name: "META-INF/maven/test/" + artifactID + "/pom.properties",
+		data: []byte("groupId=test\nartifactId=" + artifactID + "\nversion=" + version + "\n"),
+	}
+}
+
+func TestParser_Digest(t *testing.T) {
+	// The pom.properties of app-1.0.jar matches its name, so Parse searches
+	// for the nested jar by SHA-1 and not for app-1.0.jar.
+	app := makeZip(t, zip.Deflate,
+		pomProperties("app", "1.0"),
+		zipEntry{name: "lib/inner.jar", data: makeZip(t, zip.Deflate, zipEntry{name: "Inner.class"})},
+	)
+	tests := []struct {
+		name    string
+		file    string
+		data    []byte // contents of file, read from disk if nil
+		offline bool
+		want    digest.Digest
+	}{
+		{
+			name: "searched by sha1",
+			file: "testdata/test.jar",
+			want: "sha1:c666f5bc47eb64ed3bbd13505a26f58be71f33f0",
+		},
+		{
+			name: "searched by sha1 with nested jars",
+			file: "testdata/nested.jar",
+			want: "sha1:16e646495b935f0439ba13d4b3da8d7b12e98117",
+		},
+		{
+			name: "found by pom.properties",
+			file: "testdata/hadoop-shaded-guava-1.1.0-SNAPSHOT.jar",
+		},
+		{
+			name: "nested jar searched by sha1",
+			file: "app-1.0.jar",
+			data: app,
+		},
+		{
+			name:    "offline",
+			file:    "testdata/test.jar",
+			offline: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := tt.data
+			if data == nil {
+				var err error
+				data, err = os.ReadFile(tt.file)
+				require.NoError(t, err)
+			}
+
+			p := jar.NewParser(notFoundClient{}, jar.WithFilePath(tt.file), jar.WithOffline(tt.offline),
+				jar.WithSize(int64(len(data))))
+			_, _, err := p.Parse(t.Context(), bytes.NewReader(data))
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, p.Digest())
 		})
 	}
 }
