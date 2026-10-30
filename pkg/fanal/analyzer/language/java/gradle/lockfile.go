@@ -2,23 +2,19 @@ package gradle
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"sort"
 	"strings"
 
-	"github.com/samber/lo"
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/gradle/lockfile"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
-	xslices "github.com/aquasecurity/trivy/pkg/x/slices"
 )
 
 func init() {
@@ -32,64 +28,30 @@ const (
 
 // gradleLockAnalyzer analyzes '*gradle.lockfile'
 type gradleLockAnalyzer struct {
-	logger *log.Logger
 	parser language.Parser
 }
 
 func newGradleLockAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	return &gradleLockAnalyzer{
-		logger: log.WithPrefix("gradle"),
 		parser: lockfile.NewParser(),
 	}, nil
 }
 
 func (a gradleLockAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
-	poms, err := a.parsePoms(ctx)
-	if err != nil {
-		a.logger.Warn("Unable to get licenses and dependencies", log.Err(err))
-	}
-
 	required := func(_ string, _ fs.DirEntry) bool {
 		// Parse all required files: `*gradle.lockfile` (from a.Required func) + input.FilePatterns.Match()
 		return true
 	}
 
 	var apps []types.Application
-	err = fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
-		var app *types.Application
-		app, err = language.Parse(ctx, types.Gradle, filePath, r, a.parser)
+	err := fsutils.WalkDir(ctx, input.FS, ".", required, input.Options.WalkErrCallback, func(filePath string, _ fs.DirEntry, r io.Reader) error {
+		app, err := language.Parse(ctx, types.Gradle, filePath, r, a.parser)
 		if err != nil {
 			return xerrors.Errorf("%s parse error: %w", filePath, err)
 		}
 
 		if app == nil {
 			return nil
-		}
-
-		pkgs := lo.SliceToMap(app.Packages, func(lib types.Package) (string, struct{}) {
-			return lib.ID, struct{}{}
-		})
-
-		for i, lib := range app.Packages {
-			pom := poms[lib.ID]
-
-			// Fill licenses from pom file
-			if len(pom.Licenses.License) > 0 {
-				app.Packages[i].Licenses = xslices.Map(pom.Licenses.License, func(license License) string {
-					return license.Name
-				})
-			}
-
-			// File child deps from pom file
-			var deps []string
-			for _, dep := range pom.Dependencies.Dependency {
-				id := packageID(dep.GroupID, dep.ArtifactID, dep.Version)
-				if _, ok := pkgs[id]; ok {
-					deps = append(deps, id)
-				}
-			}
-			sort.Strings(deps)
-			app.Packages[i].DependsOn = deps
 		}
 
 		sort.Sort(app.Packages)
@@ -116,8 +78,4 @@ func (a gradleLockAnalyzer) Type() analyzer.Type {
 
 func (a gradleLockAnalyzer) Version() int {
 	return version
-}
-
-func packageID(groupId, artifactId, ver string) string {
-	return fmt.Sprintf("%s:%s:%s", groupId, artifactId, ver)
 }
