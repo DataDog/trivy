@@ -1,7 +1,11 @@
 package javaparser
 
 import (
+	"bytes"
+	"debug/elf"
+	"encoding/binary"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -84,4 +88,30 @@ func TestParse(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestParse_segmentPastEnd(t *testing.T) {
+	data, err := os.ReadFile("testdata/java.jre-8u421-linux-x64.elf")
+	require.NoError(t, err)
+
+	// Make .rodata and the segment that holds it claim 2^50 bytes, as a
+	// crafted file can.
+	f, err := elf.NewFile(bytes.NewReader(data))
+	require.NoError(t, err)
+	s := slices.IndexFunc(f.Sections, func(s *elf.Section) bool { return s.Name == ".rodata" })
+	require.GreaterOrEqual(t, s, 0)
+	addr := f.Sections[s].Addr
+	p := slices.IndexFunc(f.Progs, func(p *elf.Prog) bool {
+		return p.Vaddr <= addr && addr < p.Vaddr+p.Filesz
+	})
+	require.GreaterOrEqual(t, p, 0)
+	le := binary.LittleEndian
+	shoff, shentsize := le.Uint64(data[0x28:]), uint64(le.Uint16(data[0x3a:]))
+	phoff, phentsize := le.Uint64(data[0x20:]), uint64(le.Uint16(data[0x36:]))
+	le.PutUint64(data[shoff+uint64(s)*shentsize+32:], 1<<50) // sh_size of an Elf64_Shdr
+	le.PutUint64(data[phoff+uint64(p)*phentsize+32:], 1<<50) // p_filesz of an Elf64_Phdr
+
+	got, _, err := NewParser().Parse(t.Context(), bytes.NewReader(data))
+	require.NoError(t, err)
+	assert.Empty(t, got)
 }
