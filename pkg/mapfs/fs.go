@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"iter"
 	"os"
 	"path/filepath"
 	"strings"
@@ -144,6 +145,20 @@ func (m *FS) FilterFunc(fn func(path string, d fs.DirEntry) (bool, error)) (*FS,
 	}
 
 	return newFS, nil
+}
+
+// AddAll adds the files and directories of src to m, linked to the same
+// underlying files. Where both hold a path, m keeps its own.
+func (m *FS) AddAll(src *FS) {
+	m.root.addAll(src.root)
+}
+
+// Files returns the paths of the files in m, in no particular order. It
+// reads nothing from the underlying files.
+func (m *FS) Files() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		m.root.eachFile("", yield)
+	}
 }
 
 // CopyDir copies a directory from the local filesystem into the in-memory filesystem.
