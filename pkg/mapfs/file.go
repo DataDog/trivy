@@ -163,6 +163,38 @@ func (f *file) without(paths set.Set[string], dir string) *file {
 	return c
 }
 
+// addAll adds the tree under src to the tree under f, sharing the file
+// nodes. Where both hold a name, f keeps its own.
+func (f *file) addAll(src *file) {
+	src.files.Range(func(name string, sub *file) bool {
+		if !sub.stat.IsDir() {
+			f.files.LoadOrStore(name, sub)
+			return true
+		}
+		dir, _ := f.files.LoadOrStore(name, &file{stat: sub.stat})
+		if dir.stat.IsDir() {
+			dir.addAll(sub)
+		}
+		return true
+	})
+}
+
+// eachFile calls yield with the path of each file under f, whose path is
+// dir, until yield returns false. It reports whether yield never did.
+func (f *file) eachFile(dir string, yield func(string) bool) bool {
+	more := true
+	f.files.Range(func(name string, sub *file) bool {
+		p := joinPath(dir, name)
+		if sub.stat.IsDir() {
+			more = sub.eachFile(p, yield)
+		} else {
+			more = yield(p)
+		}
+		return more
+	})
+	return more
+}
+
 func joinPath(dir, name string) string {
 	if dir == "" {
 		return name
