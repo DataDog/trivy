@@ -24,6 +24,7 @@ func Test_ParseLicenses(t *testing.T) {
 			want: map[string][]string{
 				"package-a@0.0.1": {"CC-BY-SA-4.0"},
 				"package-e@0.0.1": {"(GPL-3.0 OR LGPL-3.0 OR MPL-1.1 OR SEE LICENSE IN LICENSE)"},
+				"package-g@0.0.1": {"MIT", "Apache-2.0"},
 			},
 		},
 	}
@@ -33,7 +34,7 @@ func Test_ParseLicenses(t *testing.T) {
 			fsys := mapfs.New()
 			require.NoError(t, fsys.CopyFilesUnder(tt.dir))
 
-			l := license.NewLicense("npm", 0.9)
+			l := license.NewLicense("npm")
 			licenses, err := l.Traverse(t.Context(), fsys, ".", nil)
 			if tt.wantErr != "" {
 				assert.ErrorContainsf(t, err, tt.wantErr, tt.name)
