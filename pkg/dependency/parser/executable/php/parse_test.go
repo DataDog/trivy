@@ -38,9 +38,11 @@ func TestParse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.Open(tt.inputFile)
 			require.NoError(t, err)
+			defer f.Close()
+			r := &readRecorder{File: f}
 
 			parser := NewParser()
-			got, _, err := parser.Parse(t.Context(), f)
+			got, _, err := parser.Parse(t.Context(), r)
 			if tt.wantErr != "" {
 				require.Error(t, err)
 				require.ErrorContains(t, err, tt.wantErr)
@@ -49,6 +51,31 @@ func TestParse(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
+			assert.LessOrEqual(t, r.max, 1<<20, "largest read")
 		})
+	}
+}
+
+// readRecorder records the size of the largest read from a file.
+type readRecorder struct {
+	*os.File
+	max int
+}
+
+func (r *readRecorder) ReadAt(p []byte, off int64) (int, error) {
+	r.max = max(r.max, len(p))
+	return r.File.ReadAt(p, off)
+}
+
+func BenchmarkParse(b *testing.B) {
+	f, err := os.Open("../nodejs/testdata/php.elf")
+	require.NoError(b, err)
+	defer f.Close()
+	parser := NewParser()
+	b.ReportAllocs()
+	for b.Loop() {
+		if _, _, err := parser.Parse(b.Context(), f); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

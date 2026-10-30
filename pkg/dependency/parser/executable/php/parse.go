@@ -3,7 +3,6 @@
 package phpparser
 
 import (
-	"bytes"
 	"context"
 	"regexp"
 
@@ -51,24 +50,9 @@ func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Packag
 }
 
 // findVers finds and returns the PHP version in the executable x.
-func findVers(x exe.Exe) (vers, mod string) {
-	text, size := x.DataStart()
-	data, err := x.ReadData(text, size)
-	if err != nil {
-		return
+func findVers(x exe.Exe) (mod, vers string) {
+	if m := exe.FindSubmatch(x, versReg); m != nil {
+		vers = string(m[1])
 	}
-
-	for len(data) > 0 {
-		// Extract the version number
-		// split by null characters
-		head, tail, _ := bytes.Cut(data, []byte("\000"))
-		match := versReg.FindSubmatch(head)
-		if match != nil {
-			vers = string(match[1])
-			break
-		}
-		data = tail
-	}
-
 	return "php", vers
 }
