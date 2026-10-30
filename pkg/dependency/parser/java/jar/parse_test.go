@@ -16,6 +16,7 @@ import (
 
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/java/jar"
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/java/jar/sonatype"
+	"github.com/aquasecurity/trivy/pkg/digest"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 )
 
@@ -853,5 +854,104 @@ Implementation-Vendor: Apache Software Foundation
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 		})
+	}
+}
+
+// A notFoundClient is a Client that finds no artifact.
+type notFoundClient struct{}
+
+func (notFoundClient) Exists(_, _ string) (bool, error) {
+	return false, nil
+}
+
+func (notFoundClient) SearchBySHA1(_ string) (jar.Properties, error) {
+	return jar.Properties{}, jar.ArtifactNotFoundErr
+}
+
+func (notFoundClient) SearchByArtifactID(_, _ string) (string, error) {
+	return "", jar.ArtifactNotFoundErr
+}
+
+// A zipEntry is a file in an archive made by makeZip.
+type zipEntry struct {
+	name string
+	data []byte
+}
+
+// makeZip returns a zip archive of entries, each compressed with method.
+func makeZip(t testing.TB, method uint16, entries ...zipEntry) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+	for _, e := range entries {
+		f, err := w.CreateHeader(&zip.FileHeader{Name: e.name, Method: method})
+		require.NoError(t, err)
+		_, err = f.Write(e.data)
+		require.NoError(t, err)
+	}
+	require.NoError(t, w.Close())
+	return buf.Bytes()
+}
+
+// pomProperties returns the pom.properties entry of test:artifactID:version.
+func pomProperties(artifactID, version string) zipEntry {
+	return zipEntry{
+		name: "META-INF/maven/test/" + artifactID + "/pom.properties",
+		data: []byte("groupId=test\nartifactId=" + artifactID + "\nversion=" + version + "\n"),
+	}
+}
+
+// A readCounter counts the bytes read with Read. Hashing an archive reads it
+// with Read, and the zip reader uses ReadAt.
+type readCounter struct {
+	r *bytes.Reader
+	n int64
+}
+
+func (r *readCounter) Read(p []byte) (int, error) {
+	n, err := r.r.Read(p)
+	r.n += int64(n)
+	return n, err
+}
+
+func (r *readCounter) ReadAt(p []byte, off int64) (int, error) {
+	return r.r.ReadAt(p, off)
+}
+
+func (r *readCounter) Seek(offset int64, whence int) (int64, error) {
+	return r.r.Seek(offset, whence)
+}
+
+func TestParser_hashOnce(t *testing.T) {
+	// app.jar holds the pom.properties of a shaded dependency and none of its
+	// own, so Parse searches for app.jar by SHA-1, finds nothing, and sets the
+	// digest of app.jar on the shaded package.
+	data := makeZip(t, zip.Deflate, pomProperties("dep", "1.0"))
+	want, err := digest.CalcSHA1(bytes.NewReader(data))
+	require.NoError(t, err)
+
+	r := &readCounter{r: bytes.NewReader(data)}
+	p := jar.NewParser(notFoundClient{}, jar.WithFilePath("app.jar"), jar.WithSize(int64(len(data))),
+		jar.WithChecksum(true))
+	pkgs, _, err := p.Parse(t.Context(), r)
+	require.NoError(t, err)
+	require.Len(t, pkgs, 1)
+	assert.Equal(t, want, pkgs[0].Digest)
+
+	// The search by SHA-1 and the checksum share one read of the archive.
+	assert.Equal(t, int64(len(data)), r.n, "bytes read")
+}
+
+func BenchmarkParse_notFoundBySHA1(b *testing.B) {
+	// A 4 MiB jar that holds the pom.properties of a shaded dependency, which
+	// Parse searches for by SHA-1 without finding it.
+	data := makeZip(b, zip.Store, pomProperties("dep", "1.0"), zipEntry{name: "data.bin", data: make([]byte, 4<<20)})
+	b.ReportAllocs()
+	for b.Loop() {
+		p := jar.NewParser(notFoundClient{}, jar.WithFilePath("app.jar"), jar.WithSize(int64(len(data))),
+			jar.WithChecksum(true))
+		if _, _, err := p.Parse(b.Context(), bytes.NewReader(data)); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
