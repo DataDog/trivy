@@ -1,33 +1,25 @@
 package license
 
 import (
-	"errors"
+	"context"
 	"io"
 	"io/fs"
-	"path"
 	"strings"
-	"context"
 
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/nodejs/packagejson"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/aquasecurity/trivy/pkg/licensing"
-	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 )
 
 type License struct {
-	logger                    *log.Logger
-	parser                    *packagejson.Parser
-	classifierConfidenceLevel float64
+	parser *packagejson.Parser
 }
 
-func NewLicense(classifierConfidenceLevel float64) *License {
+func NewLicense() *License {
 	return &License{
-		logger:                    log.WithPrefix("npm"),
-		parser:                    packagejson.NewParser(),
-		classifierConfidenceLevel: classifierConfidenceLevel,
+		parser: packagejson.NewParser(),
 	}
 }
 
@@ -39,24 +31,11 @@ func (l *License) Traverse(ctx context.Context, fsys fs.FS, root string) (map[st
 			return xerrors.Errorf("unable to parse %q: %w", pkgJSONPath, err)
 		}
 
-		ok, licenseFileName := IsLicenseRefToFile(pkg.Licenses)
-		if !ok {
+		// Record the license that package.json names. A license kept in a
+		// file stays unknown: licensing.Classify returns empty findings in
+		// this build.
+		if ok, _ := IsLicenseRefToFile(pkg.Licenses); !ok {
 			licenses[pkg.ID] = pkg.Licenses
-			return nil
-		}
-
-		l.logger.Debug("License names are missing, an attempt to find them in the license file",
-			log.FilePath(pkgJSONPath), log.String("license_file", licenseFileName))
-		licenseFilePath := path.Join(path.Dir(pkgJSONPath), licenseFileName)
-
-		if findings, err := classifyLicense(licenseFilePath, l.classifierConfidenceLevel, fsys); err != nil {
-			return xerrors.Errorf("unable to classify the license: %w", err)
-		} else if len(findings) > 0 {
-			// License found
-			licenses[pkg.ID] = findings.Names()
-		} else {
-			l.logger.Debug("The license file was not found or the license could not be classified",
-				log.String("license_file", licenseFilePath))
 		}
 		return nil
 	}
@@ -86,25 +65,4 @@ func IsLicenseRefToFile(maybeLicenses []string) (bool, string) {
 	}
 
 	return licenseFileName != "", licenseFileName
-}
-
-func classifyLicense(filePath string, classifierConfidenceLevel float64, fsys fs.FS) (types.LicenseFindings, error) {
-	f, err := fsys.Open(filePath)
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	} else if err != nil {
-		return nil, xerrors.Errorf("file open error: %w", err)
-	}
-	defer f.Close()
-
-	l, err := licensing.Classify(filePath, f, classifierConfidenceLevel)
-	if err != nil {
-		return nil, xerrors.Errorf("license classify error: %w", err)
-	}
-
-	if l == nil {
-		return nil, nil
-	}
-
-	return l.Findings, nil
 }

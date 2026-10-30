@@ -1000,12 +1000,17 @@ func Test_yarnLibraryAnalyzer_Required(t *testing.T) {
 		{
 			name:     "license file",
 			filePath: "node_modules/@vue/compiler-sfc/LICENSE",
-			want:     true,
+			want:     false,
 		},
 		{
 			name:     "txt license file",
 			filePath: "node_modules/@vue/compiler-sfc/LICENSE.txt",
-			want:     true,
+			want:     false,
+		},
+		{
+			name:     "lowercase license file",
+			filePath: "node_modules/picocolors/license",
+			want:     false,
 		},
 	}
 	for _, tt := range tests {

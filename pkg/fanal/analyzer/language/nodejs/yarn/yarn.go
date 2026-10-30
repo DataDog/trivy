@@ -50,12 +50,12 @@ type yarnAnalyzer struct {
 	license           *license.License
 }
 
-func newYarnAnalyzer(opt analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
+func newYarnAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	return &yarnAnalyzer{
 		logger:            log.WithPrefix("yarn"),
 		packageJsonParser: packagejson.NewParser(),
 		comparer:          npm.Comparer{},
-		license:           license.NewLicense(opt.LicenseScannerOption.ClassifierConfidenceLevel),
+		license:           license.NewLicense(),
 	}, nil
 }
 
@@ -134,9 +134,7 @@ func (a yarnAnalyzer) Required(filePath string, _ os.FileInfo) bool {
 		return false
 	}
 
-	if fileName == types.YarnLock ||
-		fileName == types.NpmPkg ||
-		strings.HasPrefix(strings.ToLower(fileName), "license") {
+	if fileName == types.YarnLock || fileName == types.NpmPkg {
 		return true
 	}
 
