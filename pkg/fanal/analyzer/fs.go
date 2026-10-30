@@ -67,13 +67,16 @@ func (c *CompositeFS) CopyFileToTemp(opener Opener, _ os.FileInfo) (string, erro
 func (c *CompositeFS) CreateLink(analyzerTypes []Type, rootDir, virtualPath, realPath string) error {
 	// Create fs.FS for each post-analyzer that wants to analyze the current file
 	for _, t := range analyzerTypes {
-		// Since filesystem scanning may require access outside the specified path, (e.g. Terraform modules)
-		// it allows "../" access with "WithUnderlyingRoot".
-		var opts []mapfs.Option
-		if rootDir != "" {
-			opts = append(opts, mapfs.WithUnderlyingRoot(rootDir))
+		mfs, ok := c.files.Load(t)
+		if !ok {
+			// Since filesystem scanning may require access outside the specified path, (e.g. Terraform modules)
+			// it allows "../" access with "WithUnderlyingRoot".
+			var opts []mapfs.Option
+			if rootDir != "" {
+				opts = append(opts, mapfs.WithUnderlyingRoot(rootDir))
+			}
+			mfs, _ = c.files.LoadOrStore(t, mapfs.New(opts...))
 		}
-		mfs, _ := c.files.LoadOrStore(t, mapfs.New(opts...))
 		if d := path.Dir(virtualPath); d != "." {
 			if err := mfs.MkdirAll(d, os.ModePerm); err != nil && !errors.Is(err, fs.ErrExist) {
 				return xerrors.Errorf("mapfs mkdir error: %w", err)
