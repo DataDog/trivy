@@ -791,6 +791,11 @@ func TestAnalyzerGroup_DeferredAnalyze(t *testing.T) {
 			installedFiles: []string{"testdata/app/Gemfile.lock"},
 			want:           &analyzer.AnalysisResult{},
 		},
+		{
+			name:           "deferred analyzer skips a file dpkg recorded with a leading slash",
+			installedFiles: []string{"/testdata/app/Gemfile.lock"},
+			want:           &analyzer.AnalysisResult{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

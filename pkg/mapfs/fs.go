@@ -71,14 +71,15 @@ func (m *FS) UnderlyingRoot() string {
 	return m.underlyingRoot
 }
 
-// Filter removes the specified skippedFiles and returns a new FS
+// Filter removes the specified skippedFiles and returns a new FS.
+// Paths may be absolute, as package managers record them.
 func (m *FS) Filter(skippedFiles []string) (*FS, error) {
 	if len(skippedFiles) == 0 {
 		return m, nil
 	}
 	skipped := make(map[string]struct{}, len(skippedFiles))
 	for _, path := range skippedFiles {
-		skipped[path] = struct{}{}
+		skipped[cleanPath(path)] = struct{}{}
 	}
 	filter := func(path string, _ fs.DirEntry) (bool, error) {
 		_, ok := skipped[path]
