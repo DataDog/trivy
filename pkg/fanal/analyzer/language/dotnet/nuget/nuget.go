@@ -2,7 +2,6 @@ package nuget
 
 import (
 	"context"
-	"errors"
 	"io"
 	"io/fs"
 	"os"
@@ -17,7 +16,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/utils/fsutils"
 )
 
@@ -37,27 +35,19 @@ var requiredFiles = []string{
 }
 
 type nugetLibraryAnalyzer struct {
-	lockParser    language.Parser
-	configParser  language.Parser
-	licenseParser nuspecParser
-	logger        *log.Logger
+	lockParser   language.Parser
+	configParser language.Parser
 }
 
 func newNugetLibraryAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	return &nugetLibraryAnalyzer{
-		lockParser:    lock.NewParser(),
-		configParser:  config.NewParser(),
-		licenseParser: newNuspecParser(),
-		logger:        log.WithPrefix("nuget"),
+		lockParser:   lock.NewParser(),
+		configParser: config.NewParser(),
 	}, nil
 }
 
 func (a *nugetLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalysisInput) (*analyzer.AnalysisResult, error) {
 	var apps []types.Application
-	foundLicenses := make(map[string][]string)
-	if a.licenseParser.packagesDir == "" {
-		a.logger.Debug("The nuget packages directory couldn't be found. License search disabled")
-	}
 
 	required := func(_ string, _ fs.DirEntry) bool {
 		// Parse all required files: `packages.lock.json`, `packages.config` (from a.Required func) + input.FilePatterns.Match()
@@ -81,19 +71,6 @@ func (a *nugetLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.P
 		// nuget file doesn't contain dependencies
 		if app == nil {
 			return nil
-		}
-
-		for i, lib := range app.Packages {
-			license, ok := foundLicenses[lib.ID]
-			if !ok {
-				license, err = a.licenseParser.findLicense(lib.Name, lib.Version)
-				if err != nil && !errors.Is(err, fs.ErrNotExist) {
-					return xerrors.Errorf("license find error: %w", err)
-				}
-				foundLicenses[lib.ID] = license
-			}
-
-			app.Packages[i].Licenses = license
 		}
 
 		sort.Sort(app.Packages)
