@@ -37,6 +37,10 @@ var (
 // guarding against a decompression bomb. Real manifests are a few KB.
 const maxManifestSize = 10 << 20 // 10 MiB
 
+// maxDepth is the deepest nesting of archives that Parse reads. The file
+// given to Parse is at depth 0, and a jar in a war in an ear is at depth 2.
+const maxDepth = 8
+
 type Client interface {
 	Exists(groupID, artifactID string) (bool, error)
 	SearchBySHA1(sha1 string) (Properties, error)
@@ -101,17 +105,22 @@ func NewParser(c Client, opts ...Option) *Parser {
 	return p
 }
 
-func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
-	pkgs, deps, err := p.parseArtifact(p.rootFilePath, p.size, r)
+// Parse returns the packages in the archive r and in the archives nested in
+// it, up to 8 deep. When ctx is done, Parse stops between entries and returns
+// an error that wraps ctx.Err().
+func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+	pkgs, deps, err := p.parseArtifact(ctx, p.rootFilePath, p.size, r, 0)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("unable to parse %s: %w", p.rootFilePath, err)
 	}
 	return removePackageDuplicates(pkgs), deps, nil
 }
 
-func (p *Parser) parseArtifact(filePath string, size int64, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+// parseArtifact returns the packages in the archive r at the given nesting
+// depth.
+func (p *Parser) parseArtifact(ctx context.Context, filePath string, size int64, r xio.ReadSeekerAt, depth int) ([]ftypes.Package, []ftypes.Dependency, error) {
 	sum := archiveDigest(r)
-	pkgs, deps, err := p.parsePackages(filePath, size, r, sum)
+	pkgs, deps, err := p.parsePackages(ctx, filePath, size, r, sum, depth)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -128,14 +137,14 @@ func (p *Parser) parseArtifact(filePath string, size int64, r xio.ReadSeekerAt) 
 	return pkgs, deps, nil
 }
 
-func (p *Parser) parsePackages(filePath string, size int64, r xio.ReadSeekerAt, sum func() (digest.Digest, error)) ([]ftypes.Package, []ftypes.Dependency, error) {
+func (p *Parser) parsePackages(ctx context.Context, filePath string, size int64, r xio.ReadSeekerAt, sum func() (digest.Digest, error), depth int) ([]ftypes.Package, []ftypes.Dependency, error) {
 	p.logger.Debug("Parsing Java artifacts...", log.FilePath(filePath))
 
 	// Try to extract artifactId and version from the file name
 	// e.g. spring-core-5.3.4-SNAPSHOT.jar => sprint-core, 5.3.4-SNAPSHOT
 	fileProps := parseFileName(filePath)
 
-	pkgs, m, foundPomProps, licenseFile, err := p.traverseZip(size, r, fileProps)
+	pkgs, m, foundPomProps, licenseFile, err := p.traverseZip(ctx, size, r, fileProps, depth)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("zip error: %w", err)
 	}
@@ -258,7 +267,7 @@ func archiveDigest(r io.ReadSeeker) func() (digest.Digest, error) {
 	})
 }
 
-func (p *Parser) traverseZip(size int64, r xio.ReadSeekerAt, fileProps Properties) (
+func (p *Parser) traverseZip(ctx context.Context, size int64, r xio.ReadSeekerAt, fileProps Properties, depth int) (
 	[]ftypes.Package, manifest, bool, *zip.File, error) {
 	var pkgs []ftypes.Package
 	var m manifest
@@ -270,6 +279,9 @@ func (p *Parser) traverseZip(size int64, r xio.ReadSeekerAt, fileProps Propertie
 	// (file order in the zip is not guaranteed).
 	pomLicenses := make(map[string][]string)
 
+	if err := ctx.Err(); err != nil {
+		return nil, manifest{}, false, nil, err
+	}
 	zr, err := zip.NewReader(r, size)
 	if err != nil {
 		return nil, manifest{}, false, nil, xerrors.Errorf("zip error: %w", err)
@@ -313,12 +325,15 @@ func (p *Parser) traverseZip(size int64, r xio.ReadSeekerAt, fileProps Propertie
 				return nil, manifest{}, false, nil, xerrors.Errorf("failed to parse MANIFEST.MF: %w", err)
 			}
 		case isArtifact(fileInJar.Name):
-			innerPkgs, _, err := p.parseInnerJar(fileInJar, fileProps.FilePath, r, size) // TODO process inner deps
+			innerPkgs, _, err := p.parseInnerJar(ctx, fileInJar, fileProps.FilePath, r, size, depth+1) // TODO process inner deps
 			if err != nil {
 				p.logger.Debug("Failed to parse", log.String("file", fileInJar.Name), log.Err(err))
-				continue
+			} else {
+				pkgs = append(pkgs, innerPkgs...)
 			}
-			pkgs = append(pkgs, innerPkgs...)
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, manifest{}, false, nil, err
 		}
 	}
 
@@ -410,8 +425,12 @@ func (p *Parser) attachFileLicenses(pkgs []ftypes.Package, filePath string, lice
 }
 
 // parseInnerJar returns the packages in the archive zf, an entry of the
-// archive r of the given size.
-func (p *Parser) parseInnerJar(zf *zip.File, rootPath string, r io.ReaderAt, size int64) ([]ftypes.Package, []ftypes.Dependency, error) {
+// archive r of the given size, at the given nesting depth.
+func (p *Parser) parseInnerJar(ctx context.Context, zf *zip.File, rootPath string, r io.ReaderAt, size int64, depth int) ([]ftypes.Package, []ftypes.Dependency, error) {
+	if depth > maxDepth {
+		return nil, nil, xerrors.Errorf("%s is nested deeper than %d archives", zf.Name, maxDepth)
+	}
+
 	var ra xio.ReadSeekerAt
 	if zf.Method == zip.Store && zf.CompressedSize64 == zf.UncompressedSize64 {
 		// The data of a stored entry is the archive itself: read it in place.
@@ -456,7 +475,7 @@ func (p *Parser) parseInnerJar(zf *zip.File, rootPath string, r io.ReaderAt, siz
 	}
 
 	// Parse jar/war/ear recursively
-	innerPkgs, innerDeps, err := p.parseArtifact(fullPath, int64(zf.UncompressedSize64), ra)
+	innerPkgs, innerDeps, err := p.parseArtifact(ctx, fullPath, int64(zf.UncompressedSize64), ra, depth)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("failed to parse %s: %w", zf.Name, err)
 	}
