@@ -3,12 +3,15 @@ package binary
 
 import (
 	"context"
+	"io"
+	"slices"
 
 	rustaudit "github.com/rust-secure-code/go-rustaudit"
 	"github.com/samber/lo"
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/dependency"
+	exe "github.com/aquasecurity/trivy/pkg/dependency/parser/executable"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 )
@@ -40,6 +43,9 @@ func NewParser() *Parser {
 // Parse scans files to try to report Rust crates and version injected into Rust binaries
 // via https://github.com/rust-secure-code/cargo-auditable
 func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
+	if !mayBeRust(r) {
+		return nil, nil, ErrNonRustBinary
+	}
 	info, err := rustaudit.GetDependencyInfo(r)
 	if err != nil {
 		return nil, nil, convertError(err)
@@ -75,6 +81,24 @@ func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package,
 	}
 
 	return pkgs, deps, nil
+}
+
+// depSections are the names that go-rustaudit looks up for the
+// cargo-auditable section of a Mach-O file.
+var depSections = []string{".dep-v0", "rust-deps-v0"}
+
+// mayBeRust reports whether r may hold cargo-auditable dependency
+// information, from the load commands of a Mach-O file. go-rustaudit reads
+// a Mach-O file with macho.NewFile, which decodes the whole symbol table.
+// mayBeRust reports true for other files.
+func mayBeRust(r io.ReaderAt) bool {
+	names, err := exe.MachOSections(r)
+	if err != nil {
+		return true
+	}
+	return slices.ContainsFunc(names, func(name string) bool {
+		return slices.Contains(depSections, name)
+	})
 }
 
 func packageID(name, version string) string {
