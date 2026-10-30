@@ -105,11 +105,14 @@ func (x *elfExe) ReadData(addr, size uint64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	data := make([]byte, min(size, uint64(r.Size())))
-	if _, err := r.ReadAt(data, 0); err != nil {
+	// The sizes come from the headers of the file, so read the data
+	// rather than allocate size bytes for it: a size past the end of the
+	// file then fails at the end.
+	var buf bytes.Buffer
+	if _, err := io.CopyN(&buf, r, int64(min(size, uint64(r.Size())))); err != nil {
 		return nil, err
 	}
-	return data, nil
+	return buf.Bytes(), nil
 }
 
 func (x *elfExe) DataReader(addr uint64) (*io.SectionReader, error) {
