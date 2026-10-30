@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/xerrors"
 
+	"github.com/aquasecurity/trivy/pkg/set"
 	xsync "github.com/aquasecurity/trivy/pkg/x/sync"
 )
 
@@ -71,21 +72,44 @@ func (m *FS) UnderlyingRoot() string {
 	return m.underlyingRoot
 }
 
+// A PathSet is a set of file paths, compared the way FS stores them.
+type PathSet struct {
+	paths set.Set[string]
+}
+
+// NewPathSet returns a set holding paths.
+func NewPathSet(paths ...string) *PathSet {
+	s := &PathSet{paths: set.New[string]()}
+	s.Add(paths...)
+	return s
+}
+
+// Add adds paths to s. They may be absolute, as package managers record them.
+func (s *PathSet) Add(paths ...string) {
+	cleaned := make([]string, len(paths))
+	for i, path := range paths {
+		cleaned[i] = cleanPath(path)
+	}
+	s.paths.Append(cleaned...)
+}
+
 // Filter removes the specified skippedFiles and returns a new FS.
 // Paths may be absolute, as package managers record them.
 func (m *FS) Filter(skippedFiles []string) (*FS, error) {
-	if len(skippedFiles) == 0 {
-		return m, nil
+	return m.Without(NewPathSet(skippedFiles...)), nil
+}
+
+// Without returns m without the files in skipped. It returns m itself when
+// m holds none of them, and otherwise copies the tree, which reads nothing
+// from the underlying files.
+func (m *FS) Without(skipped *PathSet) *FS {
+	if skipped.paths.Size() == 0 || !m.root.holds(skipped.paths, "") {
+		return m
 	}
-	skipped := make(map[string]struct{}, len(skippedFiles))
-	for _, path := range skippedFiles {
-		skipped[cleanPath(path)] = struct{}{}
+	return &FS{
+		root:           m.root.without(skipped.paths, ""),
+		underlyingRoot: m.underlyingRoot,
 	}
-	filter := func(path string, _ fs.DirEntry) (bool, error) {
-		_, ok := skipped[path]
-		return ok, nil
-	}
-	return m.FilterFunc(filter)
 }
 
 func (m *FS) FilterFunc(fn func(path string, d fs.DirEntry) (bool, error)) (*FS, error) {
