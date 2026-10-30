@@ -372,13 +372,12 @@ func (ag AnalyzerGroup) analyze(ctx context.Context, a analyzer, input AnalysisI
 }
 
 // postAnalyze runs the post-analyzer and sets AnalyzedBy on the result.
+// postAnalyze runs a and returns what it found, which is partial when err
+// is set.
 func (ag AnalyzerGroup) postAnalyze(ctx context.Context, a PostAnalyzer, input PostAnalysisInput) (*AnalysisResult, error) {
 	result, err := a.PostAnalyze(ctx, input)
-	if err != nil {
-		return nil, err
-	}
 	result.setAnalyzedBy(a.Type())
-	return result, nil
+	return result, err
 }
 
 func belongToGroup(groupName Group, analyzerType Type, disabledAnalyzers []Type, analyzer any) bool {
@@ -637,21 +636,19 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 			Options:      opts,
 		}, opts.PostAnalyzerTimeout)
 		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				appCount := 0
-				if res != nil {
-					appCount = len(res.Applications)
-				}
-				err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), appCount, err)
-				errs = errors.Join(errs, err)
-			} else {
+			if !errors.Is(err, context.DeadlineExceeded) {
 				return xerrors.Errorf("post analysis error: %w", err)
 			}
-		} else {
-			// Merge result only if the PostAnalyzer completed successfully.
-			result.Merge(res)
-			ag.skip(skipped, res)
+			appCount := 0
+			if res != nil {
+				appCount = len(res.Applications)
+			}
+			err = xerrors.Errorf("%s post analysis timeout after %d results: %w", a.Type(), appCount, err)
+			errs = errors.Join(errs, err)
 		}
+		// A timed out analyzer still returns what it found.
+		result.Merge(res)
+		ag.skip(skipped, res)
 	}
 	return errs
 }

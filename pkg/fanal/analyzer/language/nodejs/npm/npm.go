@@ -75,6 +75,10 @@ func (a npmLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 			}
 		}
 
+		// The license walk stops when ctx is done, which leaves app partial.
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		apps = append(apps, *app)
 		return nil
 	})

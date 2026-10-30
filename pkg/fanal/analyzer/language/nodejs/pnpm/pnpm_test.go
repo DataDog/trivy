@@ -1,6 +1,8 @@
 package pnpm
 
 import (
+	"context"
+	"io/fs"
 	"os"
 	"sort"
 	"testing"
@@ -180,4 +182,32 @@ func Test_pnpmPkgLibraryAnalyzer_Required(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+// cancelFS calls cancel when the file name is opened.
+type cancelFS struct {
+	fs.FS
+	name   string
+	cancel context.CancelFunc
+}
+
+func (c cancelFS) Open(name string) (fs.File, error) {
+	if name == c.name {
+		c.cancel()
+	}
+	return c.FS.Open(name)
+}
+
+func Test_pnpmPkgLibraryAnalyzer_PostAnalyze_canceled(t *testing.T) {
+	// The context ends when pnpm opens pnpm-lock.yaml, before it reads the
+	// licenses in node_modules.
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	fsys := cancelFS{FS: os.DirFS("testdata/happy"), name: "pnpm-lock.yaml", cancel: cancel}
+
+	a, err := newPnpmAnalyzer(analyzer.AnalyzerOptions{})
+	require.NoError(t, err)
+	got, err := a.PostAnalyze(ctx, analyzer.PostAnalysisInput{FS: fsys})
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Empty(t, got.Applications)
 }

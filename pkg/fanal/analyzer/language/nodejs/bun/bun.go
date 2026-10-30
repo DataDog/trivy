@@ -74,6 +74,11 @@ func (a bunLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Post
 			}
 		}
 		sort.Sort(app.Packages)
+
+		// The license walk stops when ctx is done, which leaves app partial.
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		apps = append(apps, *app)
 		return nil
 	})

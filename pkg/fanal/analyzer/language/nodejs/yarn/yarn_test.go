@@ -1,8 +1,11 @@
 package yarn
 
 import (
+	"context"
+	"io/fs"
 	"os"
 	"testing"
+	"testing/fstest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -1012,4 +1015,47 @@ func Test_yarnLibraryAnalyzer_Required(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+// isOddLock is a yarn.lock that holds is-odd.
+const isOddLock = `# yarn lockfile v1
+
+is-odd@^3.0.1:
+  version "3.0.1"
+`
+
+// cancelFS calls cancel when the file name is opened.
+type cancelFS struct {
+	fs.FS
+	name   string
+	cancel context.CancelFunc
+}
+
+func (c cancelFS) Open(name string) (fs.File, error) {
+	if name == c.name {
+		c.cancel()
+	}
+	return c.FS.Open(name)
+}
+
+func Test_yarnLibraryAnalyzer_PostAnalyze_canceled(t *testing.T) {
+	// The context ends while yarn reads the package.json beside yarn.lock,
+	// before it finds the workspaces and the dev dependencies.
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	fsys := cancelFS{
+		FS: fstest.MapFS{
+			"yarn.lock":               {Data: []byte(isOddLock)},
+			"package.json":            {Data: []byte(`{"name": "root", "version": "1.0.0", "devDependencies": {"is-odd": "^3.0.1"}, "workspaces": ["packages/*"]}`)},
+			"packages/a/package.json": {Data: []byte(`{"name": "a", "version": "1.0.0"}`)},
+		},
+		name:   "package.json",
+		cancel: cancel,
+	}
+
+	a, err := newYarnAnalyzer(analyzer.AnalyzerOptions{})
+	require.NoError(t, err)
+	got, err := a.PostAnalyze(ctx, analyzer.PostAnalysisInput{FS: fsys})
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Empty(t, got.Applications)
 }
