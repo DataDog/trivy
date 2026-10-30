@@ -82,6 +82,10 @@ type WalkDirFunc func(path string, d fs.DirEntry, r io.Reader) error
 
 type WalkDirErrorCallback func(path string, err error) error
 
+// WalkDir calls fn on each regular file under root that required takes. An
+// error from fn skips its file, and an error of the walk ends it unless
+// errCallback returns nil for it. WalkDir returns the error that ended the
+// walk, which is the error of ctx if ctx is done before the walk ends.
 func WalkDir(ctx context.Context, fsys fs.FS, root string, required WalkDirRequiredFunc, errCallback WalkDirErrorCallback, fn WalkDirFunc) error {
 	return fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -116,6 +120,11 @@ func WalkDir(ctx context.Context, fsys fs.FS, root string, required WalkDirRequi
 		defer f.Close()
 
 		if err = fn(path, d, f); err != nil {
+			// fn may have failed because ctx is done, and then the walk
+			// was cut short rather than the file skipped.
+			if err := ctx.Err(); err != nil {
+				return err
+			}
 			log.Debug("Walk error", log.FilePath(path), log.Err(err))
 		}
 		return nil

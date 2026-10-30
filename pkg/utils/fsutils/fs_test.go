@@ -1,9 +1,14 @@
 package fsutils
 
 import (
+	"context"
+	"errors"
+	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/fstest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -100,4 +105,28 @@ func TestFileExists(t *testing.T) {
 	t.Run("dir path", func(t *testing.T) {
 		assert.False(t, FileExists(t.TempDir()))
 	})
+}
+
+func TestWalkDir_Canceled(t *testing.T) {
+	fsys := fstest.MapFS{
+		"a.lock": {Data: []byte("a")},
+		"b.lock": {Data: []byte("b")},
+	}
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	// The context ends while the last file is read, as the deadline of a
+	// post-analyzer can.
+	var got []string
+	err := WalkDir(ctx, fsys, ".", RequiredExt(".lock"), DefaultWalkErrorCallback,
+		func(path string, _ fs.DirEntry, _ io.Reader) error {
+			if path == "b.lock" {
+				cancel()
+				return errors.New("cut short")
+			}
+			got = append(got, path)
+			return nil
+		})
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Equal(t, []string{"a.lock"}, got)
 }
