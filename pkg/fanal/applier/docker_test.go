@@ -1,6 +1,7 @@
 package applier_test
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
@@ -1526,5 +1527,97 @@ func TestApplyLayers(t *testing.T) {
 			}
 			assert.Equal(t, tt.want, got, tt.name)
 		})
+	}
+}
+
+// TestApplyLayersLibraryLayer checks that a library gets the first layer
+// holding it at its file path, in any application at that path.
+func TestApplyLayersLibraryLayer(t *testing.T) {
+	layers := []types.BlobInfo{
+		{
+			SchemaVersion: 1,
+			Digest:        "sha256:1",
+			DiffID:        "sha256:1",
+			Applications: []types.Application{
+				{
+					Type:     types.Bundler,
+					FilePath: "app/Gemfile.lock",
+					Packages: types.Packages{{Name: "rack", Version: "1.0.0"}},
+				},
+				{
+					Type:     types.GemSpec,
+					FilePath: "app/Gemfile.lock",
+					Packages: types.Packages{{Name: "rake", Version: "1.0.0"}},
+				},
+			},
+		},
+		{
+			SchemaVersion: 1,
+			Digest:        "sha256:2",
+			DiffID:        "sha256:2",
+			Applications: []types.Application{
+				{
+					Type:     types.Bundler,
+					FilePath: "app/Gemfile.lock",
+					Packages: types.Packages{
+						{Name: "rack", Version: "1.0.0"},
+						{Name: "rails", Version: "2.0.0"},
+					},
+				},
+			},
+		},
+	}
+	got := make(map[string]string)
+	for _, app := range applier.ApplyLayers(layers).Applications {
+		for _, pkg := range app.Packages {
+			got[pkg.Name] = pkg.Layer.Digest
+		}
+	}
+	want := map[string]string{
+		"rack":  "sha256:1",
+		"rails": "sha256:2",
+		"rake":  "sha256:1",
+	}
+	assert.Equal(t, want, got)
+}
+
+// BenchmarkApplyLayers applies an image with 2000 node-pkg and 2000
+// python-pkg applications of one package each, and a lock file of 2000
+// packages.
+func BenchmarkApplyLayers(b *testing.B) {
+	const n = 2000
+	newLayers := func() []types.BlobInfo {
+		var node, python []types.Application
+		lock := types.Application{Type: types.Npm, FilePath: "app/package-lock.json"}
+		for i := range n {
+			path := fmt.Sprintf("usr/local/lib/node_modules/node-%d/package.json", i)
+			node = append(node, types.Application{
+				Type:     types.NodePkg,
+				FilePath: path,
+				Packages: types.Packages{{Name: fmt.Sprintf("node-%d", i), Version: "1.0.0", FilePath: path}},
+			})
+			path = fmt.Sprintf("usr/local/lib/python3.12/site-packages/python_%d-1.0.0.dist-info/METADATA", i)
+			python = append(python, types.Application{
+				Type:     types.PythonPkg,
+				FilePath: path,
+				Packages: types.Packages{{Name: fmt.Sprintf("python-%d", i), Version: "1.0.0", FilePath: path}},
+			})
+			lock.Packages = append(lock.Packages, types.Package{Name: fmt.Sprintf("lib-%d", i), Version: "1.0.0"})
+		}
+		return []types.BlobInfo{
+			{SchemaVersion: 1, Digest: "sha256:1", DiffID: "sha256:1", OS: types.OS{Family: "alpine", Name: "3.20"}},
+			{SchemaVersion: 1, Digest: "sha256:2", DiffID: "sha256:2", Applications: node},
+			{SchemaVersion: 1, Digest: "sha256:3", DiffID: "sha256:3", Applications: python},
+			{SchemaVersion: 1, Digest: "sha256:4", DiffID: "sha256:4", Applications: []types.Application{lock}},
+		}
+	}
+	b.ReportAllocs()
+	for b.Loop() {
+		// ApplyLayers sets the layer of the packages in layers, so each
+		// run needs new ones.
+		b.StopTimer()
+		layers := newLayers()
+		b.StartTimer()
+		applier.ApplyLayers(layers)
 	}
 }

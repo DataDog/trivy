@@ -79,15 +79,36 @@ func lookupBuildInfo(index int, layers []ftypes.BlobInfo) *ftypes.BuildInfo {
 	return nil
 }
 
-func lookupOriginLayerForLib(filePath string, lib ftypes.Package, layers []ftypes.BlobInfo) (string, string, map[string]string) {
+// layerApp is an application found in a layer.
+type layerApp struct {
+	layer *ftypes.BlobInfo
+	app   *ftypes.Application
+}
+
+// indexApps returns the applications of layers by file path, each list in
+// layer order.
+func indexApps(layers []ftypes.BlobInfo) map[string][]layerApp {
+	var n int
 	for _, layer := range layers {
-		for _, layerApp := range layer.Applications {
-			if filePath != layerApp.FilePath {
-				continue
-			}
-			if findPackage(lib, layerApp.Packages) != nil {
-				return layer.Digest, layer.DiffID, layer.Annotations
-			}
+		n += len(layer.Applications)
+	}
+	apps := make(map[string][]layerApp, n)
+	for i := range layers {
+		layer := &layers[i]
+		for j := range layer.Applications {
+			app := &layer.Applications[j]
+			apps[app.FilePath] = append(apps[app.FilePath], layerApp{layer: layer, app: app})
+		}
+	}
+	return apps
+}
+
+// lookupOriginLayerForLib returns the digest, diff ID, and annotations of
+// the first layer with an application at filePath that holds lib.
+func lookupOriginLayerForLib(filePath string, lib ftypes.Package, apps map[string][]layerApp) (string, string, map[string]string) {
+	for _, a := range apps[filePath] {
+		if findPackage(lib, a.app.Packages) != nil {
+			return a.layer.Digest, a.layer.DiffID, a.layer.Annotations
 		}
 	}
 	return "", "", nil
@@ -251,11 +272,12 @@ func ApplyLayers(layers []ftypes.BlobInfo) ftypes.ArtifactDetail {
 		return fmt.Sprintf("%s/%s", id, pkg.FilePath)
 	}))
 
+	layerApps := indexApps(layers)
 	for _, app := range mergedLayer.Applications {
 		for i, pkg := range app.Packages {
 			// Skip lookup for SBOM
 			if pkg.Layer.IsEmpty() {
-				originLayerDigest, originLayerDiffID, originLayerAnnotations := lookupOriginLayerForLib(app.FilePath, pkg, layers)
+				originLayerDigest, originLayerDiffID, originLayerAnnotations := lookupOriginLayerForLib(app.FilePath, pkg, layerApps)
 				app.Packages[i].Layer = ftypes.Layer{
 					Digest:      originLayerDigest,
 					DiffID:      originLayerDiffID,
