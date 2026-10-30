@@ -5,7 +5,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/samber/lo"
@@ -15,7 +14,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer/language"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
-	"github.com/aquasecurity/trivy/pkg/log"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 )
 
@@ -28,16 +26,7 @@ const (
 	eggExt             = ".egg"
 )
 
-type eggAnalyzer struct {
-	logger                           *log.Logger
-	licenseClassifierConfidenceLevel float64
-}
-
-func (a *eggAnalyzer) Init(opt analyzer.AnalyzerOptions) error {
-	a.logger = log.WithPrefix("python")
-	a.licenseClassifierConfidenceLevel = opt.LicenseScannerOption.ClassifierConfidenceLevel
-	return nil
-}
+type eggAnalyzer struct{}
 
 // Analyze analyzes egg archive files
 func (a *eggAnalyzer) Analyze(ctx context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
@@ -64,24 +53,7 @@ func (a *eggAnalyzer) Analyze(ctx context.Context, input analyzer.AnalysisInput)
 		return nil, nil
 	}
 
-	opener := func(licPath string) (io.ReadCloser, error) {
-		required := func(filePath string) bool {
-			return path.Base(filePath) == licPath
-		}
-
-		f, err := findFileInZip(input.Content, input.Info.Size(), required)
-		if err != nil {
-			return nil, xerrors.Errorf("unable to find license file in `*.egg` file: %w", err)
-		} else if f == nil { // zip doesn't contain license file
-			return nil, nil
-		}
-
-		return f, nil
-	}
-
-	if err = fillAdditionalData(opener, app, a.licenseClassifierConfidenceLevel); err != nil {
-		a.logger.Warn("Unable to collect additional info", log.Err(err))
-	}
+	dropLicenseFiles(app)
 
 	return &analyzer.AnalysisResult{
 		Applications: []types.Application{*app},
