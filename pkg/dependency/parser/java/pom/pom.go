@@ -147,8 +147,8 @@ func pomLicenseName(name, url string) string {
 	return ""
 }
 
-func (p *pom) repositories(servers []Server) []repository {
-	return resolvePomRepos(servers, p.content.Repositories)
+func (p *pom) repositories() []repository {
+	return resolvePomRepos(p.content.Repositories)
 }
 
 type pomXML struct {

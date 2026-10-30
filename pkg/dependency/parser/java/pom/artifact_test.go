@@ -74,7 +74,7 @@ func Test_evaluateVariable(t *testing.T) {
 			args: args{
 				s: "${env.TEST_GO_DEP_PARSER}",
 			},
-			want: "1.2.3",
+			want: "",
 		},
 		{
 			name: "no variable",

@@ -3,6 +3,7 @@ package pom
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -198,6 +199,46 @@ func Test_pomAnalyzer_Analyze(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func Test_pomAnalyzer_Analyze_layer(t *testing.T) {
+	// A file in an image layer comes with an empty Dir, and the working
+	// directory of the scanning process holds a POM for the parent of app.
+	t.Chdir(t.TempDir())
+	parent := `<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.example</groupId>
+  <artifactId>parent</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+  <licenses><license><name>License of the scanning host</name></license></licenses>
+</project>`
+	require.NoError(t, os.WriteFile("pom.xml", []byte(parent), 0o600))
+	app := `<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.0</version>
+  </parent>
+  <groupId>com.example</groupId>
+  <artifactId>app</artifactId>
+  <version>1.0.0</version>
+</project>`
+
+	a := pomAnalyzer{}
+	got, err := a.Analyze(t.Context(), analyzer.AnalysisInput{
+		FilePath: "app/pom.xml",
+		Content:  strings.NewReader(app),
+		Options: analyzer.AnalysisOptions{
+			Offline: true,
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, got.Applications, 1)
+	require.Len(t, got.Applications[0].Packages, 1)
+	assert.Equal(t, "com.example:app", got.Applications[0].Packages[0].Name)
+	assert.Empty(t, got.Applications[0].Packages[0].Licenses)
 }
 
 func Test_pomAnalyzer_Required(t *testing.T) {

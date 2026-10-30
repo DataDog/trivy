@@ -798,3 +798,10 @@ func Test_fetchPOMFromRemoteRepositories_mirror(t *testing.T) {
 		})
 	}
 }
+
+func mustParseURL(t *testing.T, s string) url.URL {
+	t.Helper()
+	u, err := url.Parse(s)
+	require.NoError(t, err)
+	return *u
+}
