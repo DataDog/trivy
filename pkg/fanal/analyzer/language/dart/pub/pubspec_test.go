@@ -2,7 +2,7 @@ package pub
 
 import (
 	"os"
-	"runtime"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,66 +14,14 @@ import (
 
 func Test_pubSpecLockAnalyzer_Analyze(t *testing.T) {
 	tests := []struct {
-		name        string
-		dir         string
-		pubCacheEnv string
-		want        *analyzer.AnalysisResult
-		wantErr     assert.ErrorAssertionFunc
+		name    string
+		dir     string
+		want    *analyzer.AnalysisResult
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			// Supports only absolute paths for `rootUri` in package_config.json
-			// But for this test this field was changed
-			name:        "happy path with cache",
-			dir:         "testdata/happy",
-			pubCacheEnv: "testdata/happy/cache",
-			want: &analyzer.AnalysisResult{
-				Applications: []types.Application{
-					{
-						Type:     types.Pub,
-						FilePath: "pubspec.lock",
-						Packages: types.Packages{
-							{
-								ID:           "crypto@3.0.3",
-								Name:         "crypto",
-								Version:      "3.0.3",
-								Relationship: types.RelationshipDirect,
-								DependsOn: []string{
-									"typed_data@1.3.2",
-								},
-							},
-							{
-								ID:           "meta@1.11.0",
-								Name:         "meta",
-								Version:      "1.11.0",
-								Relationship: types.RelationshipDirect,
-							},
-							{
-								ID:           "collection@1.17.0",
-								Name:         "collection",
-								Version:      "1.17.0",
-								Indirect:     true,
-								Relationship: types.RelationshipIndirect,
-							},
-							{
-								ID:           "typed_data@1.3.2",
-								Name:         "typed_data",
-								Version:      "1.3.2",
-								Indirect:     true,
-								Relationship: types.RelationshipIndirect,
-								DependsOn: []string{
-									"collection@1.17.0",
-								},
-							},
-						},
-					},
-				},
-			},
-			wantErr: assert.NoError,
-		},
-		{
-			name:        "happy path without cache",
-			dir:         "testdata/happy",
-			pubCacheEnv: "testdata/happy/empty",
+			name: "happy path",
+			dir:  "testdata/happy",
 			want: &analyzer.AnalysisResult{
 				Applications: []types.Application{
 					{
@@ -128,7 +76,6 @@ func Test_pubSpecLockAnalyzer_Analyze(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("PUB_CACHE", tt.pubCacheEnv)
 			a, err := newPubSpecLockAnalyzer(analyzer.AnalyzerOptions{})
 			require.NoError(t, err)
 
@@ -142,55 +89,24 @@ func Test_pubSpecLockAnalyzer_Analyze(t *testing.T) {
 	}
 }
 
-func Test_pubSpecLockAnalyzer_cacheDir(t *testing.T) {
-	tests := []struct {
-		name            string
-		pubCacheEnv     string
-		localAppDataEnv string
-		windowsTest     bool
-		wantDir         string
-	}{
-		{
-			name:    "default cache dir for Linux/MacOS",
-			wantDir: "/root/.pub_cache",
-		},
-		{
-			name:        "default cache dir Windows",
-			windowsTest: true,
-			wantDir:     "C:\\Users\\User\\AppData\\Local\\Pub\\Cache",
-		},
-		{
-			name:        "PUB_CACHE is used",
-			pubCacheEnv: "/root/cache",
-			wantDir:     "/root/cache",
-		},
-		{
-			name:        "PUB_CACHE is used in Windows",
-			pubCacheEnv: "C:\\Cache",
-			windowsTest: true,
-			wantDir:     "C:\\Cache",
-		},
-	}
+func Test_pubSpecLockAnalyzer_Analyze_cache(t *testing.T) {
+	// The pub cache of the scanning host has a pubspec.yaml for crypto.
+	cache := t.TempDir()
+	pubspec := filepath.Join(cache, "hosted", "pub.dev", "crypto-3.0.3", "pubspec.yaml")
+	require.NoError(t, os.MkdirAll(filepath.Dir(pubspec), 0o755))
+	require.NoError(t, os.WriteFile(pubspec, []byte("name: crypto\nversion: 3.0.3\ndependencies:\n  typed_data: ^1.3.0\n"), 0o644))
+	t.Setenv("PUB_CACHE", cache)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if runtime.GOOS == "windows" {
-				if !tt.windowsTest {
-					t.Skipf("This test is not used for %s", runtime.GOOS)
-				}
-				t.Setenv("LOCALAPPDATA", "C:\\Users\\User\\AppData\\Local")
-			} else {
-				if tt.windowsTest {
-					t.Skipf("This test is not used for %s", runtime.GOOS)
-				}
-				t.Setenv("HOME", "/root")
-			}
+	a, err := newPubSpecLockAnalyzer(analyzer.AnalyzerOptions{})
+	require.NoError(t, err)
 
-			t.Setenv("PUB_CACHE", tt.pubCacheEnv)
-
-			dir := cacheDir()
-			assert.Equal(t, tt.wantDir, dir)
-		})
+	got, err := a.PostAnalyze(t.Context(), analyzer.PostAnalysisInput{
+		FS: os.DirFS("testdata/happy"),
+	})
+	require.NoError(t, err)
+	require.Len(t, got.Applications, 1)
+	for _, pkg := range got.Applications[0].Packages {
+		assert.Empty(t, pkg.DependsOn, pkg.ID)
 	}
 }
 
