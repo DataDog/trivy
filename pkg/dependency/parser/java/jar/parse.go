@@ -197,7 +197,7 @@ func (p *Parser) traverseZip(filePath string, size int64, r xio.ReadSeekerAt, fi
 				return nil, manifest{}, false, xerrors.Errorf("failed to parse MANIFEST.MF: %w", err)
 			}
 		case isArtifact(fileInJar.Name):
-			innerPkgs, _, err := p.parseInnerJar(fileInJar, filePath) // TODO process inner deps
+			innerPkgs, _, err := p.parseInnerJar(fileInJar, filePath, r, size) // TODO process inner deps
 			if err != nil {
 				p.logger.Debug("Failed to parse", log.String("file", fileInJar.Name), log.Err(err))
 				continue
@@ -208,26 +208,44 @@ func (p *Parser) traverseZip(filePath string, size int64, r xio.ReadSeekerAt, fi
 	return pkgs, m, foundPomProps, nil
 }
 
-func (p *Parser) parseInnerJar(zf *zip.File, rootPath string) ([]ftypes.Package, []ftypes.Dependency, error) {
-	fr, err := zf.Open()
-	if err != nil {
-		return nil, nil, xerrors.Errorf("unable to open %s: %w", zf.Name, err)
+// parseInnerJar returns the packages in the archive zf, an entry of the
+// archive r of the given size.
+func (p *Parser) parseInnerJar(zf *zip.File, rootPath string, r io.ReaderAt, size int64) ([]ftypes.Package, []ftypes.Dependency, error) {
+	var ra xio.ReadSeekerAt
+	if zf.Method == zip.Store && zf.CompressedSize64 == zf.UncompressedSize64 {
+		// The data of a stored entry is the archive itself: read it in place.
+		// A malformed entry, whose sizes differ or run past the end of r, is
+		// left to the copy below, which fails on it.
+		off, err := zf.DataOffset()
+		if err != nil {
+			return nil, nil, xerrors.Errorf("unable to open %s: %w", zf.Name, err)
+		}
+		if off <= size && zf.UncompressedSize64 <= uint64(size-off) {
+			ra = io.NewSectionReader(r, off, int64(zf.UncompressedSize64))
+		}
 	}
+	if ra == nil {
+		fr, err := zf.Open()
+		if err != nil {
+			return nil, nil, xerrors.Errorf("unable to open %s: %w", zf.Name, err)
+		}
 
-	f, err := xos.CreateTemp("", "jar-inner-")
-	if err != nil {
-		return nil, nil, xerrors.Errorf("unable to create a temp file: %w", err)
-	}
-	defer func() {
-		_ = f.Close()
-		_ = os.Remove(f.Name())
-	}()
+		f, err := xos.CreateTemp("", "jar-inner-")
+		if err != nil {
+			return nil, nil, xerrors.Errorf("unable to create a temp file: %w", err)
+		}
+		defer func() {
+			_ = f.Close()
+			_ = os.Remove(f.Name())
+		}()
 
-	// Copy the file content to the temp file
-	if n, err := io.CopyN(f, fr, int64(zf.UncompressedSize64)); err != nil {
-		return nil, nil, xerrors.Errorf("file copy error: %w", err)
-	} else if n != int64(zf.UncompressedSize64) {
-		return nil, nil, xerrors.Errorf("file copy size error: %w", err)
+		// Copy the file content to the temp file
+		if n, err := io.CopyN(f, fr, int64(zf.UncompressedSize64)); err != nil {
+			return nil, nil, xerrors.Errorf("file copy error: %w", err)
+		} else if n != int64(zf.UncompressedSize64) {
+			return nil, nil, xerrors.Errorf("file copy size error: %w", err)
+		}
+		ra = f
 	}
 
 	// build full path to inner jar
@@ -237,7 +255,7 @@ func (p *Parser) parseInnerJar(zf *zip.File, rootPath string) ([]ftypes.Package,
 	}
 
 	// Parse jar/war/ear recursively
-	innerPkgs, innerDeps, err := p.parseArtifact(fullPath, int64(zf.UncompressedSize64), f, false)
+	innerPkgs, innerDeps, err := p.parseArtifact(fullPath, int64(zf.UncompressedSize64), ra, false)
 	if err != nil {
 		return nil, nil, xerrors.Errorf("failed to parse %s: %w", zf.Name, err)
 	}

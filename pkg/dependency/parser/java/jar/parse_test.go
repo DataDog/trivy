@@ -3,7 +3,10 @@ package jar_test
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
+	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -18,6 +21,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/dependency/parser/java/jar/sonatype"
 	"github.com/aquasecurity/trivy/pkg/digest"
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
+	xos "github.com/aquasecurity/trivy/pkg/x/os"
 )
 
 var (
@@ -362,18 +366,30 @@ func TestParse(t *testing.T) {
 	}
 }
 
-// A notFoundClient is a Client that finds no artifact.
-type notFoundClient struct{}
+// A notFoundClient is a Client that finds no artifact. It calls onCall, if
+// set, at each search.
+type notFoundClient struct {
+	onCall func()
+}
 
-func (notFoundClient) Exists(_, _ string) (bool, error) {
+func (c notFoundClient) call() {
+	if c.onCall != nil {
+		c.onCall()
+	}
+}
+
+func (c notFoundClient) Exists(_, _ string) (bool, error) {
+	c.call()
 	return false, nil
 }
 
-func (notFoundClient) SearchBySHA1(_ string) (jar.Properties, error) {
+func (c notFoundClient) SearchBySHA1(_ string) (jar.Properties, error) {
+	c.call()
 	return jar.Properties{}, jar.ArtifactNotFoundErr
 }
 
-func (notFoundClient) SearchByArtifactID(_, _ string) (string, error) {
+func (c notFoundClient) SearchByArtifactID(_, _ string) (string, error) {
+	c.call()
 	return "", jar.ArtifactNotFoundErr
 }
 
@@ -459,6 +475,137 @@ func TestParser_Digest(t *testing.T) {
 			_, _, err := p.Parse(t.Context(), bytes.NewReader(data))
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, p.Digest())
+		})
+	}
+}
+
+func TestParse_nestedArchive(t *testing.T) {
+	want := []ftypes.Package{
+		{
+			Name:     "test:inner",
+			Version:  "1.0",
+			FilePath: "app.jar/lib/inner.jar",
+		},
+		{
+			Name:     "test:innermost",
+			Version:  "1.0",
+			FilePath: "app.jar/lib/inner.jar/lib/innermost.jar",
+		},
+	}
+	tests := []struct {
+		name          string
+		method        uint16
+		prefix        string // data before the zip archive
+		wantTempFiles int
+	}{
+		{
+			name:   "stored",
+			method: zip.Store,
+		},
+		{
+			name:   "stored after a launch script",
+			method: zip.Store,
+			prefix: "#!/bin/sh\nexec java -jar \"$0\" \"$@\"\n",
+		},
+		{
+			name:          "deflated",
+			method:        zip.Deflate,
+			wantTempFiles: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// No pom.properties names its jar, so Parse searches for each
+			// jar by SHA-1 while it holds the jar open.
+			innermost := makeZip(t, tt.method, pomProperties("innermost", "1.0"))
+			inner := makeZip(t, tt.method, pomProperties("inner", "1.0"),
+				zipEntry{name: "lib/innermost.jar", data: innermost})
+			app := append([]byte(tt.prefix), makeZip(t, tt.method, zipEntry{name: "lib/inner.jar", data: inner})...)
+
+			var tempFiles int
+			c := notFoundClient{onCall: func() {
+				des, err := os.ReadDir(xos.TempDir())
+				require.NoError(t, err)
+				tempFiles = max(tempFiles, len(des))
+			}}
+			p := jar.NewParser(c, jar.WithFilePath("app.jar"), jar.WithSize(int64(len(app))))
+			got, _, err := p.Parse(t.Context(), bytes.NewReader(app))
+			require.NoError(t, err)
+			assert.Equal(t, want, got)
+			assert.Equal(t, tt.wantTempFiles, tempFiles, "temp files")
+		})
+	}
+}
+
+func TestParse_nestedArchivePastEnd(t *testing.T) {
+	inner := makeZip(t, zip.Store, pomProperties("inner", "1.0"))
+	app := makeZip(t, zip.Store, zipEntry{name: "lib/inner.jar", data: inner}, pomProperties("later", "1.0"))
+
+	// Give lib/inner.jar a size in the central directory that runs 300
+	// bytes past the end of app.jar.
+	zr, err := zip.NewReader(bytes.NewReader(app), int64(len(app)))
+	require.NoError(t, err)
+	off, err := zr.File[0].DataOffset()
+	require.NoError(t, err)
+	le := binary.LittleEndian
+	cd := le.Uint32(app[len(app)-22+16:]) // from the end of central directory record
+	size := uint32(int64(len(app)) - off + 300)
+	le.PutUint32(app[cd+20:], size) // compressed size
+	le.PutUint32(app[cd+24:], size) // uncompressed size
+
+	p := jar.NewParser(notFoundClient{}, jar.WithFilePath("app.jar"), jar.WithSize(int64(len(app))))
+	got, _, err := p.Parse(t.Context(), bytes.NewReader(app))
+	require.NoError(t, err)
+	want := []ftypes.Package{
+		{
+			Name:     "test:later",
+			Version:  "1.0",
+			FilePath: "app.jar",
+		},
+	}
+	assert.Equal(t, want, got)
+}
+
+func BenchmarkParse_nestedArchive(b *testing.B) {
+	for _, bb := range []struct {
+		name   string
+		method uint16
+	}{
+		{
+			name:   "stored",
+			method: zip.Store,
+		},
+		{
+			name:   "deflated",
+			method: zip.Deflate,
+		},
+	} {
+		b.Run(bb.name, func(b *testing.B) {
+			// A fat jar of 32 jars, each holding 64 class files of 4 KiB.
+			const n = 32
+			rng := rand.NewChaCha8([32]byte{})
+			var libs []zipEntry
+			for i := range n {
+				lib := []zipEntry{pomProperties(fmt.Sprintf("lib%d", i), "1.0")}
+				for j := range 64 {
+					class := make([]byte, 4<<10)
+					_, _ = rng.Read(class) // ChaCha8.Read always fills class.
+					lib = append(lib, zipEntry{name: fmt.Sprintf("lib%d/Class%d.class", i, j), data: class})
+				}
+				libs = append(libs, zipEntry{
+					name: fmt.Sprintf("BOOT-INF/lib/lib%d-1.0.jar", i),
+					data: makeZip(b, zip.Store, lib...),
+				})
+			}
+			app := makeZip(b, bb.method, libs...)
+
+			p := jar.NewParser(nil, jar.WithFilePath("app.jar"), jar.WithOffline(true), jar.WithSize(int64(len(app))))
+			b.ReportAllocs()
+			for b.Loop() {
+				got, _, err := p.Parse(b.Context(), bytes.NewReader(app))
+				require.NoError(b, err)
+				require.Len(b, got, n)
+			}
 		})
 	}
 }
