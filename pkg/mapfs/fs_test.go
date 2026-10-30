@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -162,6 +163,29 @@ func BenchmarkFS_Without(b *testing.B) {
 		s := mapfs.NewPathSet(skipped...)
 		for _, fsys := range trees {
 			fsys.Without(s)
+		}
+	}
+}
+
+// BenchmarkFS_WriteFile links 10,000 files at the depth of a node_modules
+// tree, as the walk links the files of a post-analyzer.
+func BenchmarkFS_WriteFile(b *testing.B) {
+	type link struct{ dir, path, underlying string }
+	var links []link
+	for i := range 10000 {
+		p := fmt.Sprintf("app/node_modules/@scope/pkg%d/node_modules/dep%d/lib/index%d.js", i/50, i%50, i)
+		links = append(links, link{dir: path.Dir(p), path: p, underlying: "/scan/" + p})
+	}
+	b.ReportAllocs()
+	for b.Loop() {
+		fsys := mapfs.New()
+		for _, l := range links {
+			if err := fsys.MkdirAll(l.dir, 0o700); err != nil {
+				b.Fatal(err)
+			}
+			if err := fsys.WriteFile(l.path, l.underlying); err != nil {
+				b.Fatal(err)
+			}
 		}
 	}
 }
