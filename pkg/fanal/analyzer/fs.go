@@ -32,8 +32,23 @@ func NewCompositeFS() (*CompositeFS, error) {
 	}, nil
 }
 
-// CopyFileToTemp takes a file path and information, opens the file, copies its contents to a temporary file
+// CopyFileToTemp takes a file path and information, opens the file, copies its contents to a temporary file.
+// When the opener returns a file on disk, as the walkers do for a large file they spill, it links that
+// file instead.
 func (c *CompositeFS) CopyFileToTemp(opener Opener, _ os.FileInfo) (string, error) {
+	// Open a file in the layer
+	r, err := opener()
+	if err != nil {
+		return "", xerrors.Errorf("file open error: %w", err)
+	}
+	defer r.Close()
+
+	if src, ok := r.(*os.File); ok {
+		if name, err := c.link(src); err == nil {
+			return name, nil
+		}
+	}
+
 	// Create a temporary file to which the file in the layer will be copied
 	// so that all the files will not be loaded into memory
 	f, err := xos.CreateTemp(c.dir, "analyzer-file-")
@@ -41,13 +56,6 @@ func (c *CompositeFS) CopyFileToTemp(opener Opener, _ os.FileInfo) (string, erro
 		return "", xerrors.Errorf("create temp error: %w", err)
 	}
 	defer f.Close()
-
-	// Open a file in the layer
-	r, err := opener()
-	if err != nil {
-		return "", xerrors.Errorf("file open error: %w", err)
-	}
-	defer r.Close()
 
 	// Copy file content into the temporary file
 	if _, err = io.Copy(f, r); err != nil {
@@ -60,6 +68,33 @@ func (c *CompositeFS) CopyFileToTemp(opener Opener, _ os.FileInfo) (string, erro
 	}
 
 	return f.Name(), nil
+}
+
+// link makes a hard link to the open file src under a new name in the
+// temporary directory, which keeps the file when its walker removes src.
+func (c *CompositeFS) link(src *os.File) (string, error) {
+	fi, err := src.Stat()
+	if err != nil {
+		return "", err
+	}
+	f, err := xos.CreateTemp(c.dir, "analyzer-file-")
+	if err != nil {
+		return "", err
+	}
+	name := f.Name()
+	_ = f.Close()
+	if err := os.Remove(name); err != nil {
+		return "", err
+	}
+	if err := os.Link(src.Name(), name); err != nil {
+		return "", err
+	}
+	// The link goes by name, which may name another file by now.
+	if li, err := os.Stat(name); err != nil || !os.SameFile(fi, li) {
+		_ = os.Remove(name)
+		return "", xerrors.Errorf("%s names another file", src.Name())
+	}
+	return name, nil
 }
 
 // CreateLink creates a link in the virtual filesystem that corresponds to a real file.
