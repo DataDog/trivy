@@ -89,48 +89,40 @@ func (f *file) RemoveAll(name string) error {
 }
 
 func (f *file) removePath(name string, recursive bool) error {
-	parts := strings.Split(name, separator)
-	if len(parts) == 1 {
-		sub, ok := f.files.Load(name)
-		if !ok {
+	for {
+		elem, rest, more := strings.Cut(name, separator)
+		if !more {
+			sub, ok := f.files.Load(name)
+			if !ok {
+				return fs.ErrNotExist
+			}
+			if sub.files.Len() != 0 && !recursive {
+				return fs.ErrInvalid
+			}
+			f.files.Delete(name)
+			return nil
+		}
+
+		sub, err := f.getFile(elem)
+		if err != nil {
+			return err
+		} else if !sub.stat.IsDir() {
 			return fs.ErrNotExist
 		}
-		if sub.files.Len() != 0 && !recursive {
-			return fs.ErrInvalid
-		}
-		f.files.Delete(name)
-		return nil
+		f, name = sub, rest
 	}
-
-	sub, err := f.getFile(parts[0])
-	if err != nil {
-		return err
-	} else if !sub.stat.IsDir() {
-		return fs.ErrNotExist
-	}
-
-	return sub.removePath(strings.Join(parts[1:], separator), recursive)
 }
 
 func (f *file) getFile(name string) (*file, error) {
-	if name == "" || name == "." {
-		return f, nil
-	}
-	parts := strings.Split(name, separator)
-	if len(parts) == 1 {
-		f, ok := f.files.Load(name)
-		if ok {
-			return f, nil
+	for name != "" && name != "." {
+		elem, rest, more := strings.Cut(name, separator)
+		sub, ok := f.files.Load(elem)
+		if !ok || (more && !sub.stat.IsDir()) {
+			return nil, fs.ErrNotExist
 		}
-		return nil, fs.ErrNotExist
+		f, name = sub, rest
 	}
-
-	sub, ok := f.files.Load(parts[0])
-	if !ok || !sub.stat.IsDir() {
-		return nil, fs.ErrNotExist
-	}
-
-	return sub.getFile(strings.Join(parts[1:], separator))
+	return f, nil
 }
 
 // holds reports whether the tree under f, whose path is dir, holds a file
@@ -213,91 +205,85 @@ func (f *file) ReadDir(name string) ([]fs.DirEntry, error) {
 		return entries, nil
 	}
 
-	parts := strings.Split(name, separator)
-	dir, ok := f.files.Load(parts[0])
+	elem, rest, _ := strings.Cut(name, separator)
+	dir, ok := f.files.Load(elem)
 	if !ok || !dir.stat.IsDir() {
 		return nil, fs.ErrNotExist
 	}
-	return dir.ReadDir(strings.Join(parts[1:], separator))
+	return dir.ReadDir(rest)
 }
 
 func (f *file) MkdirAll(path string, perm fs.FileMode) error {
-	parts := strings.Split(path, separator)
-
-	if path == "" || path == "." {
-		return nil
-	}
-
 	if perm&fs.ModeDir == 0 {
 		perm |= fs.ModeDir
 	}
-
-	sub := &file{
-		stat: fileStat{
-			name:    parts[0],
-			size:    0x100,
-			modTime: time.Now(),
-			mode:    perm,
-		},
-		files: xsync.Map[string, *file]{},
+	for path != "" && path != "." {
+		elem, rest, _ := strings.Cut(path, separator)
+		sub, loaded := f.files.Load(elem)
+		if !loaded {
+			// Create the directory when the key is not present
+			sub, loaded = f.files.LoadOrStore(elem, &file{
+				stat: fileStat{
+					name:    elem,
+					size:    0x100,
+					modTime: time.Now(),
+					mode:    perm,
+				},
+			})
+		}
+		if loaded && !sub.stat.IsDir() {
+			return fs.ErrExist
+		}
+		f, path = sub, rest
 	}
-
-	// Create the directory when the key is not present
-	sub, loaded := f.files.LoadOrStore(parts[0], sub)
-	if loaded && !sub.stat.IsDir() {
-		return fs.ErrExist
-	}
-
-	if len(parts) == 1 {
-		return nil
-	}
-
-	return sub.MkdirAll(strings.Join(parts[1:], separator), perm)
+	return nil
 }
 
 func (f *file) WriteFile(path, underlyingPath string) error {
-	parts := strings.Split(path, separator)
-
-	if len(parts) == 1 {
-		f.files.Store(parts[0], &file{
-			underlyingPath: underlyingPath,
-		})
-		return nil
+	dir, name, err := f.parent(path)
+	if err != nil {
+		return err
 	}
+	dir.files.Store(name, &file{
+		underlyingPath: underlyingPath,
+	})
+	return nil
+}
 
-	dir, ok := f.files.Load(parts[0])
-	if !ok || !dir.stat.IsDir() {
-		return fs.ErrNotExist
+// parent returns the directory that holds path, and the last element of
+// path.
+func (f *file) parent(path string) (*file, string, error) {
+	for {
+		elem, rest, more := strings.Cut(path, separator)
+		if !more {
+			return f, elem, nil
+		}
+		dir, ok := f.files.Load(elem)
+		if !ok || !dir.stat.IsDir() {
+			return nil, "", fs.ErrNotExist
+		}
+		f, path = dir, rest
 	}
-
-	return dir.WriteFile(strings.Join(parts[1:], separator), underlyingPath)
 }
 
 func (f *file) WriteVirtualFile(path string, data []byte, mode fs.FileMode) error {
 	if mode&fs.ModeDir != 0 {
 		return xerrors.Errorf("invalid perm: %v", mode)
 	}
-	parts := strings.Split(path, separator)
-
-	if len(parts) == 1 {
-		f.files.Store(parts[0], &file{
-			data: data,
-			stat: fileStat{
-				name:    parts[0],
-				size:    int64(len(data)),
-				mode:    mode,
-				modTime: time.Now(),
-			},
-		})
-		return nil
+	dir, name, err := f.parent(path)
+	if err != nil {
+		return err
 	}
-
-	dir, ok := f.files.Load(parts[0])
-	if !ok || !dir.stat.IsDir() {
-		return fs.ErrNotExist
-	}
-
-	return dir.WriteVirtualFile(strings.Join(parts[1:], separator), data, mode)
+	dir.files.Store(name, &file{
+		data: data,
+		stat: fileStat{
+			name:    name,
+			size:    int64(len(data)),
+			mode:    mode,
+			modTime: time.Now(),
+		},
+	})
+	return nil
 }
 
 func (f *file) glob(pattern string) ([]string, error) {
