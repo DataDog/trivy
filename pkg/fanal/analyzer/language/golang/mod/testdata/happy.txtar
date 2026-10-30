@@ -1,5 +1,5 @@
-Test case with go.mod, go.sum, and GOPATH pkg/mod dependencies.
-This tests the happy path where all dependencies can be resolved from GOPATH.
+Test case with go.mod and go.sum.
+This tests the happy path with a replaced direct dependency and an indirect dependency.
 
 -- go.mod --
 module github.com/org/repo

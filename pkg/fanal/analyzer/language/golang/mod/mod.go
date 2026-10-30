@@ -1,15 +1,11 @@
 package mod
 
 import (
-	"cmp"
 	"context"
 	"errors"
-	"fmt"
-	"go/build"
 	"io"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -49,25 +45,16 @@ type gomodAnalyzer struct {
 	modParser language.Parser
 	sumParser language.Parser
 
-	// go.mod/go.sum in dependencies
-	leafModParser language.Parser
-
 	licenseClassifierConfidenceLevel float64
-
-	// gopathFS represents the $GOPATH directory as an fs.FS.
-	// It should contain the "pkg/mod" subdirectory structure.
-	gopathFS fs.FS
 
 	logger *log.Logger
 }
 
 func newGoModAnalyzer(opt analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) {
 	return &gomodAnalyzer{
-		modParser:                        mod.NewParser(true, opt.DetectionPriority == types.PriorityComprehensive), // Only the root module should replace
+		modParser:                        mod.NewParser(true, opt.DetectionPriority == types.PriorityComprehensive),
 		sumParser:                        sum.NewParser(),
-		leafModParser:                    mod.NewParser(false, false), // Don't detect stdlib for non-root go.mod files
 		licenseClassifierConfidenceLevel: opt.LicenseScannerOption.ClassifierConfidenceLevel,
-		gopathFS:                         os.DirFS(cmp.Or(os.Getenv("GOPATH"), build.Default.GOPATH)),
 		logger:                           log.WithPrefix("golang"),
 	}, nil
 }
@@ -102,7 +89,7 @@ func (a *gomodAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnal
 		return nil
 	})
 
-	if err := a.fillAdditionalData(ctx, input.FS, apps); err != nil {
+	if err := a.fillAdditionalData(input.FS, apps); err != nil {
 		a.logger.Warn("Unable to collect additional info", log.Err(err))
 	}
 
@@ -146,134 +133,32 @@ func (a *gomodAnalyzer) Version() int {
 	return version
 }
 
-// fillAdditionalData collects licenses and dependency relationships, then update applications.
-func (a *gomodAnalyzer) fillAdditionalData(ctx context.Context, fsys fs.FS, apps []types.Application) error {
-	var modSearchDirs []searchDir
-
-	// $GOPATH/pkg/mod
-	if gopath, err := newGOPATH(a.gopathFS); err != nil {
-		a.logger.Debug("GOPATH not found. Run 'go mod download' or 'go mod tidy' for identifying dependency graph and licenses", log.Err(err))
-	} else {
-		modSearchDirs = append(modSearchDirs, gopath)
-	}
-
+// fillAdditionalData collects licenses from the vendor directory next to each
+// go.mod, then updates applications.
+func (a *gomodAnalyzer) fillAdditionalData(fsys fs.FS, apps []types.Application) error {
 	licenses := make(map[string][]string)
 	for i, app := range apps {
-		licenseSearchDirs := modSearchDirs
-
 		// vendor directory next to go.mod
-		if vendorDir, err := newVendorDir(fsys, app.FilePath); err == nil {
-			licenseSearchDirs = append(licenseSearchDirs, vendorDir)
-		}
-
-		// Actually used dependencies
-		usedPkgs := lo.SliceToMap(app.Packages, func(pkg types.Package) (string, types.Package) {
-			return pkg.Name, pkg
-		})
-
-		// Check if either $GOPATH/pkg/mod or the vendor directory exists
-		if len(licenseSearchDirs) == 0 {
+		vendorDir, err := newVendorDir(fsys, app.FilePath)
+		if err != nil {
 			continue
 		}
 
 		for j, pkg := range app.Packages {
-			// Collect licenses
-			if licenseNames, err := findLicense(licenseSearchDirs, pkg, licenses, a.licenseClassifierConfidenceLevel); err != nil {
-				return xerrors.Errorf("unable to collect license: %w", err)
-			} else {
-				// Fill licenses
-				apps[i].Packages[j].Licenses = licenseNames
-			}
-
-			// Collect dependencies of the direct dependency from $GOPATH/pkg/mod because the vendor directory doesn't have go.mod files.
-			dep, err := a.collectDeps(ctx, modSearchDirs, pkg)
+			licenseNames, err := findLicense(vendorDir, pkg, licenses, a.licenseClassifierConfidenceLevel)
 			if err != nil {
-				return xerrors.Errorf("dependency graph error: %w", err)
-			} else if dep.ID == "" {
-				// go.mod not found
-				continue
+				return xerrors.Errorf("unable to collect license: %w", err)
 			}
-			// Filter out unused dependencies and convert module names to module IDs
-			apps[i].Packages[j].DependsOn = lo.FilterMap(dep.DependsOn, func(modName string, _ int) (string, bool) {
-				m, ok := usedPkgs[modName]
-				if !ok {
-					return "", false
-				}
-				return m.ID, true
-			})
+			apps[i].Packages[j].Licenses = licenseNames
 		}
 	}
 	return nil
 }
 
-func (a *gomodAnalyzer) collectDeps(ctx context.Context, searchDirs []searchDir, pkg types.Package) (types.Dependency, error) {
-	for _, searchDir := range searchDirs {
-		// e.g. $GOPATH/pkg/mod/github.com/aquasecurity/go-dep-parser@v0.1.0
-		modDir, err := searchDir.Resolve(pkg)
-		if err != nil {
-			continue
-		}
-
-		dependsOn, err := a.resolveDeps(ctx, modDir)
-		if errors.Is(err, fs.ErrNotExist) {
-			a.logger.Debug("Unable to identify dependencies as it doesn't support Go modules",
-				log.String("module", pkg.ID))
-			return types.Dependency{}, nil
-		} else if err != nil {
-			return types.Dependency{}, xerrors.Errorf("resolve deps error: %w", err)
-		}
-
-		return types.Dependency{
-			ID:        pkg.ID,
-			DependsOn: dependsOn,
-		}, nil
-	}
-	return types.Dependency{}, nil
-}
-
-// resolveDeps parses go.mod under $GOPATH/pkg/mod and returns the dependencies
-func (a *gomodAnalyzer) resolveDeps(ctx context.Context, modDir fs.FS) ([]string, error) {
-	// e.g. $GOPATH/pkg/mod/github.com/aquasecurity/go-dep-parser@v0.1.0/go.mod
-	f, err := modDir.Open("go.mod")
-	if err != nil {
-		return nil, xerrors.Errorf("file open error: %w", err)
-	}
-	defer f.Close()
-
-	file, ok := f.(xio.ReadSeekCloserAt)
-	if !ok {
-		return nil, xerrors.Errorf("type assertion error: %w", err)
-	}
-
-	// Parse go.mod under $GOPATH/pkg/mod
-	pkgs, _, err := a.leafModParser.Parse(ctx, file)
-	if err != nil {
-		return nil, xerrors.Errorf("parse error: %w", err)
-	}
-
-	// Filter out indirect dependencies
-	dependsOn := lo.FilterMap(pkgs, func(lib types.Package, _ int) (string, bool) {
-		return lib.Name, lib.Relationship == types.RelationshipDirect
-	})
-
-	return dependsOn, nil
-
-}
-
-// addOrphanIndirectDepsUnderRoot handles indirect dependencies that have no identifiable parent packages in the dependency tree.
-// This situation can occur when:
-// - $GOPATH/pkg directory doesn't exist
-// - Module cache is incomplete
-// - etc.
-//
-// In such cases, indirect packages become "orphaned" - they exist in the dependency list
-// but have no connection to the dependency tree. This function resolves this issue by:
-// 1. Finding the root (main) module
-// 2. Identifying all indirect dependencies that have no parent packages
-// 3. Adding these orphaned indirect dependencies under the main module
-//
-// This ensures that all packages remain visible in the dependency tree, even when the complete
-// dependency chain cannot be determined.
+// addOrphanIndirectDepsUnderRoot adds the orphan indirect dependencies under
+// the main module, so that every package appears in the dependency tree. The
+// tree comes from the go.mod of the main module, which makes the main module
+// the parent of its direct dependencies alone.
 func (a *gomodAnalyzer) addOrphanIndirectDepsUnderRoot(apps []types.Application) {
 	for _, app := range apps {
 		// Find the main module
@@ -346,60 +231,57 @@ func mergeGoSum(gomod, gosum *types.Application) {
 	gomod.Packages = lo.Values(uniq)
 }
 
-func findLicense(searchDirs []searchDir, pkg types.Package, licenses map[string][]string, classifierConfidenceLevel float64) ([]string, error) {
+func findLicense(vendor vendorDir, pkg types.Package, licenses map[string][]string, classifierConfidenceLevel float64) ([]string, error) {
 	if licenses[pkg.ID] != nil {
 		return licenses[pkg.ID], nil
 	}
 
-	var license *types.LicenseFile
-	for _, searchDir := range searchDirs {
-		sub, err := searchDir.Resolve(pkg)
-		if err != nil {
-			continue
-		}
-
-		err = fs.WalkDir(sub, ".", func(path string, d fs.DirEntry, err error) error {
-			switch {
-			case err != nil:
-				return err
-			case !d.Type().IsRegular():
-				return nil
-			case !licenseRegexp.MatchString(filepath.Base(path)):
-				return nil
-			}
-
-			// e.g. $GOPATH/pkg/mod/github.com/aquasecurity/go-dep-parser@v0.1.0/LICENSE
-			f, err := sub.Open(path)
-			if err != nil {
-				return xerrors.Errorf("file (%s) open error: %w", path, err)
-			}
-			defer f.Close()
-
-			if l, err := licensing.Classify(path, f, classifierConfidenceLevel); err != nil {
-				return xerrors.Errorf("license classify error: %w", err)
-			} else if l != nil && len(l.Findings) > 0 { // License found
-				license = l
-				return fs.SkipAll // Stop walking
-			}
-			return nil
-		})
-
-		switch {
-		// The module path may not exist
-		case errors.Is(err, os.ErrNotExist):
-			continue
-		case err != nil && !errors.Is(err, io.EOF):
-			return nil, xerrors.Errorf("unable to find a known open source license: %w", err)
-		case license == nil || len(license.Findings) == 0:
-			continue
-		}
-
-		// License found
-		licenseNames := license.Findings.Names()
-		licenses[pkg.ID] = licenseNames
-		return licenseNames, nil
+	sub, err := vendor.Resolve(pkg)
+	if err != nil {
+		return nil, nil
 	}
-	return nil, nil
+
+	var license *types.LicenseFile
+	err = fs.WalkDir(sub, ".", func(path string, d fs.DirEntry, err error) error {
+		switch {
+		case err != nil:
+			return err
+		case !d.Type().IsRegular():
+			return nil
+		case !licenseRegexp.MatchString(filepath.Base(path)):
+			return nil
+		}
+
+		// e.g. vendor/github.com/aquasecurity/go-dep-parser/LICENSE
+		f, err := sub.Open(path)
+		if err != nil {
+			return xerrors.Errorf("file (%s) open error: %w", path, err)
+		}
+		defer f.Close()
+
+		if l, err := licensing.Classify(path, f, classifierConfidenceLevel); err != nil {
+			return xerrors.Errorf("license classify error: %w", err)
+		} else if l != nil && len(l.Findings) > 0 { // License found
+			license = l
+			return fs.SkipAll // Stop walking
+		}
+		return nil
+	})
+
+	switch {
+	// The module path may not exist
+	case errors.Is(err, os.ErrNotExist):
+		return nil, nil
+	case err != nil && !errors.Is(err, io.EOF):
+		return nil, xerrors.Errorf("unable to find a known open source license: %w", err)
+	case license == nil || len(license.Findings) == 0:
+		return nil, nil
+	}
+
+	// License found
+	licenseNames := license.Findings.Names()
+	licenses[pkg.ID] = licenseNames
+	return licenseNames, nil
 }
 
 // normalizeModName escapes upper characters
@@ -415,46 +297,6 @@ func normalizeModName(name string) string {
 		}
 	}
 	return string(newName)
-}
-
-type searchDir interface {
-	Resolve(pkg types.Package) (fs.FS, error)
-}
-
-type gopathDir struct {
-	root fs.FS // $GOPATH/pkg/mod as fs.FS (can be os.DirFS or test fixture)
-}
-
-func newGOPATH(gopathFS fs.FS) (searchDir, error) {
-	// $GOPATH/pkg/mod
-	// Use path.Join instead of filepath.Join because fs.FS always uses forward slashes,
-	// regardless of the operating system.
-	modFS, err := fs.Sub(gopathFS, path.Join("pkg", "mod"))
-	if err != nil {
-		return nil, xerrors.Errorf("failed to access $GOPATH/pkg/mod: %w", err)
-	}
-
-	// Check if the directory exists.
-	// fs.Sub doesn't return an error for non-existent directories,
-	// so we need to explicitly verify the directory exists.
-	if _, err := fs.Stat(modFS, "."); err != nil {
-		return nil, xerrors.Errorf("$GOPATH/pkg/mod does not exist: %w", err)
-	}
-
-	return &gopathDir{root: modFS}, nil
-}
-
-// Resolve resolves the module directory for a given package.
-// It adds the version suffix to the module name and returns the directory as an fs.FS.
-// e.g. $GOPATH/pkg/mod => $GOPATH/pkg/mod/github.com/aquasecurity/go-dep-parser@v1.0.0
-func (d *gopathDir) Resolve(pkg types.Package) (fs.FS, error) {
-	name := normalizeModName(pkg.Name)
-
-	// Add version suffix for packages from $GOPATH
-	// e.g. github.com/aquasecurity/go-dep-parser@v1.0.0
-	modDirName := fmt.Sprintf("%s@%s", name, pkg.Version)
-
-	return fs.Sub(d.root, modDirName)
 }
 
 type vendorDir struct {

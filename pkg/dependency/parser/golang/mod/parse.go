@@ -166,7 +166,6 @@ func (p *Parser) Parse(_ context.Context, r xio.ReadSeekerAt) ([]ftypes.Package,
 		}
 
 		// Store child dependencies for the root package (main module).
-		// We will build a dependency graph for Direct/Indirect in `fanal` using additional files.
 		dependsOn := lo.FilterMap(lo.Values(pkgs), func(pkg ftypes.Package, _ int) (string, bool) {
 			return pkg.ID, pkg.Relationship == ftypes.RelationshipDirect
 		})
