@@ -1,6 +1,7 @@
 package mapfs_test
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -115,6 +116,82 @@ func TestFS_Filter(t *testing.T) {
 		_, err = newFS.Stat("a/b/c/c.txt")
 		require.NoError(t, err)
 	})
+}
+
+func TestFS_Without(t *testing.T) {
+	fsys := initFS(t)
+	t.Run("nothing to skip", func(t *testing.T) {
+		got := fsys.Without(mapfs.NewPathSet("hello.txt.orig", "a/b"))
+		assert.Same(t, fsys, got)
+	})
+	t.Run("skip", func(t *testing.T) {
+		got := fsys.Without(mapfs.NewPathSet("/a/b/b.txt", "a/b/c/virtual.txt"))
+		var files []string
+		require.NoError(t, fs.WalkDir(got, ".", func(path string, _ fs.DirEntry, err error) error {
+			files = append(files, path)
+			return err
+		}))
+		assert.Equal(t, []string{
+			".",
+			"a",
+			"a/b",
+			"a/b/c",
+			"a/b/c/.dotfile",
+			"a/b/c/c.txt",
+			"a/b/c/empty-virtual.txt",
+			"a/b/empty",
+			"hello.txt",
+		}, files)
+		b, err := fs.ReadFile(got, "a/b/c/empty-virtual.txt")
+		require.NoError(t, err)
+		assert.Empty(t, b)
+
+		// The source keeps its files.
+		_, err = fsys.Stat("a/b/b.txt")
+		require.NoError(t, err)
+	})
+}
+
+// BenchmarkFS_Without filters the trees of 10 analyzers, 2,000 linked files
+// each, with the files of a host's OS packages, 20 of which are in each tree.
+// A post-analysis phase builds the set once and filters every tree with it.
+func BenchmarkFS_Without(b *testing.B) {
+	trees, skipped := filterBenchTrees(b)
+	b.ReportAllocs()
+	for b.Loop() {
+		s := mapfs.NewPathSet(skipped...)
+		for _, fsys := range trees {
+			fsys.Without(s)
+		}
+	}
+}
+
+func filterBenchTrees(b *testing.B) ([]*mapfs.FS, []string) {
+	b.Helper()
+	dir := b.TempDir()
+	var trees []*mapfs.FS
+	var skipped []string
+	for range 10 {
+		fsys := mapfs.New()
+		for i := range 2000 {
+			d := fmt.Sprintf("usr/lib/pkg%d", i/100)
+			p := fmt.Sprintf("%s/lib%d.so", d, i)
+			if len(trees) == 0 {
+				require.NoError(b, os.MkdirAll(filepath.Join(dir, d), 0o700))
+				require.NoError(b, os.WriteFile(filepath.Join(dir, p), nil, 0o600))
+				if i%100 == 0 {
+					skipped = append(skipped, "/"+p)
+				}
+			}
+			require.NoError(b, fsys.MkdirAll(d, 0o700))
+			require.NoError(b, fsys.WriteFile(p, filepath.Join(dir, p)))
+		}
+		trees = append(trees, fsys)
+	}
+	for i := range 50000 {
+		skipped = append(skipped, fmt.Sprintf("/usr/share/doc/pkg%d/copyright", i))
+	}
+	return trees, skipped
 }
 
 func TestFS_VanishedFile(t *testing.T) {

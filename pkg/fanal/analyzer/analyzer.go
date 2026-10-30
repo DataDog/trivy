@@ -23,6 +23,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/licensing"
 	"github.com/aquasecurity/trivy/pkg/log"
+	"github.com/aquasecurity/trivy/pkg/mapfs"
 	"github.com/aquasecurity/trivy/pkg/misconf"
 	"github.com/aquasecurity/trivy/pkg/parallel"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
@@ -616,40 +617,20 @@ func (ag AnalyzerGroup) RequiredDeferredAnalyzers(filePath string, info os.FileI
 func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeFS, result *AnalysisResult,
 	opts AnalysisOptions) error {
 	var errs error
+	skipped := mapfs.NewPathSet()
+	ag.skip(skipped, result)
 	for _, a := range ag.postAnalyzers {
 		fsys, ok := compositeFS.Get(a.Type())
 		if !ok {
 			continue
 		}
-		// Filter ignores the context, and some analyzers work before they
-		// check it, so stop here once the context is done.
+		// Some analyzers work before they check the context, so stop here
+		// once it is done.
 		if err := ctx.Err(); err != nil {
 			return errors.Join(errs, xerrors.Errorf("post analysis stopped before %s: %w", a.Type(), err))
 		}
 
-		skippedFiles := result.SystemInstalledFiles
-		if ag.detectionPriority == types.PriorityComprehensive {
-			// If the detection priority is comprehensive, system files installed by the OS package manager will not be skipped.
-			// It can lead to false positives and duplicates, but it may be necessary to detect all possible vulnerabilities.
-			skippedFiles = nil
-		}
-		for _, app := range result.Applications {
-			skippedFiles = append(skippedFiles, app.FilePath)
-			for _, pkg := range app.Packages {
-				// The analysis result could contain packages listed in SBOM.
-				// The files of those packages don't have to be analyzed.
-				// This is especially helpful for expensive post-analyzers such as the JAR analyzer.
-				if pkg.FilePath != "" {
-					skippedFiles = append(skippedFiles, pkg.FilePath)
-				}
-			}
-		}
-
-		filteredFS, err := fsys.Filter(skippedFiles)
-		if err != nil {
-			return xerrors.Errorf("unable to filter filesystem: %w", err)
-		}
-
+		filteredFS := fsys.Without(skipped)
 		res, err := ag.postAnalyzeWithTimeout(ctx, a, PostAnalysisInput{
 			FS:           filteredFS,
 			FilePatterns: ag.filePatterns[a.Type()],
@@ -669,9 +650,37 @@ func (ag AnalyzerGroup) PostAnalyze(ctx context.Context, compositeFS *CompositeF
 		} else {
 			// Merge result only if the PostAnalyzer completed successfully.
 			result.Merge(res)
+			ag.skip(skipped, res)
 		}
 	}
 	return errs
+}
+
+// skip adds to skipped the files the post and deferred analyzers leave out:
+// the files r found OS packages installed, unless the detection priority is
+// comprehensive, and the files of the applications in r.
+func (ag AnalyzerGroup) skip(skipped *mapfs.PathSet, r *AnalysisResult) {
+	if r == nil {
+		return
+	}
+	if ag.detectionPriority != types.PriorityComprehensive {
+		// With the comprehensive priority, files installed by the OS package
+		// manager are analyzed too. It can lead to false positives and
+		// duplicates, but it may be necessary to detect all possible
+		// vulnerabilities.
+		skipped.Add(r.SystemInstalledFiles...)
+	}
+	for _, app := range r.Applications {
+		skipped.Add(app.FilePath)
+		for _, pkg := range app.Packages {
+			// The analysis result could contain packages listed in SBOM.
+			// The files of those packages don't have to be analyzed.
+			// This is especially helpful for expensive post-analyzers such as the JAR analyzer.
+			if pkg.FilePath != "" {
+				skipped.Add(pkg.FilePath)
+			}
+		}
+	}
 }
 
 func (ag AnalyzerGroup) postAnalyzeWithTimeout(ctx context.Context, a PostAnalyzer, input PostAnalysisInput, t time.Duration) (*AnalysisResult, error) {
@@ -691,6 +700,8 @@ func (ag AnalyzerGroup) postAnalyzeWithTimeout(ctx context.Context, a PostAnalyz
 // SystemInstalledFiles is complete (e.g. dpkg is a post-analyzer).
 func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *CompositeFS, result *AnalysisResult, opts AnalysisOptions) error {
 	var errs error
+	skipped := mapfs.NewPathSet()
+	ag.skip(skipped, result)
 	for _, a := range ag.deferredAnalyzers {
 		fsys, ok := compositeFS.Get(a.Type())
 		if !ok {
@@ -700,26 +711,11 @@ func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *Compos
 			return errors.Join(errs, xerrors.Errorf("deferred analysis stopped before %s: %w", a.Type(), err))
 		}
 
-		skippedFiles := result.SystemInstalledFiles
-		if ag.detectionPriority == types.PriorityComprehensive {
-			skippedFiles = nil
-		}
-		for _, app := range result.Applications {
-			skippedFiles = append(skippedFiles, app.FilePath)
-			for _, pkg := range app.Packages {
-				if pkg.FilePath != "" {
-					skippedFiles = append(skippedFiles, pkg.FilePath)
-				}
-			}
-		}
-
-		filteredFS, err := fsys.Filter(skippedFiles)
+		filteredFS := fsys.Without(skipped)
+		found, err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, filteredFS.UnderlyingRoot(), opts, opts.PostAnalyzerTimeout)
+		result.Merge(found)
+		ag.skip(skipped, found)
 		if err != nil {
-			return xerrors.Errorf("unable to filter filesystem: %w", err)
-		}
-
-		dir := filteredFS.UnderlyingRoot()
-		if err := ag.deferredAnalyzeWithTimeout(ctx, a, filteredFS, dir, result, opts, opts.PostAnalyzerTimeout); err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
 				errs = errors.Join(errs, xerrors.Errorf("%s deferred analysis timeout: %w", a.Type(), err))
 			} else {
@@ -730,7 +726,9 @@ func (ag AnalyzerGroup) DeferredAnalyze(ctx context.Context, compositeFS *Compos
 	return errs
 }
 
-func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, dir string, result *AnalysisResult, opts AnalysisOptions, t time.Duration) error {
+// deferredAnalyzeWithTimeout runs a on every file of fsys and returns what it
+// found, which is partial when err is set.
+func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyzer, fsys fs.FS, dir string, opts AnalysisOptions, t time.Duration) (*AnalysisResult, error) {
 	if t > 0 {
 		ctx1, cancel := context.WithTimeout(ctx, t)
 		defer cancel()
@@ -745,13 +743,13 @@ func (ag AnalyzerGroup) deferredAnalyzeWithTimeout(ctx context.Context, a analyz
 			Options:  opts,
 		})
 	}
+	found := NewAnalysisResult()
 	onResult := func(res *AnalysisResult) error {
-		if res != nil {
-			result.Merge(res)
-		}
+		found.Merge(res)
 		return nil
 	}
-	return parallel.WalkDir(ctx, fsys, ".", ag.parallel, onFile, onResult)
+	err := parallel.WalkDir(ctx, fsys, ".", ag.parallel, onFile, onResult)
+	return found, err
 }
 
 // PostAnalyzerFS returns a composite filesystem that contains multiple filesystems for each post-analyzer

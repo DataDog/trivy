@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/xerrors"
 
+	"github.com/aquasecurity/trivy/pkg/set"
 	xsync "github.com/aquasecurity/trivy/pkg/x/sync"
 )
 
@@ -130,6 +131,51 @@ func (f *file) getFile(name string) (*file, error) {
 	}
 
 	return sub.getFile(strings.Join(parts[1:], separator))
+}
+
+// holds reports whether the tree under f, whose path is dir, holds a file
+// in paths.
+func (f *file) holds(paths set.Set[string], dir string) bool {
+	found := false
+	f.files.Range(func(name string, sub *file) bool {
+		p := joinPath(dir, name)
+		if sub.stat.IsDir() {
+			found = sub.holds(paths, p)
+		} else {
+			found = paths.Contains(p)
+		}
+		return !found
+	})
+	return found
+}
+
+// without returns a copy of the tree under f, whose path is dir, without
+// the files in paths. The copy shares the file nodes, which FS never
+// changes in place.
+func (f *file) without(paths set.Set[string], dir string) *file {
+	c := &file{
+		underlyingPath: f.underlyingPath,
+		data:           f.data,
+		stat:           f.stat,
+	}
+	f.files.Range(func(name string, sub *file) bool {
+		p := joinPath(dir, name)
+		switch {
+		case sub.stat.IsDir():
+			c.files.Store(name, sub.without(paths, p))
+		case !paths.Contains(p):
+			c.files.Store(name, sub)
+		}
+		return true
+	})
+	return c
+}
+
+func joinPath(dir, name string) string {
+	if dir == "" {
+		return name
+	}
+	return dir + separator + name
 }
 
 func (f *file) ReadDir(name string) ([]fs.DirEntry, error) {
