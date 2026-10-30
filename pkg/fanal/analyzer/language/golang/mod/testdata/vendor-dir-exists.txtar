@@ -1,5 +1,5 @@
 Test case with vendor directory.
-This tests getting dependency licenses from the vendor directory.
+The license files in the vendor directory leave the licenses unknown.
 
 -- go.mod --
 module github.com/org/repo
