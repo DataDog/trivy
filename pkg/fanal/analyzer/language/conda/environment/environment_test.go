@@ -2,6 +2,8 @@ package environment
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -72,65 +74,6 @@ func Test_environmentAnalyzer_Analyze(t *testing.T) {
 			},
 		},
 		{
-			name:      "happy path with licenses",
-			inputFile: "testdata/environment-with-licenses.yaml",
-			want: &analyzer.AnalysisResult{
-				Applications: []types.Application{
-					{
-						Type:     types.CondaEnv,
-						FilePath: "testdata/environment-with-licenses.yaml",
-						Packages: types.Packages{
-							{
-								Name: "_libgcc_mutex",
-								Locations: []types.Location{
-									{
-										StartLine: 5,
-										EndLine:   5,
-									},
-								},
-							},
-							{
-								Name:    "_openmp_mutex",
-								Version: "5.1",
-								Locations: []types.Location{
-									{
-										StartLine: 6,
-										EndLine:   6,
-									},
-								},
-								Licenses: []string{
-									"BSD-3-Clause",
-								},
-							},
-							{
-								Name:    "blas",
-								Version: "1.0",
-								Locations: []types.Location{
-									{
-										StartLine: 7,
-										EndLine:   7,
-									},
-								},
-							},
-							{
-								Name:    "bzip2",
-								Version: "1.0.8",
-								Locations: []types.Location{
-									{
-										StartLine: 8,
-										EndLine:   8,
-									},
-								},
-								Licenses: []string{
-									"bzip2-1.0.8",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
 			name:      "empty",
 			inputFile: "testdata/empty.yaml",
 		},
@@ -161,6 +104,44 @@ func Test_environmentAnalyzer_Analyze(t *testing.T) {
 			require.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func Test_environmentAnalyzer_Analyze_prefix(t *testing.T) {
+	// The prefix is a directory of the scanning host, with the conda-meta
+	// of bzip2 and its license.
+	prefix := t.TempDir()
+	meta := filepath.Join(prefix, "conda-meta", "bzip2-1.0.8-h998d150_5.json")
+	require.NoError(t, os.Mkdir(filepath.Dir(meta), 0o755))
+	require.NoError(t, os.WriteFile(meta, []byte(`{"name": "bzip2", "version": "1.0.8", "license": "bzip2-1.0.8"}`), 0o644))
+
+	a := environmentAnalyzer{}
+	got, err := a.Analyze(t.Context(), analyzer.AnalysisInput{
+		FilePath: "environment.yaml",
+		Content:  strings.NewReader("dependencies:\n  - bzip2=1.0.8=h998d150_5\nprefix: " + prefix + "\n"),
+	})
+	require.NoError(t, err)
+
+	want := &analyzer.AnalysisResult{
+		Applications: []types.Application{
+			{
+				Type:     types.CondaEnv,
+				FilePath: "environment.yaml",
+				Packages: types.Packages{
+					{
+						Name:    "bzip2",
+						Version: "1.0.8",
+						Locations: []types.Location{
+							{
+								StartLine: 2,
+								EndLine:   2,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	assert.Equal(t, want, got)
 }
 
 func Test_environmentAnalyzer_Required(t *testing.T) {
