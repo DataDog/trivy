@@ -25,14 +25,6 @@
         </developer>
     </developers>
 
-    <!-- This repository will not be used since it exists in a local repository -->
-    <repositories>
-        <repository>
-            <id>repo.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/public/</url>
-        </repository>
-    </repositories>
-
     <properties>
         <api.version>1.7.30</api.version>
     </properties>

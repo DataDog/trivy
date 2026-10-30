@@ -15,17 +15,12 @@ type repository struct {
 	snapshotEnabled bool
 }
 
-type repositories struct {
-	settings    []repository // Repositories from settings.xml files
-	defaultRepo repository   // Default repository - Maven Central for Release, empty for Snapshot
-}
-
 var mavenCentralRepo = repository{
 	url:            *centralURL,
 	releaseEnabled: true,
 }
 
-func resolvePomRepos(servers []Server, pomRepos []pomRepository) []repository {
+func resolvePomRepos(pomRepos []pomRepository) []repository {
 	logger := log.WithPrefix("pom")
 	var repos []repository
 	for _, rep := range pomRepos {
@@ -49,15 +44,6 @@ func resolvePomRepos(servers []Server, pomRepos []pomRepository) []repository {
 			}
 			logger.Debug("Unable to parse remote repository url", log.String("id", rep.ID), log.Err(err))
 			continue
-		}
-
-		// Get the credentials from settings.xml based on matching server id
-		// with the repository id from pom.xml and use it for accessing the repository url
-		for _, server := range servers {
-			if rep.ID == server.ID && server.Username != "" && server.Password != "" {
-				repoURL.User = url.UserPassword(server.Username, server.Password)
-				break
-			}
 		}
 
 		logger.Debug("Adding repository", log.String("id", rep.ID), log.String("url", repoURL.Redacted()))

@@ -21,14 +21,6 @@
         </license>
     </licenses>
 
-    <!-- This repository will not be used since it exists in a local repository -->
-    <repositories>
-        <repository>
-            <id>repo.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/public/</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.example</groupId>

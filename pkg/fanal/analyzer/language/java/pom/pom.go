@@ -25,7 +25,9 @@ type pomAnalyzer struct{}
 
 func (a pomAnalyzer) Analyze(ctx context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
 	filePath := filepath.Join(input.Dir, input.FilePath)
-	p := pom.NewParser(filePath, pom.WithOffline(input.Options.Offline))
+	// A file in an image layer comes with an empty Dir, and its neighbors
+	// are in the layer rather than on disk.
+	p := pom.NewParser(filePath, pom.WithOffline(input.Options.Offline), pom.WithLocalPOMs(input.Dir != ""))
 	res, err := language.Analyze(ctx, types.Pom, input.FilePath, input.Content, p)
 	if err != nil {
 		return nil, xerrors.Errorf("%s parse error: %w", input.FilePath, err)

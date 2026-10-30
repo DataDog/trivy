@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,9 +34,9 @@ import (
 )
 
 type options struct {
-	offline       bool
-	defaultRepo   repository
-	settingsRepos []repository
+	offline     bool
+	defaultRepo repository
+	localPOMs   bool
 }
 
 type option func(*options)
@@ -43,6 +44,16 @@ type option func(*options)
 func WithOffline(offline bool) option {
 	return func(opts *options) {
 		opts.offline = offline
+	}
+}
+
+// WithLocalPOMs sets whether the parser opens the parent and module POMs
+// that a POM names by relative path. The neighbors of a POM read from an
+// image layer are in the layer. With local POMs off, the parser looks the
+// parents up in the repositories alone. The default is true.
+func WithLocalPOMs(local bool) option {
+	return func(opts *options) {
+		opts.localPOMs = local
 	}
 }
 
@@ -57,60 +68,33 @@ func WithDefaultRepo(repoURL string, releaseEnabled, snapshotEnabled bool) optio
 	}
 }
 
-func WithSettingsRepos(repoURLs []string, releaseEnabled, snapshotEnabled bool) option {
-	return func(opts *options) {
-		opts.settingsRepos = xslices.Map(repoURLs, func(repoURL string) repository {
-			u, _ := url.Parse(repoURL)
-			return repository{
-				url:             *u,
-				releaseEnabled:  releaseEnabled,
-				snapshotEnabled: snapshotEnabled,
-			}
-		})
-	}
-}
-
 type Parser struct {
-	logger          *log.Logger
-	rootPath        string
-	cache           pomCache
-	localRepository string
-	remoteRepos     repositories
-	offline         bool
-	servers         []Server
+	logger      *log.Logger
+	rootPath    string
+	cache       pomCache
+	defaultRepo repository
+	offline     bool
+	localPOMs   bool
 }
 
 func NewParser(filePath string, opts ...option) *Parser {
 	o := &options{
 		offline:     false,
 		defaultRepo: mavenCentralRepo,
-	}
-
-	s := readSettings()
-	o.settingsRepos = s.effectiveRepositories()
-	localRepository := s.LocalRepository
-	if localRepository == "" {
-		homeDir, _ := os.UserHomeDir()
-		localRepository = filepath.Join(homeDir, ".m2", "repository")
+		localPOMs:   true,
 	}
 
 	for _, opt := range opts {
 		opt(o)
 	}
 
-	remoteRepos := repositories{
-		defaultRepo: o.defaultRepo,
-		settings:    o.settingsRepos,
-	}
-
 	return &Parser{
-		logger:          log.WithPrefix("pom"),
-		rootPath:        filepath.Clean(filePath),
-		cache:           newPOMCache(),
-		localRepository: localRepository,
-		remoteRepos:     remoteRepos,
-		offline:         o.offline,
-		servers:         s.Servers,
+		logger:      log.WithPrefix("pom"),
+		rootPath:    filepath.Clean(filePath),
+		cache:       newPOMCache(),
+		defaultRepo: o.defaultRepo,
+		offline:     o.offline,
+		localPOMs:   o.localPOMs,
 	}
 }
 
@@ -394,7 +378,7 @@ func (p *Parser) analyze(ctx context.Context, pom *pom, opts analysisOptions) (a
 	}
 
 	// Get repositories from current POM and merge with inherited ones
-	pomRepos := pom.repositories(p.servers)
+	pomRepos := pom.repositories()
 	opts.repositories = lo.UniqBy(append(pomRepos, opts.repositories...), func(r repository) url.URL {
 		return r.url
 	})
@@ -629,7 +613,7 @@ func (p *Parser) retrieveParent(ctx context.Context, currentPath, relativePath s
 	}
 	errs = multierror.Append(errs, err)
 
-	// If not found, search local/remote remoteRepositories
+	// If not found, search the remote repositories
 	pom, err = p.tryRepository(ctx, target.GroupID, target.ArtifactID, target.Version.String(), pomRepos)
 	if err == nil {
 		return pom, nil
@@ -672,6 +656,9 @@ func (p *Parser) openRelativePom(currentPath, relativePath string) (*pom, error)
 
 	// e.g. child + ../parent => parent/
 	filePath := filepath.Join(dir, relativePath)
+	if !p.localPOMs {
+		return nil, &fs.PathError{Op: "open", Path: filePath, Err: fs.ErrNotExist}
+	}
 
 	isDir, err := isDirectory(filePath)
 	if err != nil {
@@ -716,14 +703,7 @@ func (p *Parser) tryRepository(ctx context.Context, groupID, artifactID, version
 	paths := strings.Split(groupID, ".")
 	paths = append(paths, artifactID, version, fmt.Sprintf("%s-%s.pom", artifactID, version))
 
-	// Search local remoteRepositories
-	loaded, err := p.loadPOMFromLocalRepository(paths)
-	if err == nil {
-		return loaded, nil
-	}
-
-	// Search remote remoteRepositories
-	loaded, err = p.fetchPOMFromRemoteRepositories(ctx, paths, isSnapshot(version), pomRepos)
+	loaded, err := p.fetchPOMFromRemoteRepositories(ctx, paths, isSnapshot(version), pomRepos)
 	if err == nil {
 		return loaded, nil
 		// We should return error if it's not "not found" error
@@ -731,14 +711,7 @@ func (p *Parser) tryRepository(ctx context.Context, groupID, artifactID, version
 		return nil, err
 	}
 
-	return nil, xerrors.Errorf("%s:%s:%s was not found in local/remote repositories", groupID, artifactID, version)
-}
-
-func (p *Parser) loadPOMFromLocalRepository(paths []string) (*pom, error) {
-	paths = append([]string{p.localRepository}, paths...)
-	localPath := filepath.Join(paths...)
-
-	return p.openPom(localPath)
+	return nil, xerrors.Errorf("%s:%s:%s was not found in remote repositories", groupID, artifactID, version)
 }
 
 func (p *Parser) fetchPOMFromRemoteRepositories(ctx context.Context, paths []string, snapshot bool, pomRepos []repository) (*pom, error) {
@@ -749,10 +722,9 @@ func (p *Parser) fetchPOMFromRemoteRepositories(ctx context.Context, paths []str
 	}
 
 	// Try all remoteRepositories by following order:
-	// 1. remoteRepositories from settings.xml
-	// 2. remoteRepositories from pom.xml (passed as parameter)
-	// 3. default remoteRepository (Maven Central for Release repository)
-	for _, repo := range slices.Concat(p.remoteRepos.settings, pomRepos, []repository{p.remoteRepos.defaultRepo}) {
+	// 1. remoteRepositories from pom.xml (passed as parameter)
+	// 2. default remoteRepository (Maven Central for Release repository)
+	for _, repo := range slices.Concat(pomRepos, []repository{p.defaultRepo}) {
 		// Skip Release only repositories for snapshot artifacts and vice versa
 		if snapshot && !repo.snapshotEnabled || !snapshot && !repo.releaseEnabled {
 			continue
