@@ -10,3 +10,8 @@
         ID: "ubuntu"
         Name: "Ubuntu CVE Tracker"
         URL: "https://git.launchpad.net/ubuntu-cve-tracker"
+    - key: ubuntu 20.04-FIPS
+      value:
+        ID: "ubuntu"
+        Name: "Ubuntu CVE Tracker"
+        URL: "https://git.launchpad.net/ubuntu-cve-tracker"

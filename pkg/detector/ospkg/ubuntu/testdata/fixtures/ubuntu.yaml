@@ -18,3 +18,10 @@
         - key: CVE-2016-4476
           value:
             FixedVersion: "2.4-0ubuntu10"
+- bucket: ubuntu 20.04-FIPS
+  pairs:
+    - bucket: openssl
+      pairs:
+        - key: CVE-2099-FIPS
+          value:
+            FixedVersion: "3.0.2-0ubuntu1.17+Fips2"
