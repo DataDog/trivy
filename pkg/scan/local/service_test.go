@@ -1106,8 +1106,6 @@ func TestScanner_Scan(t *testing.T) {
 								asset.Layer = ftypes.Layer{
 									DiffID: "sha256:a6d503001157aedc826853f9b67f26d35966221b158bff03849868ae4a821116",
 								}
-								asset.Algorithm.ClassicalSecurityLevel = new(112)
-								asset.Algorithm.NISTQuantumSecurityLevel = new(0)
 							})),
 							cryptotest.CertificateAsset(cryptotest.WithMutate(func(asset *ftypes.CryptoAsset) {
 								asset.FilePath = "etc/ssl/certs/ca.pem"
