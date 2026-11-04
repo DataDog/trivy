@@ -20,6 +20,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/set"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 	xslices "github.com/aquasecurity/trivy/pkg/x/slices"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 var (
@@ -311,7 +312,7 @@ func classifyVersion(foundVersions [][]string, key, moduleName, val string) {
 func versionPrefix(s string) string {
 	// Trim module part.
 	// e.g. `github.com/aquasecurity/trivy/pkg/Version.version` => `Version.version`
-	if _, base, found := strings.CutLast(s, "/"); found {
+	if _, base, found := xstrings.CutLast(s, "/"); found {
 		s = base
 	}
 

@@ -735,6 +735,7 @@ func setUpRegistry(t *testing.T) (string, v1.Hash) {
 	t.Helper()
 
 	ts := registrytest.NewServer(t)
+	t.Cleanup(ts.Close)
 	host := strings.TrimPrefix(ts.URL, "http://")
 
 	_, subject := registrytest.PushRandomImage(t, host, "debian", "12")

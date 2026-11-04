@@ -19,6 +19,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 	xos "github.com/aquasecurity/trivy/pkg/x/os"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 func init() {
@@ -232,17 +233,17 @@ func (a rpmPkgAnalyzer) StaticPaths() []string {
 func splitFileName(filename string) (name, ver, rel string, err error) {
 	filename = strings.TrimSuffix(filename, ".rpm")
 
-	nvr, _, found := strings.CutLast(filename, ".") // Trim arch
+	nvr, _, found := xstrings.CutLast(filename, ".") // Trim arch
 	if !found {
 		return "", "", "", errUnexpectedNameFormat
 	}
 
-	nv, rel, found := strings.CutLast(nvr, "-")
+	nv, rel, found := xstrings.CutLast(nvr, "-")
 	if !found {
 		return "", "", "", errUnexpectedNameFormat
 	}
 
-	name, ver, found = strings.CutLast(nv, "-")
+	name, ver, found = xstrings.CutLast(nv, "-")
 	if !found {
 		return "", "", "", errUnexpectedNameFormat
 	}

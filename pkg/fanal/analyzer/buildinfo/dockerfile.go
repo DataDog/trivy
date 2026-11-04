@@ -9,6 +9,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 func init() {
@@ -42,11 +43,11 @@ func (a dockerfileAnalyzer) Version() int {
 
 // parseVersion parses version from a file name
 func parseVersion(nvr string) string {
-	nv, release, found := strings.CutLast(nvr, "-")
+	nv, release, found := xstrings.CutLast(nvr, "-")
 	if !found {
 		return ""
 	}
-	_, version, _ := strings.CutLast(nv, "-")
+	_, version, _ := xstrings.CutLast(nv, "-")
 	return version + "-" + release
 }
 
