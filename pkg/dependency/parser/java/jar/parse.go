@@ -25,6 +25,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/log"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 	xos "github.com/aquasecurity/trivy/pkg/x/os"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 var (
@@ -871,7 +872,7 @@ func (m *manifest) determineGroupID() (string, error) {
 		groupID = m.bundleSymbolicName
 
 		// e.g. "com.fasterxml.jackson.core.jackson-databind" => "com.fasterxml.jackson.core"
-		if prefix, _, found := strings.CutLast(m.bundleSymbolicName, "."); found {
+		if prefix, _, found := xstrings.CutLast(m.bundleSymbolicName, "."); found {
 			groupID = prefix
 		}
 	case m.implementationVendor != "":

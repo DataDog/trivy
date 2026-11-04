@@ -16,6 +16,7 @@ import (
 
 func TestReferrers(t *testing.T) {
 	ts := registrytest.NewServer(t)
+	t.Cleanup(ts.Close)
 
 	u, err := url.Parse(ts.URL)
 	require.NoError(t, err)

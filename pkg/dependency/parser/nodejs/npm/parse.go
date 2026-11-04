@@ -21,6 +21,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/set"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 	xjson "github.com/aquasecurity/trivy/pkg/x/json"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 const nodeModulesDir = "node_modules"
@@ -385,7 +386,7 @@ func (p *Parser) pkgNameFromPath(pkgPath string) string {
 	// we renamed to `node_modules` directory prefixes `workspace` when resolving Links
 	// node_modules/function1
 	// node_modules/nested_func/node_modules/debug
-	_, pkgName, found := strings.CutLast(pkgPath, nodeModulesDir)
+	_, pkgName, found := xstrings.CutLast(pkgPath, nodeModulesDir)
 	if !found {
 		p.logger.Warn("Package path doesn't have `node_modules` prefix", log.String("pkg_path", pkgPath))
 		return pkgPath

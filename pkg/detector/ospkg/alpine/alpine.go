@@ -16,6 +16,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/scan/utils"
 	"github.com/aquasecurity/trivy/pkg/types"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 var eolDates = map[string]time.Time{
@@ -171,7 +172,7 @@ func (s *Scanner) repoRelease(repo *ftypes.Repository) string {
 	}
 	release := repo.Release
 	if strings.Count(release, ".") > 1 {
-		release, _, _ = strings.CutLast(release, ".")
+		release, _, _ = xstrings.CutLast(release, ".")
 	}
 	return release
 }

@@ -14,6 +14,7 @@ import (
 	ftypes "github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/scan/utils"
 	"github.com/aquasecurity/trivy/pkg/types"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 const (
@@ -310,7 +311,7 @@ func parseOCI(metadata types.Metadata) (*packageurl.PackageURL, error) {
 	}
 
 	name := strings.ToLower(digest.RepositoryStr())
-	if _, base, found := strings.CutLast(name, "/"); found {
+	if _, base, found := xstrings.CutLast(name, "/"); found {
 		name = base
 	}
 
@@ -519,7 +520,7 @@ func parseQualifier(pkg ftypes.Package) packageurl.Qualifiers {
 }
 
 func parsePkgName(name string) (string, string) {
-	if namespace, base, found := strings.CutLast(name, "/"); found {
+	if namespace, base, found := xstrings.CutLast(name, "/"); found {
 		return namespace, base
 	}
 	return "", name

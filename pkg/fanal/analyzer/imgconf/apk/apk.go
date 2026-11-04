@@ -20,6 +20,7 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/analyzer"
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/set"
+	xstrings "github.com/aquasecurity/trivy/pkg/x/strings"
 )
 
 const (
@@ -94,7 +95,7 @@ func (a alpineCmdAnalyzer) fetchApkIndexArchive(targetOS types.OS) (*apkIndex, e
 	// 3.9.3 => 3.9
 	osVer := targetOS.Name
 	if strings.Count(osVer, ".") > 1 {
-		osVer, _, _ = strings.CutLast(osVer, ".")
+		osVer, _, _ = xstrings.CutLast(osVer, ".")
 	}
 
 	url := fmt.Sprintf(a.apkIndexArchiveURL, osVer)

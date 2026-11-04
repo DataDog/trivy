@@ -49,9 +49,7 @@ func setupGitServer(t *testing.T, bareDir string, opts Options) *httptest.Server
 	err := service.Setup()
 	require.NoError(t, err)
 
-	ts := httptest.NewTestServer(t, service)
-	ts.Start()
-	return ts
+	return httptest.NewServer(service)
 }
 
 func NewServer(t *testing.T, repo, dir string, opts Options) *httptest.Server {
