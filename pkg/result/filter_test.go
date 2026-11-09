@@ -222,7 +222,6 @@ func TestFilter(t *testing.T) {
 		severities     []dbTypes.Severity
 		ignoreStatuses []dbTypes.Status
 		ignoreFile     string
-		policyFile     string
 		vexPath        string
 	}
 	tests := []struct {
@@ -661,137 +660,6 @@ func TestFilter(t *testing.T) {
 			},
 		},
 		{
-			name: "policy file for vulnerabilities",
-			args: args{
-				report: types.Report{
-					Results: types.Results{
-						{
-							Vulnerabilities: []types.DetectedVulnerability{
-								vuln1,
-								vuln2, // ignored by severity
-								vuln3, // ignored by check
-							},
-						},
-					},
-				},
-				severities: []dbTypes.Severity{dbTypes.SeverityLow},
-				policyFile: "./testdata/ignore-vuln.rego",
-			},
-			want: types.Report{
-				Results: types.Results{
-					{
-						Vulnerabilities: []types.DetectedVulnerability{
-							vuln1,
-						},
-						ModifiedFindings: []types.ModifiedFinding{
-							{
-								Type:      types.FindingTypeVulnerability,
-								Status:    types.FindingStatusIgnored,
-								Statement: "Filtered by Rego",
-								Source:    "testdata/ignore-vuln.rego",
-								Finding:   vuln3,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "policy file for misconfigurations",
-			args: args{
-				report: types.Report{
-					Results: types.Results{
-						{
-							Misconfigurations: []types.DetectedMisconfiguration{
-								misconf1,
-								misconf2, // passed
-								misconf3, // ignored by check
-							},
-						},
-					},
-				},
-				severities: []dbTypes.Severity{
-					dbTypes.SeverityLow,
-					dbTypes.SeverityHigh,
-				},
-				policyFile: "./testdata/ignore-misconf.rego",
-			},
-			want: types.Report{
-				Results: types.Results{
-					{
-						MisconfSummary: &types.MisconfSummary{
-							Successes: 1,
-							Failures:  1,
-						},
-						Misconfigurations: []types.DetectedMisconfiguration{
-							misconf1,
-						},
-						ModifiedFindings: []types.ModifiedFinding{
-							{
-								Type:      types.FindingTypeMisconfiguration,
-								Status:    types.FindingStatusIgnored,
-								Statement: "Filtered by Rego",
-								Source:    "testdata/ignore-misconf.rego",
-								Finding:   misconf3,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "ignore file for licenses and secrets",
-			args: args{
-				report: types.Report{
-					Results: types.Results{
-						{
-							Licenses: []types.DetectedLicense{
-								license1,
-								license2,
-							},
-							Secrets: []types.DetectedSecret{
-								secret1,
-								secret2,
-							},
-						},
-					},
-				},
-				severities: []dbTypes.Severity{
-					dbTypes.SeverityLow,
-					dbTypes.SeverityHigh,
-				},
-				policyFile: "./testdata/test-ignore-policy-licenses-and-secrets.rego",
-			},
-			want: types.Report{
-				Results: types.Results{
-					{
-						Licenses: []types.DetectedLicense{
-							license1,
-						},
-						Secrets: []types.DetectedSecret{
-							secret1,
-						},
-						ModifiedFindings: []types.ModifiedFinding{
-							{
-								Type:      types.FindingTypeSecret,
-								Status:    types.FindingStatusIgnored,
-								Statement: "Filtered by Rego",
-								Source:    "testdata/test-ignore-policy-licenses-and-secrets.rego",
-								Finding:   secret2,
-							},
-							{
-								Type:      types.FindingTypeLicense,
-								Status:    types.FindingStatusIgnored,
-								Statement: "Filtered by Rego",
-								Source:    "testdata/test-ignore-policy-licenses-and-secrets.rego",
-								Finding:   license2,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
 			name: "happy path with duplicates, one with empty fixed version",
 			args: args{
 				report: types.Report{
@@ -1081,67 +949,6 @@ func TestFilter(t *testing.T) {
 			},
 		},
 		{
-			name: "ignore findings by type in policy file",
-			args: args{
-				report: types.Report{
-					Results: types.Results{
-						{
-							Target: "foo/package-lock.json",
-							Vulnerabilities: []types.DetectedVulnerability{
-								vuln1,
-								vuln7, // filtered by PkgName and Type
-							},
-						},
-						{
-							Target: "LICENSE.txt",
-							Licenses: []types.DetectedLicense{
-								license1, // filtered by PkgName and Type
-								license2,
-							},
-						},
-					},
-				},
-				policyFile: "testdata/ignore-by-type.rego",
-				severities: []dbTypes.Severity{
-					dbTypes.SeverityLow,
-				},
-			},
-			want: types.Report{
-				Results: types.Results{
-					{
-						Target: "foo/package-lock.json",
-						Vulnerabilities: []types.DetectedVulnerability{
-							vuln1,
-						},
-						ModifiedFindings: []types.ModifiedFinding{
-							{
-								Type:      types.FindingTypeVulnerability,
-								Status:    types.FindingStatusIgnored,
-								Source:    "testdata/ignore-by-type.rego",
-								Statement: "Filtered by Rego",
-								Finding:   vuln7,
-							},
-						},
-					},
-					{
-						Target: "LICENSE.txt",
-						Licenses: []types.DetectedLicense{
-							license2,
-						},
-						ModifiedFindings: []types.ModifiedFinding{
-							{
-								Type:      types.FindingTypeLicense,
-								Status:    types.FindingStatusIgnored,
-								Source:    "testdata/ignore-by-type.rego",
-								Statement: "Filtered by Rego",
-								Finding:   license1,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
 			name: "happy path with duplicates and different package IDs",
 			args: args{
 				report: types.Report{
@@ -1256,10 +1063,23 @@ func TestFilter(t *testing.T) {
 				VEXSources:     vexSources,
 				IgnoreStatuses: tt.args.ignoreStatuses,
 				IgnoreFile:     tt.args.ignoreFile,
-				PolicyFile:     tt.args.policyFile,
 			})
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, tt.args.report)
 		})
 	}
+}
+
+func TestFilter_PolicyFile(t *testing.T) {
+	report := types.Report{
+		Results: types.Results{
+			{
+				Vulnerabilities: []types.DetectedVulnerability{
+					{VulnerabilityID: "CVE-2019-0001"},
+				},
+			},
+		},
+	}
+	err := result.Filter(t.Context(), report, result.FilterOptions{PolicyFile: "trivy.rego"})
+	assert.ErrorContains(t, err, "Rego ignore policies not implemented")
 }
