@@ -129,6 +129,15 @@ var (
 		},
 	}
 
+	// offline, no groupId in MANIFEST.MF
+	wantOfflineFileName = []ftypes.Package{
+		{
+			Name:     ":heuristic",
+			Version:  "1.0.0-SNAPSHOT",
+			FilePath: "testdata/heuristic-1.0.0-SNAPSHOT.jar",
+		},
+	}
+
 	// manually created
 	wantHeuristic = []ftypes.Package{
 		{
@@ -316,6 +325,12 @@ func TestParse(t *testing.T) {
 			file:    "testdata/test.jar",
 			offline: true,
 			want:    wantOffline,
+		},
+		{
+			name:    "offline with artifactId from file name",
+			file:    "testdata/heuristic-1.0.0-SNAPSHOT.jar",
+			offline: true,
+			want:    wantOfflineFileName,
 		},
 		{
 			name: "artifactId search",
@@ -957,6 +972,48 @@ func TestParser_hashOnce(t *testing.T) {
 
 	// The search by SHA-1 and the checksum share one read of the archive.
 	assert.Equal(t, int64(len(data)), r.n, "bytes read")
+}
+
+func TestParse_offlineFileName(t *testing.T) {
+	// A Gradle-built jar: no pom.properties, and a MANIFEST.MF without a groupId.
+	data := makeZip(t, zip.Deflate, zipEntry{
+		name: "META-INF/MANIFEST.MF",
+		data: []byte("Manifest-Version: 1.0\nImplementation-Title: okhttp\nImplementation-Version: 4.11.0\n"),
+	})
+	sum, err := digest.CalcSHA1(bytes.NewReader(data))
+	require.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		filePath string
+		want     []ftypes.Package
+	}{
+		{
+			name:     "artifactId and version in the file name",
+			filePath: "okhttp-4.11.0.jar",
+			want: []ftypes.Package{
+				{
+					Name:     ":okhttp",
+					Version:  "4.11.0",
+					FilePath: "okhttp-4.11.0.jar",
+					Digest:   sum,
+				},
+			},
+		},
+		{
+			name:     "no version in the file name",
+			filePath: "okhttp.jar",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := jar.NewParser(nil, jar.WithFilePath(tt.filePath), jar.WithOffline(true),
+				jar.WithSize(int64(len(data))), jar.WithChecksum(true))
+			got, _, err := p.Parse(t.Context(), bytes.NewReader(data))
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }
 
 func BenchmarkParse_notFoundBySHA1(b *testing.B) {

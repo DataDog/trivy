@@ -182,11 +182,19 @@ func (p *Parser) resolveArtifact(m manifest, fileProps Properties, sum func() (d
 	manifestProps := m.properties(fileProps.FilePath)
 	if p.offline {
 		// In offline mode, we will not check if the artifact information is correct.
-		if !manifestProps.Valid() {
-			p.logger.Debug("Unable to identify POM in offline mode", log.String("file", fileName))
-			return ftypes.Package{}, false, nil
+		if manifestProps.Valid() {
+			return manifestProps.Package(), true, nil
 		}
-		return manifestProps.Package(), true, nil
+		// The groupId can't be looked up offline. Keep the jar under the artifactId and
+		// version of its file name, so that it stays in the result with its digest and a
+		// consumer can resolve it by SHA-1.
+		if fileProps.ArtifactID != "" && fileProps.Version != "" {
+			p.logger.Debug("POM was determined from the file name in offline mode",
+				log.String("file", fileName), log.String("artifact", fileProps.String()))
+			return fileProps.Package(), true, nil
+		}
+		p.logger.Debug("Unable to identify POM in offline mode", log.String("file", fileName))
+		return ftypes.Package{}, false, nil
 	}
 
 	if manifestProps.Valid() {
