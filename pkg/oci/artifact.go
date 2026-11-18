@@ -3,14 +3,13 @@ package oci
 import (
 	"context"
 	"errors"
-	"net/http"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
-	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/xerrors"
 
@@ -18,7 +17,6 @@ import (
 	"github.com/aquasecurity/trivy/pkg/fanal/types"
 	"github.com/aquasecurity/trivy/pkg/log"
 	"github.com/aquasecurity/trivy/pkg/remote"
-	"github.com/aquasecurity/trivy/pkg/version/doc"
 	xio "github.com/aquasecurity/trivy/pkg/x/io"
 	xos "github.com/aquasecurity/trivy/pkg/x/os"
 	xslices "github.com/aquasecurity/trivy/pkg/x/slices"
@@ -227,8 +225,9 @@ func NewArtifacts(repos []name.Reference, opt types.RegistryOptions, opts ...Opt
 	})
 }
 
-// Download downloads artifacts until one of them succeeds.
-// Attempts to download next artifact if the first one fails due to a temporary error.
+// Download downloads artifacts until one of them succeeds. It stops early at
+// a local file error, such as a full disk, which the next artifact would meet
+// as well, and once ctx is done.
 func (a Artifacts) Download(ctx context.Context, dst string, opt DownloadOption) error {
 	var errs error
 	for i, art := range a {
@@ -239,7 +238,8 @@ func (a Artifacts) Download(ctx context.Context, dst string, opt DownloadOption)
 			return nil
 		}
 
-		if !shouldTryOtherRepo(err) {
+		var pathErr *fs.PathError
+		if ctx.Err() != nil || errors.As(err, &pathErr) {
 			return xerrors.Errorf("failed to download artifact from %s: %w", art.repository, err)
 		}
 		log.ErrorContext(ctx, "Failed to download artifact", log.String("repo", art.repository), log.Err(err))
@@ -250,40 +250,4 @@ func (a Artifacts) Download(ctx context.Context, dst string, opt DownloadOption)
 	}
 
 	return xerrors.Errorf("failed to download artifact from any source: %w", errs)
-}
-
-func shouldTryOtherRepo(err error) bool {
-	var terr *transport.Error
-	if !errors.As(err, &terr) {
-		return false
-	}
-
-	for _, diagnostic := range terr.Errors {
-		// For better user experience
-		if diagnostic.Code == transport.DeniedErrorCode || diagnostic.Code == transport.UnauthorizedErrorCode {
-			// e.g. https://trivy.dev/docs/latest/guide/references/troubleshooting/#db
-			log.Warnf("See %s", doc.URL("guide/references/troubleshooting/", "db"))
-			break
-		}
-	}
-
-	// try the following artifact if a temporary error occurs
-	if terr.Temporary() {
-		return true
-	}
-
-	// `GCR` periodically returns `BLOB_UNKNOWN` error, and mirror.gcr.io
-	// a plain 404 from the download URL its blob requests redirect to.
-	// cf. https://github.com/aquasecurity/trivy/discussions/8020
-	// In this case we need to check other repositories.
-	if terr.StatusCode == http.StatusNotFound {
-		return true
-	}
-	for _, e := range terr.Errors {
-		if e.Code == transport.BlobUnknownErrorCode {
-			return true
-		}
-	}
-
-	return false
 }

@@ -1,11 +1,15 @@
 package oci_test
 
 import (
+	"context"
 	"errors"
 	"io"
+	"io/fs"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"syscall"
 	"testing"
 
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -159,6 +163,7 @@ func TestArtifacts_Download(t *testing.T) {
 	tests := []struct {
 		name     string
 		fetchErr error
+		canceled bool // the context is done before the download
 		wantErr  string
 	}{
 		{
@@ -171,7 +176,21 @@ func TestArtifacts_Download(t *testing.T) {
 				Errors:     []transport.Diagnostic{{Code: transport.UnauthorizedErrorCode}},
 				StatusCode: http.StatusUnauthorized,
 			},
-			wantErr: "failed to download artifact from first",
+		},
+		{
+			name:     "connection refused",
+			fetchErr: &net.OpError{Op: "dial", Net: "tcp", Err: syscall.ECONNREFUSED},
+		},
+		{
+			name:     "disk full",
+			fetchErr: &fs.PathError{Op: "write", Path: "javadb.tar.gz", Err: syscall.ENOSPC},
+			wantErr:  "failed to download artifact from first",
+		},
+		{
+			name:     "canceled",
+			fetchErr: context.Canceled,
+			canceled: true,
+			wantErr:  "failed to download artifact from first",
 		},
 	}
 
@@ -183,7 +202,12 @@ func TestArtifacts_Download(t *testing.T) {
 				oci.NewArtifact("first", ftypes.RegistryOptions{}, oci.WithImage(newFakeImage(errLayer{err: tt.fetchErr}))),
 				oci.NewArtifact("second", ftypes.RegistryOptions{}, oci.WithImage(newFakeImage(fakeLayer{layer}))),
 			}
-			err := artifacts.Download(t.Context(), tempDir, oci.DownloadOption{Quiet: true})
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			if tt.canceled {
+				cancel()
+			}
+			err := artifacts.Download(ctx, tempDir, oci.DownloadOption{Quiet: true})
 			if tt.wantErr != "" {
 				assert.ErrorContains(t, err, tt.wantErr)
 				return
