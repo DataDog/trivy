@@ -44,8 +44,8 @@ type Updater struct {
 	once           sync.Once // we need to update java-db once per run
 }
 
-func (u *Updater) Update() error {
-	ctx := log.WithContextPrefix(context.Background(), log.PrefixJavaDB)
+func (u *Updater) Update(ctx context.Context) error {
+	ctx = log.WithContextPrefix(ctx, log.PrefixJavaDB)
 	metac := db.NewMetadata(u.dbDir)
 
 	meta, err := metac.Get()
@@ -107,14 +107,14 @@ func Init(cacheDir string, javaDBRepositories []name.Reference, skip, quiet bool
 	}
 }
 
-func Update() error {
+func Update(ctx context.Context) error {
 	if updater == nil {
 		return xerrors.New("Java DB client not initialized")
 	}
 
 	var err error
 	updater.once.Do(func() {
-		err = updater.Update()
+		err = updater.Update(ctx)
 	})
 	return err
 }
@@ -131,8 +131,8 @@ type DB struct {
 	driver db.DB
 }
 
-func NewClient() (*DB, error) {
-	if err := Update(); err != nil {
+func NewClient(ctx context.Context) (*DB, error) {
+	if err := Update(ctx); err != nil {
 		return nil, xerrors.Errorf("Java DB update failed: %s", err)
 	}
 
