@@ -407,6 +407,43 @@ func TestDecoder_Decode_OSPackages(t *testing.T) {
 	}
 }
 
+func TestDecoder_Decode_ThirdPartyRepository(t *testing.T) {
+	bom := core.NewBOM(core.Options{})
+	bom.SerialNumber = "test-third-party-repo"
+	bom.Version = 1
+	bom.AddComponent(&core.Component{
+		Type:    core.TypeLibrary,
+		Name:    "postgresql-18",
+		Version: "18.6-1.pgdg13+2",
+		PkgIdentifier: ftypes.PkgIdentifier{
+			PURL: &packageurl.PackageURL{
+				Type:      packageurl.TypeDebian,
+				Namespace: "debian",
+				Name:      "postgresql-18",
+				Version:   "18.6-1.pgdg13+2",
+			},
+		},
+		Properties: []core.Property{
+			{Name: core.PropertyPkgType, Value: "debian"},
+			{Name: core.PropertySrcName, Value: "postgresql-18"},
+			{Name: core.PropertyRepositoryClass, Value: "third-party"},
+			{Name: core.PropertyRepositoryName, Value: "pgdg"},
+			{Name: core.PropertyRepositoryProduct, Value: "postgresql"},
+		},
+	})
+
+	var gotSBOM types.SBOM
+	require.NoError(t, sbomio.NewDecoder(bom).Decode(t.Context(), &gotSBOM))
+
+	require.Len(t, gotSBOM.Packages, 1)
+	require.Len(t, gotSBOM.Packages[0].Packages, 1)
+	assert.Equal(t, ftypes.PackageRepository{
+		Class:   ftypes.RepositoryClassThirdParty,
+		Name:    "pgdg",
+		Product: "postgresql",
+	}, gotSBOM.Packages[0].Packages[0].Repository)
+}
+
 func TestDecoder_Decode_RepositoryClass(t *testing.T) {
 	bom := core.NewBOM(core.Options{})
 	bom.SerialNumber = "test-repository-class"
