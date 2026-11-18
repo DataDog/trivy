@@ -103,6 +103,8 @@ func (s *Scanner) Detect(ctx context.Context, osVer string, _ *ftypes.Repository
 	log.InfoContext(ctx, "Detecting vulnerabilities...", log.String("os_version", osVer),
 		log.Int("pkg_num", len(pkgs)))
 
+	release := s.versionFromEolDates(ctx, osVer)
+
 	var vulns []types.DetectedVulnerability
 	for _, pkg := range pkgs {
 		// Skip third-party packages as they are not covered by Ubuntu security advisories
@@ -110,9 +112,16 @@ func (s *Scanner) Detect(ctx context.Context, osVer string, _ *ftypes.Repository
 			continue
 		}
 
-		osVer = s.versionFromEolDates(ctx, osVer)
+		// FIPS-validated packages are fixed on Ubuntu's FIPS streams, which
+		// trivy-db stores in a dedicated "<version>-FIPS" bucket. Querying that
+		// bucket (instead of the regular release bucket) ensures FIPS users get
+		// the FIPS-validated fixed version, and non-FIPS users are unaffected.
+		pkgRelease := release
+		if isFIPSPackage(pkg) {
+			pkgRelease += "-FIPS"
+		}
 		advisories, err := s.vs.Get(db.GetParams{
-			Release: osVer,
+			Release: pkgRelease,
 			PkgName: pkg.SrcName,
 		})
 		if err != nil {
@@ -162,6 +171,20 @@ func (s *Scanner) Detect(ctx context.Context, osVer string, _ *ftypes.Repository
 func (s *Scanner) IsSupportedVersion(ctx context.Context, osFamily ftypes.OSType, osVer string) bool {
 	osVer = s.versionFromEolDates(ctx, osVer)
 	return osver.Supported(ctx, s.eolDates, osFamily, osVer)
+}
+
+// isFIPSPackage reports whether a package is a FIPS-validated build, based on
+// the FIPS marker Ubuntu adds to the package version (e.g. "3.0.2-0ubuntu1.17+Fips1").
+// Such packages are fixed on Ubuntu's FIPS streams and must be matched against
+// the dedicated "<version>-FIPS" bucket rather than the regular release bucket.
+func isFIPSPackage(pkg ftypes.Package) bool {
+	for _, v := range []string{utils.FormatVersion(pkg), utils.FormatSrcVersion(pkg)} {
+		v = strings.ToLower(v)
+		if strings.Contains(v, "+fips") || strings.Contains(v, ".fips.") {
+			return true
+		}
+	}
+	return false
 }
 
 // versionFromEolDates checks if actual (not ESM) version is not outdated
