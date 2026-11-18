@@ -1,6 +1,7 @@
 package oci_test
 
 import (
+	"bytes"
 	"cmp"
 	"context"
 	"errors"
@@ -8,14 +9,24 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync/atomic"
 	"syscall"
 	"testing"
+	"time"
 
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/registry"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
+	"github.com/google/go-containerregistry/pkg/v1/empty"
 	fakei "github.com/google/go-containerregistry/pkg/v1/fake"
+	"github.com/google/go-containerregistry/pkg/v1/mutate"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/remote/transport"
+	"github.com/google/go-containerregistry/pkg/v1/static"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/google/go-containerregistry/pkg/v1/types"
 	"github.com/stretchr/testify/assert"
@@ -248,6 +259,84 @@ func TestArtifacts_Download(t *testing.T) {
 			assert.Equal(t, "Hello, world", string(got))
 		})
 	}
+}
+
+// TestArtifacts_DownloadStall downloads from a registry that stops sending,
+// ahead of one that serves the artifact.
+func TestArtifacts_DownloadStall(t *testing.T) {
+	blob, err := os.ReadFile("testdata/test.tar.gz")
+	require.NoError(t, err)
+
+	tests := []struct {
+		name string
+		sent int // bytes of the layer sent before the stall, -1 for no answer at all
+	}{
+		{name: "no answer", sent: -1},
+		{name: "stalled layer", sent: len(blob) / 2},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			artifacts := oci.Artifacts{
+				oci.NewArtifact(serveArtifact(t, blob, tt.sent), ftypes.RegistryOptions{}),
+				oci.NewArtifact(serveArtifact(t, blob, len(blob)), ftypes.RegistryOptions{}),
+			}
+			dir := t.TempDir()
+			start := time.Now()
+			err := artifacts.Download(t.Context(), dir, oci.DownloadOption{Quiet: true, StallTimeout: time.Second})
+			require.NoError(t, err)
+			assert.Less(t, time.Since(start), 10*time.Second)
+
+			got, err := os.ReadFile(filepath.Join(dir, "test.txt"))
+			require.NoError(t, err)
+			assert.Equal(t, "Hello, world", string(got))
+		})
+	}
+}
+
+// serveArtifact serves blob as the single layer of an artifact from a
+// registry in the test, and returns its repository. The registry stalls a
+// request for the layer once it has sent the first sent bytes, and every
+// request when sent is -1, until the client gives up.
+func serveArtifact(t *testing.T, blob []byte, sent int) string {
+	t.Helper()
+	reg := registry.New()
+	var pushed atomic.Bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !pushed.Load() || sent >= len(blob) {
+			reg.ServeHTTP(w, r)
+			return
+		}
+		if sent < 0 {
+			<-r.Context().Done()
+			return
+		}
+		rec := httptest.NewRecorder()
+		reg.ServeHTTP(rec, r)
+		for k, v := range rec.Header() {
+			w.Header()[k] = v
+		}
+		w.WriteHeader(rec.Code)
+		if r.Method != http.MethodGet || !bytes.Equal(rec.Body.Bytes(), blob) {
+			_, _ = w.Write(rec.Body.Bytes())
+			return
+		}
+		_, _ = w.Write(blob[:sent])
+		w.(http.Flusher).Flush()
+		<-r.Context().Done()
+	}))
+	t.Cleanup(srv.Close)
+
+	repo := strings.TrimPrefix(srv.URL, "http://") + "/test:1"
+	img, err := mutate.Append(empty.Image, mutate.Addendum{
+		Layer:       static.NewLayer(blob, "application/vnd.cncf.openpolicyagent.layer.v1.tar+gzip"),
+		Annotations: map[string]string{"org.opencontainers.image.title": "bundle.tar.gz"},
+	})
+	require.NoError(t, err)
+	ref, err := name.ParseReference(repo)
+	require.NoError(t, err)
+	require.NoError(t, remote.Write(ref, img))
+	pushed.Store(true)
+	return repo
 }
 
 func newFakeImage(layer v1.Layer) v1.Image {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -118,9 +119,32 @@ type DownloadOption struct {
 	MediaType string // Accept any media type if not specified
 	Filename  string // Use the annotation if not specified
 	Quiet     bool
+
+	// StallTimeout, if set, ends a download that receives no data for that
+	// long: no answer from the registry, or no byte of the layer.
+	StallTimeout time.Duration
 }
 
+var errStalled = errors.New("download stalled")
+
 func (a *Artifact) Download(ctx context.Context, dir string, opt DownloadOption) error {
+	if opt.StallTimeout <= 0 {
+		return a.downloadLayer(ctx, dir, opt, nil)
+	}
+	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
+	stall := time.AfterFunc(opt.StallTimeout, func() { cancel(errStalled) })
+	defer stall.Stop()
+	err := a.downloadLayer(ctx, dir, opt, stall)
+	if err != nil && errors.Is(context.Cause(ctx), errStalled) {
+		return xerrors.Errorf("no data for %s: %w", opt.StallTimeout, err)
+	}
+	return err
+}
+
+// downloadLayer downloads the layer of the artifact into dir. When stall is
+// set, each read of the layer resets it to opt.StallTimeout.
+func (a *Artifact) downloadLayer(ctx context.Context, dir string, opt DownloadOption, stall *time.Timer) error {
 	layer, err := a.singleLayer(ctx)
 	if err != nil {
 		return err
@@ -156,7 +180,7 @@ func (a *Artifact) Download(ctx context.Context, dir string, opt DownloadOption)
 		return xerrors.Errorf("unacceptable media type: %s", string(layerMediaType))
 	}
 
-	if err = a.download(ctx, layer, fileName, dir, opt.Quiet); err != nil {
+	if err = a.download(ctx, layer, fileName, dir, opt.Quiet, stall, opt.StallTimeout); err != nil {
 		return xerrors.Errorf("oci download error: %w", err)
 	}
 
@@ -197,7 +221,7 @@ func (a *Artifact) Blob(ctx context.Context) (io.ReadCloser, error) {
 	return rc, nil
 }
 
-func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir string, quiet bool) error {
+func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir string, quiet bool, stall *time.Timer, stallTimeout time.Duration) error {
 	rc, err := layer.Compressed()
 	if err != nil {
 		return xerrors.Errorf("failed to fetch the layer: %w", err)
@@ -219,8 +243,13 @@ func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir s
 		_ = os.RemoveAll(tempDir)
 	}()
 
+	var r io.Reader = rc
+	if stall != nil {
+		r = stallReader{rc, stall, stallTimeout}
+	}
+
 	// Download the layer content into a temporal file
-	if _, err = xio.Copy(ctx, f, rc); err != nil {
+	if _, err = xio.Copy(ctx, f, r); err != nil {
 		return xerrors.Errorf("copy error: %w", err)
 	}
 
@@ -231,6 +260,25 @@ func (a *Artifact) download(ctx context.Context, layer v1.Layer, fileName, dir s
 	}
 
 	return nil
+}
+
+// stallReader reads the layer of a download whose stall timer is t. Each read
+// resets t to d, and the end of the layer stops it, since the rest of the
+// download is local.
+type stallReader struct {
+	io.Reader
+	t *time.Timer
+	d time.Duration
+}
+
+func (r stallReader) Read(p []byte) (int, error) {
+	n, err := r.Reader.Read(p)
+	if err != nil {
+		r.t.Stop()
+	} else {
+		r.t.Reset(r.d)
+	}
+	return n, err
 }
 
 func (a *Artifact) Digest(ctx context.Context) (string, error) {
