@@ -323,7 +323,7 @@ func (r *runner) Report(ctx context.Context, opts flag.Options, report types.Rep
 }
 
 func (r *runner) initDB(ctx context.Context, opts flag.Options) error {
-	if err := r.initJavaDB(opts); err != nil {
+	if err := r.initJavaDB(ctx, opts); err != nil {
 		return err
 	}
 
@@ -350,7 +350,7 @@ func (r *runner) initDB(ctx context.Context, opts flag.Options) error {
 	return nil
 }
 
-func (r *runner) initJavaDB(opts flag.Options) error {
+func (r *runner) initJavaDB(ctx context.Context, opts flag.Options) error {
 	// When running as server mode, it doesn't need to download the Java database.
 	if opts.Listen != "" {
 		return nil
@@ -366,7 +366,7 @@ func (r *runner) initJavaDB(opts flag.Options) error {
 	noProgress := opts.Quiet || opts.NoProgress
 	javadb.Init(opts.CacheDir, opts.JavaDBRepositories, opts.SkipJavaDBUpdate, noProgress, opts.RegistryOpts())
 	if opts.DownloadJavaDBOnly {
-		if err := javadb.Update(); err != nil {
+		if err := javadb.Update(ctx); err != nil {
 			return xerrors.Errorf("Java DB error: %w", err)
 		}
 		return SkipScan

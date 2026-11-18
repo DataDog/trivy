@@ -51,7 +51,7 @@ func (a *javaLibraryAnalyzer) PostAnalyze(ctx context.Context, input analyzer.Po
 
 	if !offline {
 		// TODO: think about the sonatype API and "--offline"
-		client, err := javadb.NewClient()
+		client, err := javadb.NewClient(ctx)
 		if err != nil {
 			return nil, xerrors.Errorf("Unable to initialize the Java DB: %s", err)
 		}
