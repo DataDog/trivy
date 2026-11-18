@@ -1,14 +1,17 @@
 package remote
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -331,6 +334,36 @@ func (uh *userAgentsTrackingHandler) ServeHTTP(rw http.ResponseWriter, r *http.R
 		}
 	}
 	uh.hr.ServeHTTP(rw, r)
+}
+
+// TestImageCanceled checks that Image returns once its context is done,
+// while the registry has yet to answer.
+func TestImageCanceled(t *testing.T) {
+	release := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+	}))
+	t.Cleanup(srv.Close)
+	t.Cleanup(func() { close(release) })
+
+	ref, err := name.ParseReference(strings.TrimPrefix(srv.URL, "http://") + "/library/alpine:3.10")
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(t.Context(), 100*time.Millisecond)
+	defer cancel()
+	errc := make(chan error, 1)
+	go func() {
+		_, err := Image(ctx, ref, types.RegistryOptions{})
+		errc <- err
+	}()
+	select {
+	case err := <-errc:
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+	case <-time.After(10 * time.Second):
+		t.Fatal("Image still running 10s after its context was done")
+	}
 }
 
 func setupAgentTrackingRegistry(t *testing.T) (*httptest.Server, *userAgentsTrackingHandler) {

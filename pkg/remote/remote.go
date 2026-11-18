@@ -37,6 +37,7 @@ func tryGet(ctx context.Context, tr http.RoundTripper, ref name.Reference, optio
 	var errs error
 	for _, authOpt := range authOptions(ctx, ref, option) {
 		remoteOpts := []remote.Option{
+			remote.WithContext(ctx),
 			remote.WithTransport(tr),
 			authOpt,
 		}
@@ -116,6 +117,7 @@ func tryImage(ctx context.Context, tr http.RoundTripper, ref name.Reference, opt
 	var errs error
 	for _, authOpt := range authOptions(ctx, ref, option) {
 		remoteOpts := []remote.Option{
+			remote.WithContext(ctx),
 			remote.WithTransport(tr),
 			authOpt,
 		}
@@ -137,6 +139,7 @@ func Referrers(ctx context.Context, d name.Digest, option types.RegistryOptions)
 	// Try each authentication method until it succeeds
 	for _, authOpt := range authOptions(ctx, d, option) {
 		remoteOpts := []remote.Option{
+			remote.WithContext(ctx),
 			remote.WithTransport(xhttp.RoundTripper(ctx)),
 			authOpt,
 		}
