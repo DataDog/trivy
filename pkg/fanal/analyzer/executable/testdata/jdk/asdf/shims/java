@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# asdf-plugin: java temurin-21.0.4+7.0.LTS
+exec /root/.asdf/bin/asdf exec "java" "$@" # asdf_allow: ' asdf '

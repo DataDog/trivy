@@ -112,8 +112,9 @@ const (
 	// ============
 	// Non-packaged
 	// ============
-	TypeExecutable Type = "executable"
-	TypeSBOM       Type = "sbom"
+	TypeExecutable  Type = "executable"
+	TypeJavaRuntime Type = "java-runtime"
+	TypeSBOM        Type = "sbom"
 
 	// ============
 	// Image Config

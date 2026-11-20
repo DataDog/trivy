@@ -6,7 +6,6 @@ import (
 	"path"
 	"regexp"
 
-	javaparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/java"
 	nodejsparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/nodejs"
 	phpparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/php"
 	pythonparser "github.com/aquasecurity/trivy/pkg/dependency/parser/executable/python"
@@ -40,10 +39,6 @@ func isDetectableLibraryExecutable(name string) (bool, types.TargetType, error) 
 	if isPhpExecutable {
 		return true, types.PhpExecutable, nil
 	}
-	isJavaExecutable := isDetectableJavaExecutable(name)
-	if isJavaExecutable {
-		return true, types.JavaExecutable, nil
-	}
 	return false, types.TargetType(""), nil
 }
 
@@ -76,10 +71,6 @@ func isDetectablePhpExecutable(name string) bool {
 	return (isPHPExecutable != nil || isPHPLib != nil || isPHPFpm != nil || isPHPCgi != nil)
 }
 
-func isDetectableJavaExecutable(name string) bool {
-	return name == "java"
-}
-
 func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.AnalysisInput) (*analyzer.AnalysisResult, error) {
 	// Skip non-binaries
 	isBinary, err := utils.IsBinary(input.Content, input.Info.Size())
@@ -99,8 +90,6 @@ func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.Analysis
 			res, err = language.AnalyzePackage(ctx, types.NodeJsExecutable, input.FilePath, input.Content, nodejsparser.NewParser(), false)
 		case types.PhpExecutable:
 			res, err = language.AnalyzePackage(ctx, types.PhpExecutable, input.FilePath, input.Content, phpparser.NewParser(), false)
-		case types.JavaExecutable:
-			res, err = language.AnalyzePackage(ctx, types.JavaExecutable, input.FilePath, input.Content, javaparser.NewParser(), false)
 		}
 		if err != nil {
 			return nil, err
@@ -114,7 +103,7 @@ func (a executableAnalyzer) Analyze(ctx context.Context, input analyzer.Analysis
 }
 
 // Required reports whether the analyzer can detect a version in the file:
-// an executable named like a python, node, php, or java interpreter.
+// an executable named like a python, node, or php interpreter.
 func (a executableAnalyzer) Required(filePath string, fileInfo os.FileInfo) bool {
 	if !utils.IsExecutable(fileInfo) {
 		return false

@@ -90,26 +90,6 @@ func Test_executableAnalyzer_Analyze(t *testing.T) {
 				},
 			},
 		},
-		{
-			name:     "Java Binary",
-			filePath: "testdata/java",
-			want: &analyzer.AnalysisResult{
-				Applications: []types.Application{
-					{
-						Type:     types.JavaExecutable,
-						FilePath: "testdata/java",
-						Packages: types.Packages{
-							{
-								ID:       "java@1.8.0_421-b09",
-								Name:     "java",
-								Version:  "1.8.0_421-b09",
-								FilePath: "testdata/java",
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -180,7 +160,7 @@ func Test_executableAnalyzer_Required(t *testing.T) {
 		{filePath: "usr/lib/x86_64-linux-gnu/libpython3.11.so.1.0", mode: 0o755, want: true},
 		{filePath: "usr/local/bin/node", mode: 0o755, want: true},
 		{filePath: "usr/sbin/php-fpm", mode: 0o755, want: true},
-		{filePath: "usr/lib/jvm/java-17/bin/java", mode: 0o755, want: true},
+		{filePath: "usr/lib/jvm/java-17/bin/java", mode: 0o755, want: false},
 		{filePath: "usr/bin/ls", mode: 0o755, want: false},
 		{filePath: "opt/app/lib/libtorch.so", mode: 0o755, want: false},
 		{filePath: "usr/bin/python3", mode: 0o644, want: false},
