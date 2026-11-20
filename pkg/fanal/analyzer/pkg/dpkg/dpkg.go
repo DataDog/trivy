@@ -160,8 +160,17 @@ func (a dpkgAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 	}
 	packageInfos = append(packageInfos, rootStatusInfos...)
 
-	// parse status files
+	// parse status files, and the md5sums files that distroless images keep
+	// beside them
 	err = fsutils.WalkDir(ctx, input.FS, strings.TrimSuffix(statusDir, "/"), fsutils.RequiredAll(), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+		if strings.HasSuffix(path, md5sumsExtension) {
+			systemFiles, err := a.parseDpkgMd5sums(bufio.NewScanner(r))
+			if err != nil {
+				return xerrors.Errorf("failed to parse %s file: %w", path, err)
+			}
+			packageFiles[strings.TrimSuffix(filepath.Base(path), md5sumsExtension)] = systemFiles
+			return nil
+		}
 		infos, err := a.parseDpkgStatus(path, r, digests)
 		if err != nil {
 			return err

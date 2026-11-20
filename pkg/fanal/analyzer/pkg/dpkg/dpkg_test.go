@@ -1565,6 +1565,51 @@ func Test_dpkgAnalyzer_Analyze(t *testing.T) {
 			},
 		},
 		{
+			name:  "md5sums in status.d",
+			txtar: "testdata/distroless-md5sums.txtar",
+			want: &analyzer.AnalysisResult{
+				PackageInfos: []types.PackageInfo{
+					{
+						FilePath: "var/lib/dpkg/status.d/python3.11-minimal",
+						Packages: types.Packages{
+							{
+								ID:         "python3.11-minimal@3.11.2-6+deb12u6",
+								Name:       "python3.11-minimal",
+								Version:    "3.11.2",
+								Release:    "6+deb12u6",
+								Arch:       "amd64",
+								Repository: types.PackageRepository{Class: types.RepositoryClassOfficial},
+								SrcName:    "python3.11",
+								SrcVersion: "3.11.2",
+								SrcRelease: "6+deb12u6",
+								Maintainer: "Matthias Klose <doko@debian.org>",
+								InstalledFiles: []string{
+									"/usr/bin/python3.11",
+									"/usr/lib/binfmt.d/python3.11.conf",
+									"/usr/share/binfmts/python3.11",
+									"/usr/share/doc/python3.11-minimal/README.Debian.gz",
+									"/usr/share/doc/python3.11-minimal/changelog.Debian.gz",
+									"/usr/share/doc/python3.11-minimal/copyright",
+									"/usr/share/lintian/overrides/python3.11-minimal",
+									"/usr/share/man/man1/python3.11.1.gz",
+								},
+							},
+						},
+					},
+				},
+				SystemInstalledFiles: []string{
+					"/usr/bin/python3.11",
+					"/usr/lib/binfmt.d/python3.11.conf",
+					"/usr/share/binfmts/python3.11",
+					"/usr/share/doc/python3.11-minimal/README.Debian.gz",
+					"/usr/share/doc/python3.11-minimal/changelog.Debian.gz",
+					"/usr/share/doc/python3.11-minimal/copyright",
+					"/usr/share/lintian/overrides/python3.11-minimal",
+					"/usr/share/man/man1/python3.11.1.gz",
+				},
+			},
+		},
+		{
 			name:  "third-party package",
 			txtar: "testdata/third-party.txtar",
 			want: &analyzer.AnalysisResult{
