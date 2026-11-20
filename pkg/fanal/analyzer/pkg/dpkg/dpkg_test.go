@@ -1676,6 +1676,11 @@ func Test_isThirdPartyPackage(t *testing.T) {
 	}{
 		{"third-party (Docker)", "Docker <support@docker.com>", true},
 		{"third-party (GitHub - exact match)", "GitHub", true},
+		{"third-party (Eclipse Temurin)", "Eclipse Adoptium Package Maintainers <temurin-dev@eclipse.org>", true},
+		{"third-party (Azul Zulu)", "Azul Systems, Inc. <azul_openjdk@azulsystems.com>", true},
+		{"third-party (Amazon Corretto)", "Amazon Corretto Team <corretto-team@amazon.com>", true},
+		{"third-party (BellSoft Liberica)", "BellSoft <info@bell-sw.com>", true},
+		{"third-party (Oracle JDK)", "jdk-download-help_ww <jdk-download-help_ww@oracle.com>", true},
 		{"official (Ubuntu)", "Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>", false},
 	}
 	for _, tt := range tests {

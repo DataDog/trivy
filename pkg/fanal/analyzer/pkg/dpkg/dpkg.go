@@ -41,7 +41,7 @@ func newDpkgAnalyzer(_ analyzer.AnalyzerOptions) (analyzer.PostAnalyzer, error) 
 }
 
 const (
-	analyzerVersion = 6
+	analyzerVersion = 7
 
 	statusFile    = "var/lib/dpkg/status"
 	statusDir     = "var/lib/dpkg/status.d/"
@@ -88,7 +88,12 @@ var (
 		"@datadoghq.com",       // Datadog
 
 		// Language runtimes (third-party repos)
-		"@nodesource.com", // NodeSource (Node.js)
+		"@nodesource.com",                 // NodeSource (Node.js)
+		"temurin-dev@eclipse.org",         // Eclipse Temurin
+		"@azulsystems.com",                // Azul Zulu
+		"corretto-team@amazon.com",        // Amazon Corretto
+		"info@bell-sw.com",                // BellSoft Liberica
+		"jdk-download-help_ww@oracle.com", // Oracle JDK
 
 		// Networking & VPN
 		"info@tailscale.com", // Tailscale
