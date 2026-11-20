@@ -118,8 +118,8 @@ func (a dpkgAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 
 	packageFiles := make(map[string][]string)
 
-	// parse md5sums files
-	err = fsutils.WalkDir(ctx, input.FS, infoDir, fsutils.RequiredExt(md5sumsExtension), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	// parse md5sums files. The walks take io/fs paths, which end without a slash.
+	err = fsutils.WalkDir(ctx, input.FS, strings.TrimSuffix(infoDir, "/"), fsutils.RequiredExt(md5sumsExtension), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		scanner := bufio.NewScanner(r)
 		systemFiles, err := a.parseDpkgMd5sums(scanner)
 		if err != nil {
@@ -161,7 +161,7 @@ func (a dpkgAnalyzer) PostAnalyze(ctx context.Context, input analyzer.PostAnalys
 	packageInfos = append(packageInfos, rootStatusInfos...)
 
 	// parse status files
-	err = fsutils.WalkDir(ctx, input.FS, statusDir, fsutils.RequiredAll(), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
+	err = fsutils.WalkDir(ctx, input.FS, strings.TrimSuffix(statusDir, "/"), fsutils.RequiredAll(), input.Options.WalkErrCallback, func(path string, d fs.DirEntry, r io.Reader) error {
 		infos, err := a.parseDpkgStatus(path, r, digests)
 		if err != nil {
 			return err
