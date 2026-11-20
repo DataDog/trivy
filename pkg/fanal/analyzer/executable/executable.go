@@ -20,7 +20,7 @@ func init() {
 	analyzer.RegisterAnalyzer(&executableAnalyzer{})
 }
 
-const version = 2
+const version = 3
 
 // executableAnalyzer calculates SHA-256 for each binary not managed by package managers (called unpackaged binaries)
 // so that it can search for SBOM attestation in post-handler.

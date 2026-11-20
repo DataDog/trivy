@@ -22,9 +22,15 @@ func NewParser() *Parser {
 	return &Parser{}
 }
 
-var versReg = regexp.MustCompile(`(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+)\x00openjdk)?\x00java(\x00([0-9\.]+)\x00([0-9a-z\+-\._]+))?\x00`)
+// versReg matches the strings the launcher passes to JLI_Launch
+// (src/java.base/share/native/launcher/main.c): LAUNCHER_NAME ("openjdk",
+// or "java" in Oracle JDK and Oracle GraalVM), PROGNAME ("java"),
+// DOT_VERSION ("1.8" in JDK 8, "0.0" since JDK 9) and VERSION_STRING.
+// They come in either order, and arm64 builds pad them with NULs to
+// 8-byte boundaries.
+var versReg = regexp.MustCompile(`(\x00+([0-9.]+)\x00+([0-9A-Za-z+._-]+)\x00+openjdk)?\x00+java(\x00+([0-9.]+)\x00+([0-9A-Za-z+._-]+))?\x00`)
 
-// Parse scans file to try to report the Python version.
+// Parse scans file to try to report the Java version.
 func (p *Parser) Parse(ctx context.Context, r xio.ReadSeekerAt) ([]ftypes.Package, []ftypes.Dependency, error) {
 	x, err := exe.OpenExe(r)
 	if err != nil {

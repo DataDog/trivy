@@ -37,9 +37,20 @@ func TestParse(t *testing.T) {
 			inputFile: "testdata/java.OpenJDK21U-jdk_x64_linux_hotspot_21.0.4_7.elf",
 			want: []types.Package{
 				{
-					ID:      "java@1.8.0_44-b02",
+					ID:      "java@21.0.4+7-LTS",
 					Name:    "java",
-					Version: "1.8.0_44-b02",
+					Version: "21.0.4+7-LTS",
+				},
+			},
+		},
+		{
+			name:      "OpenJDK21U-jre_aarch64_linux_hotspot_21.0.13_9",
+			inputFile: "testdata/java.OpenJDK21U-jre_aarch64_linux_hotspot_21.0.13_9.elf",
+			want: []types.Package{
+				{
+					ID:      "java@21.0.13+9-LTS",
+					Name:    "java",
+					Version: "21.0.13+9-LTS",
 				},
 			},
 		},
